@@ -2,8 +2,8 @@ module dalr.main;
 
 import dalr.productionmanager;
 
-import hurt.io.stdio;
 import hurt.container.deque;
+import hurt.io.stdio;
 
 void main() {
 	ProductionManager a = new ProductionManager();
