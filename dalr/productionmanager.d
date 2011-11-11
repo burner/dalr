@@ -34,12 +34,8 @@ class ProductionManager {
 	public string productionToString(Deque!(int) pro) {
 		assert(pro.getSize() > 0);
 		StringBuffer!(char) sb = new StringBuffer!(char)(pro.getSize() * 4);
-		Iterator!(int) it = pro.begin();
-		assert(it.isValid());
-		for(size_t idx = 0;it.isValid(); it++, idx++) {
-			string tmp = this.productionItemToString(*it);
-			assert(tmp != "");
-			sb.pushBack(tmp);	
+		foreach(idx, it; pro) {
+			sb.pushBack(this.productionItemToString(it));
 			if(idx == 0) {
 				sb.pushBack(" -> ");
 			} else {
@@ -60,10 +56,9 @@ class ProductionManager {
 		assert(this.prod.getSize() > 0);
 		StringBuffer!(char) sb = 
 			new StringBuffer!(char)(this.prod.getSize()*10);
-		Iterator!(Deque!(int)) it = this.prod.begin();
-		assert(it.isValid());
-		for(; it.isValid();it++) {
-			sb.pushBack(this.productionToString(*it));
+
+		foreach(it; this.prod) {
+			sb.pushBack(this.productionToString(it));
 		}
 		return sb.getString();
 	}
