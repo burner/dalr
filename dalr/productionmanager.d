@@ -14,12 +14,7 @@ class ProductionManager {
 	}
 
 	private bool doesProductionExists(Deque!(int) toTest) {
-		foreach(it; prod) {
-			if(it == toTest) {
-				return true;
-			}
-		}
-		return false;
+		return this.prod.contains(toTest);
 	}
 
 	public void insertProduction(Deque!(int) toInsert) {
@@ -27,7 +22,7 @@ class ProductionManager {
 		if(this.doesProductionExists(toInsert)) {
 			throw new Exception(
 				format("production %s does allready exist", 
-					this.productionToString(toInsert)));
+					this.productionToString(toInsert)[0 .. $-1]));
 		} else {
 			assert(this.prod !is null);
 			size_t oldSize = this.prod.getSize();
@@ -67,7 +62,7 @@ class ProductionManager {
 			new StringBuffer!(char)(this.prod.getSize()*10);
 		Iterator!(Deque!(int)) it = this.prod.begin();
 		assert(it.isValid());
-		for(;it.isValid(); it++) {
+		for(; it.isValid();it++) {
 			sb.pushBack(this.productionToString(*it));
 		}
 		return sb.getString();
@@ -76,5 +71,13 @@ class ProductionManager {
 
 unittest {
 	ProductionManager pm = new ProductionManager();
+	pm.insertProduction(new Deque!(int)([0,6,2,7]));
+	bool thrown = false;
+	try {
+		pm.insertProduction(new Deque!(int)([0,6,2,7]));
+	} catch(Exception e) {
+		thrown = true;
+	}
+	assert(thrown);
 	assert("1" == pm.productionItemToString(1));
 }
