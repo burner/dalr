@@ -44,12 +44,13 @@ public class SymbolManager {
 		this.stringSymbols = new Map!(string,Symbol)(ISRType.HashTable);
 	}
 
-	public void insertSymbol(string sym, bool kind) {
+	public int insertSymbol(string sym, bool kind) {
 		MapItem!(string, Symbol) item = this.stringSymbols.find(sym);	
 		if(item !is null) {
 			throw new Exception(format("Symbol %s allready presend", sym));
 		} else {
-			Symbol s = new Symbol(sym, this.getNextId(), kind);
+			int newId = this.getNextId();
+			Symbol s = new Symbol(sym, newId, kind);
 			this.intSymbols.insert(s.getId(), s);
 			this.stringSymbols.insert(s.getSymbolName(), s);
 
@@ -61,6 +62,7 @@ public class SymbolManager {
 				assert(intS !is null && strS !is null);
 				assert(intS.getData() is strS.getData());
 			}
+			return newId;
 		}
 	}
 
@@ -90,7 +92,7 @@ public class SymbolManager {
 		}
 	}
 
-	public int getSymbolId(string symbolName) {
+	public int getSymbolId(const string symbolName) {
 		MapItem!(string,Symbol) f = this.stringSymbols.find(symbolName);
 		if(f is null) {
 			return -1;
@@ -99,7 +101,7 @@ public class SymbolManager {
 		}
 	}
 
-	public string getSymbolName(int symbolId) {
+	public string getSymbolName(const int symbolId) {
 		MapItem!(int,Symbol) f = this.intSymbols.find(symbolId);
 		if(f is null) {
 			return null;
@@ -108,7 +110,7 @@ public class SymbolManager {
 		}
 	}
 
-	public Symbol getSymbol(int symbolId) {
+	public Symbol getSymbol(const int symbolId) {
 		MapItem!(int,Symbol) f = this.intSymbols.find(symbolId);
 		if(f is null) {
 			return null;
@@ -117,7 +119,7 @@ public class SymbolManager {
 		}
 	}
 
-	public Symbol getSymbol(string symbolId) {
+	public Symbol getSymbol(const string symbolId) {
 		MapItem!(string,Symbol) f = this.stringSymbols.find(symbolId);
 		if(f is null) {
 			return null;

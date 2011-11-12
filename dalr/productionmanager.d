@@ -2,6 +2,7 @@ module dalr.productionmanager;
 
 import dalr.item;
 import dalr.itemset;
+import dalr.symbolmanager;
 
 import hurt.container.deque;
 import hurt.container.isr;
@@ -15,10 +16,16 @@ class ProductionManager {
 	private Deque!(Deque!(int)) prod;
 
 	private Map!(Item, ItemSet) itemSets;
+	private SymbolManager symbolManager;
 
 	this() {
 		this.prod = new Deque!(Deque!(int));
 		this.itemSets = new Map!(Item, ItemSet)(ISRType.HashTable);
+	}
+
+	this(SymbolManager symbolManager) {
+		this();
+		this.symbolManager = symbolManager;
 	}
 
 	public void makeLRZeroItemSets() {
@@ -60,8 +67,12 @@ class ProductionManager {
 		return ret;
 	}
 
-	public string productionItemToString(const int item) const {
-		return conv!(int,string)(item);
+	public string productionItemToString(const int item) {
+		if(this.symbolManager is null) {
+			return conv!(int,string)(item);
+		} else {
+			return this.symbolManager.getSymbolName(item);
+		}
 	}
 	
 	public override string toString() {
@@ -69,7 +80,7 @@ class ProductionManager {
 		StringBuffer!(char) sb = 
 			new StringBuffer!(char)(this.prod.getSize()*10);
 
-		foreach(it; this.prod) {
+		foreach(Deque!(int) it; this.prod) {
 			sb.pushBack(this.productionToString(it));
 		}
 		return sb.getString();

@@ -16,18 +16,19 @@ clean:
 	rm Dalr
 
 fine: $(OBJS)
-	dmd $(OBJS) $(CFLAGS) ../libhurt/libhurt.a -gc -ofDalr
+	sh IncreBuildId.sh
+	dmd $(OBJS) $(CFLAGS) compilerinfo.d ../libhurt/libhurt.a -gc -ofDalr
 
-dalr.main.o: dalr/main.d dalr/productionmanager.d Makefile
+dalr.main.o: dalr/main.d dalr/productionmanager.d dalr/symbolmanager.d Makefile
 	dmd $(CFLAGS) -c dalr/main.d -ofdalr.main.o
 
-dalr.productionmanager.o: dalr/productionmanager.d dalr/item.d dalr/itemset.d Makefile
+dalr.productionmanager.o: dalr/productionmanager.d dalr/item.d dalr/itemset.d dalr/symbolmanager.d Makefile
 	dmd $(CFLAGS) -c dalr/productionmanager.d -ofdalr.productionmanager.o
 
 dalr.item.o: dalr/item.d Makefile
 	dmd $(CFLAGS) -c dalr/item.d -ofdalr.item.o
 
-dalr.grammerparser.o: dalr/grammerparser.d Makefile
+dalr.grammerparser.o: dalr/grammerparser.d dalr/symbolmanager.d Makefile
 	dmd $(CFLAGS) -c dalr/grammerparser.d -ofdalr.grammerparser.o
 
 dalr.itemset.o: dalr/itemset.d dalr/item.d Makefile
