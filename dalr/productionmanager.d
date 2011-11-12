@@ -1,6 +1,11 @@
 module dalr.productionmanager;
 
+import dalr.item;
+import dalr.itemset;
+
 import hurt.container.deque;
+import hurt.container.isr;
+import hurt.container.map;
 import hurt.conv.conv;
 import hurt.io.stdio;
 import hurt.string.formatter;
@@ -9,8 +14,15 @@ import hurt.string.stringbuffer;
 class ProductionManager {
 	private Deque!(Deque!(int)) prod;
 
+	private Map!(Item, ItemSet) itemSets;
+
 	this() {
 		this.prod = new Deque!(Deque!(int));
+		this.itemSets = new Map!(Item, ItemSet)(ISRType.HashTable);
+	}
+
+	public void makeLRZeroItemSets() {
+
 	}
 
 	private bool doesProductionExists(Deque!(int) toTest) {

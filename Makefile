@@ -21,7 +21,7 @@ fine: $(OBJS)
 dalr.main.o: dalr/main.d dalr/productionmanager.d Makefile
 	dmd $(CFLAGS) -c dalr/main.d -ofdalr.main.o
 
-dalr.productionmanager.o: dalr/productionmanager.d Makefile
+dalr.productionmanager.o: dalr/productionmanager.d dalr/item.d dalr/itemset.d Makefile
 	dmd $(CFLAGS) -c dalr/productionmanager.d -ofdalr.productionmanager.o
 
 dalr.item.o: dalr/item.d Makefile

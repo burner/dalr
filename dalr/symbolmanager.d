@@ -103,9 +103,30 @@ public class SymbolManager {
 			return f.getData().getSymbolName();
 		}
 	}
+
+	public Symbol getSymbol(int symbolId) {
+		MapItem!(int,Symbol) f = this.intSymbols.find(symbolId);
+		if(f is null) {
+			return null;
+		} else {
+			return f.getData();
+		}
+	}
+
+	public Symbol getSymbol(string symbolId) {
+		MapItem!(string,Symbol) f = this.stringSymbols.find(symbolId);
+		if(f is null) {
+			return null;
+		} else {
+			return f.getData();
+		}
+	}
 }
 
 unittest {
 	SymbolManager sm = new SymbolManager();
 	sm.insertSymbol("expr", true);
+	Symbol sbs = sm.getSymbol("expr");
+	Symbol sbi = sm.getSymbol(sbs.getId());
+	assert(sbs is sbi);
 }
