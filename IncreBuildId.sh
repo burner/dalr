@@ -1,17 +1,17 @@
 #!/bin/bash
 
-if ! test -f compilerinfo.d; then 
+if ! test -f buildinfo.d; then 
 	HASH=`git log -1 --pretty=format:%H`
-	echo -e "module compilerinfo;
+	echo -e "module buildinfo;
 
-public static immutable(uint) CompilerID = 0;
-public static immutable(dstring) GitHash = \"$HASH\";" > compilerinfo.d; 
+public static immutable(uint) buildID = 0;
+public static immutable(dstring) gitHash = \"$HASH\";" > buildinfo.d; 
 else
-	TMP=`grep "CompilerID" compilerinfo.d | cut -b 44- | sed 's/\(.*\)./\1/'` 
+	TMP=`grep "CompilerID" buildinfo.d | cut -b 44- | sed 's/\(.*\)./\1/'` 
 	TMP=$(($TMP + 1))
 	HASH=`git log -1 --pretty=format:%H`
-	echo -e "module compilerinfo;
+	echo -e "module buildinfo;
 
-public static immutable(uint) CompilerID = $TMP;
-public static immutable(dstring) GitHash = \"$HASH\";" > compilerinfo.d; 
+public static immutable(uint) buildID = $TMP;
+public static immutable(dstring) gitHash = \"$HASH\";" > buildinfo.d; 
 fi

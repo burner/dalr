@@ -17,7 +17,7 @@ clean:
 
 fine: $(OBJS)
 	sh IncreBuildId.sh
-	dmd $(OBJS) $(CFLAGS) compilerinfo.d ../libhurt/libhurt.a -gc -ofDalr
+	dmd $(OBJS) $(CFLAGS) buildinfo.d ../libhurt/libhurt.a -gc -ofDalr
 
 dalr.main.o: dalr/main.d dalr/productionmanager.d dalr/symbolmanager.d Makefile
 	dmd $(CFLAGS) -c dalr/main.d -ofdalr.main.o
