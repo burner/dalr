@@ -6,7 +6,7 @@ CFLAGS=-m64 -unittest -debug -gc -I../libhurt/ -wi
 #CFLAGS=-m64 -offsm -O -wi -I../libhurt
 
 OBJS=dalr.main.o dalr.productionmanager.o dalr.item.o dalr.itemset.o \
-dalr.symbolmanager.o
+dalr.symbolmanager.o dalr.grammerparser.o
 
 count:
 	wc -l `find dalr -name \*.d`
@@ -16,7 +16,7 @@ clean:
 	rm Dalr
 
 fine: $(OBJS)
-	dmd $(OBJS) $(CFLAGS) ../libhurt/libhurt.a -I../libhurt/ -gc -ofDalr
+	dmd $(OBJS) $(CFLAGS) ../libhurt/libhurt.a -gc -ofDalr
 
 dalr.main.o: dalr/main.d dalr/productionmanager.d Makefile
 	dmd $(CFLAGS) -c dalr/main.d -ofdalr.main.o
@@ -26,6 +26,9 @@ dalr.productionmanager.o: dalr/productionmanager.d dalr/item.d dalr/itemset.d Ma
 
 dalr.item.o: dalr/item.d Makefile
 	dmd $(CFLAGS) -c dalr/item.d -ofdalr.item.o
+
+dalr.grammerparser.o: dalr/grammerparser.d Makefile
+	dmd $(CFLAGS) -c dalr/grammerparser.d -ofdalr.grammerparser.o
 
 dalr.itemset.o: dalr/itemset.d dalr/item.d Makefile
 	dmd $(CFLAGS) -c dalr/itemset.d -ofdalr.itemset.o

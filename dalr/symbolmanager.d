@@ -64,6 +64,10 @@ public class SymbolManager {
 		}
 	}
 
+	public bool containsSymbol(string sym) {
+		return null !is this.stringSymbols.find(sym);
+	}
+
 	private int getNextId() {
 		return this.nextSymbolNumber++;
 	}

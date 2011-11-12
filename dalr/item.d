@@ -37,3 +37,15 @@ class Item {
 		return cast(hash_t)(this.prod<<16) + this.dotPos;
 	}
 }
+
+unittest {
+	Item a = new Item(0, 1);
+	Item b = new Item(1, 1);
+	Item c = new Item(2, 1);
+	assert(a == a);
+	assert(b == b);
+	assert(c == c);
+	assert(a != b);
+	assert(a != c);
+	assert(c != b);
+}
