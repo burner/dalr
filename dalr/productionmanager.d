@@ -15,17 +15,21 @@ import hurt.string.stringbuffer;
 class ProductionManager {
 	private Deque!(Deque!(int)) prod;
 
-	private Map!(Item, ItemSet) itemSets;
+	private Map!(ItemSet, ItemSet) itemSets;
 	private SymbolManager symbolManager;
 
 	this() {
 		this.prod = new Deque!(Deque!(int));
-		this.itemSets = new Map!(Item, ItemSet)(ISRType.HashTable);
+		this.itemSets = new Map!(ItemSet, ItemSet)();
 	}
 
 	this(SymbolManager symbolManager) {
 		this();
 		this.symbolManager = symbolManager;
+	}
+
+	public Item getFirstProduction() {
+		return new Item(0, 1);
 	}
 
 	public void makeLRZeroItemSets() {

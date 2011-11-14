@@ -16,5 +16,4 @@ class ItemSet {
 		this.followSets = new Map!(int,ItemSet)(ISRType.HashTable);
 		this.items.pushBack(kernel);
 	}
-	
 }
