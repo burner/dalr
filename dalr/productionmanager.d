@@ -7,6 +7,7 @@ import dalr.symbolmanager;
 import hurt.container.deque;
 import hurt.container.isr;
 import hurt.container.map;
+import hurt.container.multimap;
 import hurt.conv.conv;
 import hurt.io.stdio;
 import hurt.string.formatter;
@@ -28,8 +29,12 @@ class ProductionManager {
 		this.symbolManager = symbolManager;
 	}
 
-	public Item getFirstProduction() {
-		return new Item(0, 1);
+	public dalr.item.Item getFirstProduction() {
+		return new dalr.item.Item(0, 1);
+	}
+
+	private MultiMap!(int,dalr.item.Item) getFollowSymbols(ItemSet set) {
+		return null;	
 	}
 
 	public void makeLRZeroItemSets() {
