@@ -5,12 +5,12 @@ class Item {
 	private long prod;
 	private long dotPos;
 
-	this(long prod, long dotPos) {
+	this(size_t prod, long dotPos) {
 		this.prod = prod;
 		this.dotPos = dotPos;
 	}
 
-	public long getProd() const {
+	public size_t getProd() const {
 		return this.prod;
 	}
 

@@ -7,7 +7,7 @@ import dalr.symbolmanager;
 import hurt.container.deque;
 import hurt.container.isr;
 import hurt.container.map;
-import hurt.container.multimap;
+//import hurt.container.multimap;
 import hurt.conv.conv;
 import hurt.io.stdio;
 import hurt.string.formatter;
@@ -43,6 +43,10 @@ class ProductionManager {
 		}
 	}
 
+	private int getSymbolFromProduction(const Item item) {
+		return this.getSymbolFromProduction(item.getProd(), item.getDotPosition());
+	}
+
 	private int getSymbolFromProduction(const size_t prodIdx, 
 			const size_t symIdx) {
 		Deque!(int) pro = this.getProduction(prodIdx);
@@ -67,7 +71,7 @@ class ProductionManager {
 	 * will lead to
 	 *  H := S -> E .H, S -> j .H
 	 *  P := L -> I .P
-	 */
+	 *
 	private MultiMap!(int,dalr.item.Item) getFollowSymbols(ItemSet set) {
 		MultiMap!(int,dalr.item.Item) ret = new MultiMap!(int,dalr.item.Item)();
 		Deque!(dalr.item.Item) items = set.getItems();
@@ -82,6 +86,42 @@ class ProductionManager {
 			}
 		}
 		return ret;
+	}*/
+
+	Deque!(size_t) getProdByStartSymbol(const int startSymbol) {
+		Deque!(size_t) ret = new Deque!(size_t)();
+		foreach(size_t idx, Deque!(int) it; this.prod) {
+			if(it[0] == startSymbol) {
+				ret.pushBack(idx);
+			}
+		}
+		return ret;
+	}
+
+	private void completeItemSet(ItemSet iSet) {
+		Deque!(Item) de = iSet.getItems();
+		Deque!(Item) stack = new Deque!(Item)(de);
+		while(!stack.isEmpty()) {
+			Item item = stack.popFront();
+			int next = this.getSymbolFromProduction(item);
+
+			// now check if it is non terminal, should that be the case insert
+			// all productions not yet contained in de with a starting symbol 
+			// simular to next
+			if(this.symbolManager.getKind(next)) {
+				Deque!(size_t) follow = this.getProdByStartSymbol(next);
+
+				// for all matching productions, check if they exists and if
+				// not insert it into the itemset and the stack
+				foreach(size_t it; follow) {
+					Item toAdd = new Item(it, 1);
+					if(!de.contains(toAdd)) {
+						de.pushBack(toAdd);
+						stack.pushBack(toAdd);
+					}
+				}
+			} 
+		}
 	}
 
 	public void makeLRZeroItemSets() {
@@ -102,7 +142,6 @@ class ProductionManager {
 			assert(this.prod !is null);
 			size_t oldSize = this.prod.getSize();
 			this.prod.pushBack(toInsert);
-			assert(oldSize+1 == this.prod.getSize());
 		}
 	}
 

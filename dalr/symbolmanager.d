@@ -1,8 +1,11 @@
 module dalr.symbolmanager;
 
+import hurt.container.deque;
 import hurt.container.map;
 import hurt.container.isr;
+import hurt.io.stdio;
 import hurt.string.formatter;
+import hurt.string.stringbuffer;
 
 public class Symbol {
 	private string symbolName; // the name of the symbol
@@ -12,7 +15,8 @@ public class Symbol {
 	private bool kind; 
 
 	this(string symbolName, int id, bool kind) {
-		this.symbolName = symbolName;
+		assert(symbolName !is null);
+		this.symbolName = symbolName.idup;
 		this.id = id;
 		this.kind = kind;
 	}
@@ -31,6 +35,12 @@ public class Symbol {
 
 	public string getSymbolName() {
 		return this.symbolName;
+	}
+
+	public override string toString() const {
+		//return format("(%s %d %b)", this.symbolName, this.id, this.kind);
+		return format("(%d :: %s || %s)", this.id, this.symbolName, 
+			this.kind ? "true" : "false");
 	}
 }
 
@@ -140,6 +150,28 @@ public class SymbolManager {
 		} else {
 			return f.getData();
 		}
+	}
+
+	public override string toString() {
+		StringBuffer!(char) sb = 
+			new StringBuffer!(char)(this.intSymbols.getSize() * 4);
+		sb.pushBack("Symbols = { ");
+
+		size_t cnt = 0;
+		ISRIterator!(MapItem!(int,Symbol)) it = this.intSymbols.begin();
+		for(; it.isValid(); it++) {
+			string tmp = (*it).getData().toString();
+			if(((sb.getSize()+tmp.length) / (80 * (cnt+1))) > 0) {
+				sb.pushBack("\n");
+				cnt++;
+			}
+			sb.pushBack(tmp);
+			sb.pushBack(" , ");	
+		}
+		sb.popBack();
+		sb.popBack();
+		sb.pushBack("}");
+		return sb.getString();
 	}
 }
 
