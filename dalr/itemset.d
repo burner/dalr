@@ -17,17 +17,24 @@ class ItemSet {
 		this.followSets = new Map!(int,ItemSet)(ISRType.HashTable);
 	}
 
+	public Deque!(Item) getItems() {
+		return this.items;
+	}
+
 	public override int opCmp(Object o) const {
 		ItemSet c = cast(ItemSet)o;
 		int cntT = 0, cntC = 0;
 		for(size_t idx = 0; idx < this.items.getSize(); idx++) {
 			if(idx >= c.items.getSize()) {
 				cntT++;
-			} else if(this.items.opIndexConst(idx) > c.items.opIndexConst(idx)) {
+			} else if(this.items.opIndexConst(idx) > 
+					c.items.opIndexConst(idx)) {
 				cntT++;
-			} else if(this.items.opIndexConst(idx) < c.items.opIndexConst(idx)) {
+			} else if(this.items.opIndexConst(idx) < 
+					c.items.opIndexConst(idx)) {
 				cntC++;
-			} else if(this.items.opIndexConst(idx) == c.items.opIndexConst(idx)) {
+			} else if(this.items.opIndexConst(idx) == 
+					c.items.opIndexConst(idx)) {
 				continue;
 			} else {
 				assert(false, "invalid case");
@@ -59,7 +66,8 @@ class ItemSet {
 
 unittest {
 	Map!(ItemSet,int) map = new Map!(ItemSet,int)();
-	Deque!(Item) de = new Deque!(Item)([new Item(0,1), new Item(1,1), new Item(1,0)]);
+	Deque!(Item) de = new Deque!(Item)([new Item(0,1), new Item(1,1), 
+		new Item(1,0)]);
 	ItemSet a = new ItemSet(de);
 	map.insert(a, 11);
 	assert(map.contains(a), "item not contained");

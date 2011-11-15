@@ -8,7 +8,8 @@ public class Symbol {
 	private string symbolName; // the name of the symbol
 	// symbols are handled as int, so there here is the mapping
 	private int id; 
-	private bool kind; // terminal or non-terminal
+	// terminal(false) or non-terminal(true)
+	private bool kind; 
 
 	this(string symbolName, int id, bool kind) {
 		this.symbolName = symbolName;
@@ -69,6 +70,10 @@ public class SymbolManager {
 	public bool containsSymbol(string sym) {
 		return null !is this.stringSymbols.find(sym);
 	}
+	
+	public bool containsSymbol(int sym) {
+		return null !is this.intSymbols.find(sym);
+	}
 
 	private int getNextId() {
 		return this.nextSymbolNumber++;
@@ -89,6 +94,15 @@ public class SymbolManager {
 			throw new Exception(format("Symbol %s doesn't exist", symbol));
 		} else {
 			return f.getData().setKind(kind);
+		}
+	}
+
+	public bool getKind(const int symbol) {
+		MapItem!(int,Symbol) f = this.intSymbols.find(symbol);
+		if(f is null) {
+			throw new Exception(format("Symbol %d doesn't exist", symbol));
+		} else {
+			return f.getData().whatKind();
 		}
 	}
 

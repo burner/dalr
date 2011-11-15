@@ -33,8 +33,54 @@ class ProductionManager {
 		return new dalr.item.Item(0, 1);
 	}
 
+	private Deque!(int) getProduction(const size_t idx) {
+		if(idx >= this.prod.getSize()) {
+			throw new Exception(format("index %d out of this.prod bound(%d)",
+				idx, this.prod.getSize()));
+		} else {
+			return this.prod[idx];
+		}
+	}
+
+	private int getSymbolFromProduction(const size_t prodIdx, 
+			const size_t symIdx) {
+		Deque!(int) pro = this.getProduction(prodIdx);
+		if(symIdx >= pro.getSize()) {
+			throw new Exception(format("index %d out of pro bound(%d)",
+				symIdx, pro.getSize()));
+		} else {
+			return pro[symIdx];
+		}
+	}
+
+	/** This creates a multimap containing all nonterminal symbols with the
+	 * relevant items next in the itemset. Or put differently, creating the 
+	 * left side of the productions to a given kernel.
+	 *
+	 * Example:
+	 * 	S -> E .H
+	 * 	S -> g .i
+	 * 	S -> j .H
+	 *  L -> I .P
+	 *
+	 * will lead to
+	 *  H := S -> E .H, S -> j .H
+	 *  P := L -> I .P
+	 */
 	private MultiMap!(int,dalr.item.Item) getFollowSymbols(ItemSet set) {
-		return null;	
+		MultiMap!(int,dalr.item.Item) ret = new MultiMap!(int,dalr.item.Item)();
+		Deque!(dalr.item.Item) items = set.getItems();
+		foreach(idx, it; items) {
+			int followSymbol = this.getSymbolFromProduction(it.getProd(),
+				it.getDotPosition());
+			if(ret.contains(followSymbol)) {
+				ret.insert(followSymbol, it);
+				continue;
+			} else if(this.symbolManager.getKind(followSymbol)) {
+				ret.insert(followSymbol, it);
+			}
+		}
+		return ret;
 	}
 
 	public void makeLRZeroItemSets() {
