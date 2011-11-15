@@ -128,7 +128,7 @@ class ProductionManager {
 		ItemSet iSet = this.getFirstItemSet();
 		this.completeItemSet(iSet);
 		foreach(Item it; iSet.getItems()) {
-			print(this.productionToString(this.prod[it.getProd()]));
+			println(this.itemToString(it));;
 		}
 
 	}
@@ -173,6 +173,26 @@ class ProductionManager {
 		} else {
 			return this.symbolManager.getSymbolName(item);
 		}
+	}
+
+	private string itemToString(const Item item) {
+		Deque!(int) de = this.getProduction(item.getProd());	
+		StringBuffer!(char) ret = new StringBuffer!(char)(de.getSize()*4);
+		foreach(size_t idx, int it; de) {
+			if(idx == 0) {
+				ret.pushBack(this.productionItemToString(it));
+				ret.pushBack(" -> ");
+				continue;
+			}
+			if(idx == item.getDotPosition()) {
+				ret.pushBack(".");
+				ret.pushBack(this.productionItemToString(it));
+			} else {
+				ret.pushBack(this.productionItemToString(it));
+			}
+			ret.pushBack(" ");
+		}
+		return ret.getString();
 	}
 	
 	public override string toString() {
