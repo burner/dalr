@@ -19,4 +19,5 @@ void main() {
 	pm.insertProduction(gp.processProduction("V := * E"));
 	print(pm.toString());
 	println(sm.toString());
+	pm.makeLRZeroItemSets();
 }

@@ -125,6 +125,11 @@ class ProductionManager {
 	}
 
 	public void makeLRZeroItemSets() {
+		ItemSet iSet = this.getFirstItemSet();
+		this.completeItemSet(iSet);
+		foreach(Item it; iSet.getItems()) {
+			print(this.productionToString(this.prod[it.getProd()]));
+		}
 
 	}
 
