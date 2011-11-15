@@ -29,8 +29,9 @@ class ProductionManager {
 		this.symbolManager = symbolManager;
 	}
 
-	public dalr.item.Item getFirstProduction() {
-		return new dalr.item.Item(0, 1);
+	public ItemSet getFirstItemSet() {
+		return new ItemSet(new Deque!(dalr.item.Item)(
+			[new dalr.item.Item(0, 1)]));
 	}
 
 	private Deque!(int) getProduction(const size_t idx) {
