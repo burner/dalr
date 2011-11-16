@@ -17,8 +17,22 @@ class ItemSet {
 		this.followSets = new Map!(int,ItemSet)(ISRType.HashTable);
 	}
 
+	public void addItem(Item item) {
+		assert(item !is null);
+		assert(!this.items.contains(item));
+		this.items.pushBack(item);
+	}
+
 	public Deque!(Item) getItems() {
 		return this.items;
+	}
+
+	public Map!(int, ItemSet) getFollowSet() {
+		return this.followSets;
+	}
+
+	public void setFollow(Map!(int,ItemSet) follow) {
+		this.followSets = follow;
 	}
 
 	public override int opCmp(Object o) const {

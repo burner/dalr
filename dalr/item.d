@@ -5,7 +5,7 @@ class Item {
 	private long prod;
 	private long dotPos;
 
-	this(size_t prod, long dotPos) {
+	this(const size_t prod, const long dotPos) {
 		this.prod = prod;
 		this.dotPos = dotPos;
 	}
@@ -26,6 +26,10 @@ class Item {
 			return -1;
 		else
 			return 0;
+	}
+
+	public Item incrementItem() const {
+		return new Item(this.prod, this.dotPos+1);
 	}
 
 	public override bool opEquals(Object o) const {

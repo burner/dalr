@@ -7,7 +7,7 @@ import dalr.symbolmanager;
 import hurt.container.deque;
 import hurt.container.isr;
 import hurt.container.map;
-//import hurt.container.multimap;
+import hurt.container.set;
 import hurt.conv.conv;
 import hurt.io.stdio;
 import hurt.string.formatter;
@@ -16,12 +16,12 @@ import hurt.string.stringbuffer;
 class ProductionManager {
 	private Deque!(Deque!(int)) prod;
 
-	private Map!(ItemSet, ItemSet) itemSets;
+	private Set!(ItemSet) itemSets;
 	private SymbolManager symbolManager;
 
 	this() {
 		this.prod = new Deque!(Deque!(int));
-		this.itemSets = new Map!(ItemSet, ItemSet)();
+		this.itemSets = new Set!(ItemSet)();
 	}
 
 	this(SymbolManager symbolManager) {
@@ -44,7 +44,8 @@ class ProductionManager {
 	}
 
 	private int getSymbolFromProduction(const Item item) {
-		return this.getSymbolFromProduction(item.getProd(), item.getDotPosition());
+		return this.getSymbolFromProduction(item.getProd(), 
+			item.getDotPosition());
 	}
 
 	private int getSymbolFromProduction(const size_t prodIdx, 
@@ -58,35 +59,10 @@ class ProductionManager {
 		}
 	}
 
-	/** This creates a multimap containing all nonterminal symbols with the
-	 * relevant items next in the itemset. Or put differently, creating the 
-	 * left side of the productions to a given kernel.
-	 *
-	 * Example:
-	 * 	S -> E .H
-	 * 	S -> g .i
-	 * 	S -> j .H
-	 *  L -> I .P
-	 *
-	 * will lead to
-	 *  H := S -> E .H, S -> j .H
-	 *  P := L -> I .P
-	 *
-	private MultiMap!(int,dalr.item.Item) getFollowSymbols(ItemSet set) {
-		MultiMap!(int,dalr.item.Item) ret = new MultiMap!(int,dalr.item.Item)();
-		Deque!(dalr.item.Item) items = set.getItems();
-		foreach(idx, it; items) {
-			int followSymbol = this.getSymbolFromProduction(it.getProd(),
-				it.getDotPosition());
-			if(ret.contains(followSymbol)) {
-				ret.insert(followSymbol, it);
-				continue;
-			} else if(this.symbolManager.getKind(followSymbol)) {
-				ret.insert(followSymbol, it);
-			}
-		}
-		return ret;
-	}*/
+	private bool isDotAtEndOfProduction(const Item item) {
+		Deque!(int) pro = this.getProduction(item.getProd());
+		return pro.getSize() == item.getDotPosition();
+	}
 
 	Deque!(size_t) getProdByStartSymbol(const int startSymbol) {
 		Deque!(size_t) ret = new Deque!(size_t)();
@@ -103,6 +79,9 @@ class ProductionManager {
 		Deque!(Item) stack = new Deque!(Item)(de);
 		while(!stack.isEmpty()) {
 			Item item = stack.popFront();
+			if(this.isDotAtEndOfProduction(item))
+				continue;
+				
 			int next = this.getSymbolFromProduction(item);
 
 			// now check if it is non terminal, should that be the case insert
@@ -124,13 +103,63 @@ class ProductionManager {
 		}
 	}
 
+	private void fillFollowSet(ItemSet iSet) {
+		Map!(int, ItemSet) follow = new Map!(int, ItemSet)();
+		assert(iSet !is null);
+		Deque!(Item) iSetItems = iSet.getItems();
+		assert(iSetItems !is null);
+		foreach(size_t idx, Item it; iSetItems) {
+			if(this.isDotAtEndOfProduction(it))
+				continue;
+				
+			int followSym = this.getSymbolFromProduction(it);	
+			MapItem!(int, ItemSet) followItem = follow.find(followSym);
+			if(followItem !is null) {
+				followItem.getData().addItem(it.incrementItem());
+			} else {
+				ItemSet tmp = new ItemSet(
+					new Deque!(Item)([it.incrementItem()]) );
+				follow.insert(followSym, tmp);
+			}
+		}
+
+		// make the itemsets complete
+		ISRIterator!(MapItem!(int, ItemSet)) it = follow.begin();
+		for(; it.isValid(); it++) {
+			this.completeItemSet((*it).getData());	
+		}
+
+		// replace newly created itemsets with itemsets that have
+		// been allready created
+		it = follow.begin();
+		for(; it.isValid(); it++) {
+			ISRIterator!(ItemSet) found = this.itemSets.find((*it).getData());
+			if(found.isValid()) {
+				(*it).setData(*found);	
+			} else {
+				this.itemSets.insert((*it).getData());
+			}
+		}
+		iSet.setFollow(follow);
+	}
+
 	public void makeLRZeroItemSets() {
 		ItemSet iSet = this.getFirstItemSet();
 		this.completeItemSet(iSet);
+		this.fillFollowSet(iSet);
 		foreach(Item it; iSet.getItems()) {
 			println(this.itemToString(it));;
 		}
+		println();
 
+		ISRIterator!(MapItem!(int,ItemSet)) it = iSet.getFollowSet().begin();
+		for(; it.isValid(); it++) {
+			printfln("%s", this.symbolManager.getSymbolName((*it).getKey()));
+			foreach(Item it; (*it).getData().getItems()) {
+				println(this.itemToString(it));;
+			}
+			println();
+		}
 	}
 
 	private bool doesProductionExists(Deque!(int) toTest) {
@@ -191,6 +220,10 @@ class ProductionManager {
 				ret.pushBack(this.productionItemToString(it));
 			}
 			ret.pushBack(" ");
+		}
+		ret.popBack();
+		if(de.getSize() == item.getDotPosition()) {
+			ret.pushBack(".");
 		}
 		return ret.getString();
 	}
