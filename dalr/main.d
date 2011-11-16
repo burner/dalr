@@ -20,4 +20,5 @@ void main() {
 	print(pm.toString());
 	println(sm.toString());
 	pm.makeLRZeroItemSets();
+	println(pm.itemsetsToString());
 }

@@ -143,22 +143,33 @@ class ProductionManager {
 		iSet.setFollow(follow);
 	}
 
+	private void insertItemsToProcess(Set!(ItemSet) processed, 
+			Deque!(ItemSet) stack, Map!(int, ItemSet) toProcess) {
+		ISRIterator!(MapItem!(int,ItemSet)) it = toProcess.begin();
+		for(; it.isValid(); it++) {
+			if(processed.contains((*it).getData())) {
+				continue;
+			} else {
+				stack.pushBack((*it).getData());
+			}
+		}
+	}
+
 	public void makeLRZeroItemSets() {
 		ItemSet iSet = this.getFirstItemSet();
 		this.completeItemSet(iSet);
 		this.fillFollowSet(iSet);
-		foreach(Item it; iSet.getItems()) {
-			println(this.itemToString(it));;
-		}
-		println();
-
-		ISRIterator!(MapItem!(int,ItemSet)) it = iSet.getFollowSet().begin();
-		for(; it.isValid(); it++) {
-			printfln("%s", this.symbolManager.getSymbolName((*it).getKey()));
-			foreach(Item it; (*it).getData().getItems()) {
-				println(this.itemToString(it));;
-			}
-			println();
+		this.itemSets.insert(iSet);
+		Set!(ItemSet) processed = new Set!(ItemSet)();
+		Deque!(ItemSet) stack = new Deque!(ItemSet)();
+		this.insertItemsToProcess(processed, stack, iSet.getFollowSet());
+		while(!stack.isEmpty()) {
+			iSet = stack.popFront();
+			//printf("%s", this.itemsetToString(iSet));
+			this.completeItemSet(iSet);
+			this.fillFollowSet(iSet);
+			processed.insert(iSet);
+			this.insertItemsToProcess(processed, stack, iSet.getFollowSet());
 		}
 	}
 
@@ -226,6 +237,29 @@ class ProductionManager {
 			ret.pushBack(".");
 		}
 		return ret.getString();
+	}
+
+	private string itemsetToString(ItemSet iSet) {
+		StringBuffer!(char) sb = new StringBuffer!(char)();
+		foreach(Item it; iSet.getItems()) {
+			sb.pushBack(this.itemToString(it));
+			sb.pushBack('\n');
+		}
+		sb.pushBack('\n');
+		return sb.getString();
+	}
+
+	public string itemsetsToString() {
+		StringBuffer!(char) sb = 
+			new StringBuffer!(char)(this.itemSets.getSize() * 10);
+
+		ISRIterator!(ItemSet) it = this.itemSets.begin();
+		for(size_t idx = 0; it.isValid(); idx++, it++) {
+			sb.pushBack(conv!(ulong,string)(idx));
+			sb.pushBack('\n');
+			sb.pushBack(this.itemsetToString(*it));
+		}
+		return sb.getString();
 	}
 	
 	public override string toString() {
