@@ -18,9 +18,11 @@ import std.process;
 private string itemsetToHTML(ItemSet iSet, Deque!(Deque!(int)) prod, 
 		SymbolManager sm) {
 	StringBuffer!(char) ret = new StringBuffer!(char)(100);	
-	ret.pushBack("<table border=\"0\" cellborder=\"0\" cellpadding=\"3\" bgcolor=\"white\">\n");
+	ret.pushBack("<table border=\"0\" cellborder=\"0\" cellpadding=\"3\" ");
+	ret.pushBack("bgcolor=\"white\">\n");
   	ret.pushBack("<tr>\n");
-	ret.pushBack("\t<td bgcolor=\"black\" align=\"center\" colspan=\"2\"><font color=\"white\">State #");
+	ret.pushBack("\t<td bgcolor=\"black\" align=\"center\" colspan=\"2\">");
+	ret.pushBack("<font color=\"white\">State #");
 	ret.pushBack(conv!(long,string)(iSet.getId()));
 	ret.pushBack("</font></td>\n</tr>\n");
 
@@ -72,11 +74,13 @@ private string makeTransitions(ItemSet iSet, SymbolManager sm) {
 		ret.pushBack(conv!(long,string)((*it).getData().getId()));
 		ret.pushBack(" [ ");
 		if(sm.getKind((*it).getKey())) {
-			ret.pushBack("penwidth = 5 fontsize = 28 fontcolor = \"black\" label = \"");
+			ret.pushBack("penwidth = 5 fontsize = 28 fontcolor = ");
+			ret.pushBack("\"black\" label = \"");
 			ret.pushBack(sm.getSymbolName((*it).getKey()));
 			ret.pushBack("\"];\n");
 		} else {
-			ret.pushBack("penwidth = 1 fontsize = 14 fontcolor = \"grey28\" label = \"'");
+			ret.pushBack("penwidth = 1 fontsize = 20 fontcolor = \"grey28\"");
+			ret.pushBack(" label = \"'");
 			ret.pushBack(sm.getSymbolName((*it).getKey()));
 			ret.pushBack("'\"];\n");
 		}
@@ -86,8 +90,10 @@ private string makeTransitions(ItemSet iSet, SymbolManager sm) {
 
 public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm, 
 		Deque!(Deque!(int)) prod, string filename) {
+
 	hurt.io.stream.File file = new hurt.io.stream.File(filename ~ ".dot", 
 		FileMode.OutNew);
+
 	StringBuffer!(char) sb = new StringBuffer!(char)(1000);
 	file.writeString("digraph g {\n");
 	file.writeString("graph [fontsize=30 labelloc=\"t\" label=\"\" ");
@@ -97,8 +103,10 @@ public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm,
 		file.writeString("\"state");
 		file.writeString(conv!(long,string)(iSet.getId()));
 		file.writeString("\" ");
-		file.writeString("[ style = \"filled\" penwidth = 1 fillcolor = \"white\"");
-		file.writeString(" fontname = \"Courier New\" shape = \"Mrecord\" label =<");
+		file.writeString("[ style = \"filled\" penwidth = 1 fillcolor = ");
+		file.writeString("\"white\"");
+		file.writeString(" fontname = \"Courier New\" shape = \"Mrecord\" ");
+		file.writeString("label =<");
 		file.writeString(itemsetToHTML(iSet, prod, sm));
 		file.writeString("> ];\n");
 	}

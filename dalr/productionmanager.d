@@ -77,11 +77,6 @@ class ProductionManager {
 		}
 	}
 
-	private bool isDotAtEndOfProduction(const Item item) {
-		Deque!(int) pro = this.getProduction(item.getProd());
-		return pro.getSize() == item.getDotPosition();
-	}
-
 	Deque!(size_t) getProdByStartSymbol(const int startSymbol) {
 		Deque!(size_t) ret = new Deque!(size_t)();
 		foreach(size_t idx, Deque!(int) it; this.prod) {
@@ -90,6 +85,15 @@ class ProductionManager {
 			}
 		}
 		return ret;
+	}
+
+	private bool isDotAtEndOfProduction(const Item item) {
+		Deque!(int) pro = this.getProduction(item.getProd());
+		return pro.getSize() == item.getDotPosition();
+	}
+	
+	private bool doesProductionExists(Deque!(int) toTest) {
+		return this.prod.contains(toTest);
 	}
 
 	private void completeItemSet(ItemSet iSet) {
@@ -191,8 +195,8 @@ class ProductionManager {
 		}
 	}
 
-	private bool doesProductionExists(Deque!(int) toTest) {
-		return this.prod.contains(toTest);
+	public void makeExtendedGrammer() {
+
 	}
 
 	public void insertProduction(Deque!(int) toInsert) {

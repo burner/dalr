@@ -18,9 +18,6 @@ void main() {
 	pm.insertProduction(gp.processProduction("E := V"));
 	pm.insertProduction(gp.processProduction("V := x"));
 	pm.insertProduction(gp.processProduction("V := * E"));
-	print(pm.toString());
-	println(sm.toString());
 	pm.makeLRZeroItemSets();
-	println(pm.itemsetsToString());
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 }
