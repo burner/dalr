@@ -1,9 +1,9 @@
 module dalr.main;
 
-import dalr.productionmanager;
-import dalr.grammerparser;
-import dalr.symbolmanager;
 import dalr.dotfilewriter;
+import dalr.grammerparser;
+import dalr.productionmanager;
+import dalr.symbolmanager;
 
 import hurt.container.deque;
 import hurt.io.stdio;
@@ -19,5 +19,7 @@ void main() {
 	pm.insertProduction(gp.processProduction("V := x"));
 	pm.insertProduction(gp.processProduction("V := * E"));
 	pm.makeLRZeroItemSets();
+	pm.makeExtendedGrammer();
+	print(pm.extendedGrammerToString());
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 }

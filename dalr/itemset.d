@@ -5,6 +5,9 @@ import dalr.item;
 import hurt.container.deque;
 import hurt.container.isr;
 import hurt.container.map;
+import hurt.conv.conv;
+import hurt.io.stdio;
+import hurt.string.formatter;
 
 // a set of items aka lr(0) set
 class ItemSet {
@@ -23,6 +26,43 @@ class ItemSet {
 		assert(item !is null);
 		assert(!this.items.contains(item));
 		this.items.pushBack(item);
+	}
+
+	public void makeFrontOfExtended(int prod, Deque!(int) extProd, bool last) {
+		if(last) {
+			extProd.pushFront(conv!(long,int)(this.id));
+		} else {
+			if(!this.followSets.contains(prod)) {
+				extProd.pushFront(-1);
+				extProd.pushFront(prod);
+				extProd.pushFront(conv!(long,int)(this.id));
+			} else {
+				MapItem!(int, ItemSet) next = this.followSets.find(prod);
+				next.getData().makeFrontOfExtended(prod, extProd, true);
+				extProd.pushFront(prod);
+				extProd.pushFront(conv!(long,int)(this.id));
+			}
+		}
+	}
+
+	public size_t makeExtendedProduction(size_t pos, const Deque!(int) prod, 
+			Deque!(int) extProd) {
+
+		extProd.pushBack(conv!(long,int)(this.id));
+		if(pos < prod.getSize()) {
+			//extProd.pushBack(prod.opIndexConst(pos));
+			if(!this.followSets.contains(prod.opIndexConst(pos))) {
+				throw new Exception(
+					format("no followSet present for input %d", 
+						prod.opIndexConst(pos)));
+			} else {
+				MapItem!(int, ItemSet) next = this.followSets.find(
+					prod.opIndexConst(pos));
+				extProd.pushBack(prod.opIndexConst(pos));
+				next.getData().makeExtendedProduction(pos+1, prod, extProd);
+			}
+		}
+		return extProd.getSize();
 	}
 
 	public Deque!(Item) getItems() {

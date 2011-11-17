@@ -4,11 +4,11 @@ import dalr.item;
 import dalr.itemset;
 import dalr.symbolmanager;
 
-import hurt.conv.conv;
 import hurt.container.deque;
 import hurt.container.isr;
 import hurt.container.map;
 import hurt.container.set;
+import hurt.conv.conv;
 import hurt.conv.conv;
 import hurt.io.stdio;
 import hurt.string.formatter;
@@ -16,6 +16,10 @@ import hurt.string.stringbuffer;
 
 class ProductionManager {
 	private Deque!(Deque!(int)) prod;
+	private Deque!(Deque!(int)) extGrammer;
+
+	private Map!(int,Set!(int)) firstNormal;
+	private Map!(int,Set!(int)) firstExtended;
 
 	private Set!(ItemSet) itemSets;
 	private SymbolManager symbolManager;
@@ -53,14 +57,20 @@ class ProductionManager {
 			item.getDotPosition());
 	}
 
-	public Deque!(ItemSet) getItemSets() {
-		Deque!(ItemSet) ret = new Deque!(ItemSet)(this.itemSets.getSize());
+	public void finalizeItemSet() {
 		ISRIterator!(ItemSet) it = this.itemSets.begin();
 		for(size_t idx = 0; it.isValid(); it++, idx++) {
 			if((*it).getId() == -1) {
 				(*it).setId(conv!(size_t,long)(idx));
 			}
 			assert((*it).getId() != -1);
+		}
+	}
+
+	public Deque!(ItemSet) getItemSets() {
+		Deque!(ItemSet) ret = new Deque!(ItemSet)(this.itemSets.getSize());
+		ISRIterator!(ItemSet) it = this.itemSets.begin();
+		for(size_t idx = 0; it.isValid(); it++, idx++) {
 			ret.pushBack(*it);
 		}
 		return ret;
@@ -193,10 +203,40 @@ class ProductionManager {
 			processed.insert(iSet);
 			this.insertItemsToProcess(processed, stack, iSet.getFollowSet());
 		}
+		this.finalizeItemSet();
 	}
 
 	public void makeExtendedGrammer() {
+		// This looks ugly because itemset numbers as well
+		// as items are mixed and both are encoded as ints.
+		// Every even indexed item in a deque!(int) is a symbol.
+		Deque!(Deque!(int)) extendedGrammer = new Deque!(Deque!(int))(
+			this.itemSets.getSize()*2);
 
+		ISRIterator!(ItemSet) iSetIt = this.itemSets.begin();
+		outer: for(; iSetIt.isValid(); iSetIt++) {
+			foreach(size_t idx, Item it; (*iSetIt).getItems()) {
+				if(it.getDotPosition() != 1) {
+					continue;
+				} else {
+					Deque!(int) p = this.getProduction(it.getProd());
+					Deque!(int) extProd = new Deque!(int)();
+					size_t s = (*iSetIt).makeExtendedProduction(1, p, extProd);
+					(*iSetIt).makeFrontOfExtended(p[0], extProd, false);
+					extendedGrammer.pushBack(extProd);
+				}
+			}
+		}
+		this.extGrammer = extendedGrammer;
+	}
+
+	public string extendedGrammerToString() {
+		StringBuffer!(char) ret = new StringBuffer!(char)(128);
+		foreach(it; this.extGrammer) {
+			ret.pushBack(this.extendedGrammerRuleToString(it));
+			ret.pushBack("\n");
+		}
+		return ret.getString();
 	}
 
 	public void insertProduction(Deque!(int) toInsert) {
@@ -210,6 +250,36 @@ class ProductionManager {
 			size_t oldSize = this.prod.getSize();
 			this.prod.pushBack(toInsert);
 		}
+	}
+
+	public string extendedGrammerRuleToString(Deque!(int) pro) {
+		StringBuffer!(char) ret = new StringBuffer!(char)(pro.getSize() * 4);
+		for(size_t idx = 0; idx < 3; idx++) {
+			if(idx % 2 == 0) {
+				if(pro[idx] == -1) 
+					ret.pushBack('$');
+				else
+					ret.pushBack(conv!(int,string)(pro[idx]));
+			} else {
+				ret.pushBack(this.symbolManager.getSymbolName(pro[idx]));
+			}
+		}
+		ret.pushBack(" => ");
+		for(size_t idx = 3; idx < pro.getSize(); idx++) {
+			if(idx % 2 == 1) {
+				if(pro[idx] == -1) 
+					ret.pushBack('$');
+				else
+					ret.pushBack(conv!(int,string)(pro[idx]));
+			} else {
+				ret.pushBack(this.symbolManager.getSymbolName(pro[idx]));
+			}
+		}
+		return ret.getString();
+	}
+
+	public void makeNormalFirstSet() {
+		this.firstNormal = new Map!(int,Set!(int));
 	}
 
 	public string productionToString(Deque!(int) pro) {
@@ -230,7 +300,9 @@ class ProductionManager {
 	}
 
 	public string productionItemToString(const int item) {
-		if(this.symbolManager is null) {
+		if(item == -1) {
+			return "$";
+		} else if(this.symbolManager is null) {
 			return conv!(int,string)(item);
 		} else {
 			return this.symbolManager.getSymbolName(item);
