@@ -10,11 +10,13 @@ import hurt.container.map;
 class ItemSet {
 	private Map!(int, ItemSet) followSets;
 	private Deque!(Item) items;
+	private long id;
 
-	this(Deque!(Item) kernel) {
+	this(Deque!(Item) kernel, long id = -1) {
 		assert(kernel !is null);
 		this.items = new Deque!(Item)(kernel);
 		this.followSets = new Map!(int,ItemSet)(ISRType.HashTable);
+		this.id = id;
 	}
 
 	public void addItem(Item item) {
@@ -33,6 +35,14 @@ class ItemSet {
 
 	public void setFollow(Map!(int,ItemSet) follow) {
 		this.followSets = follow;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public long getId() const {
+		return this.id;
 	}
 
 	public override int opCmp(Object o) const {

@@ -3,6 +3,7 @@ module dalr.main;
 import dalr.productionmanager;
 import dalr.grammerparser;
 import dalr.symbolmanager;
+import dalr.dotfilewriter;
 
 import hurt.container.deque;
 import hurt.io.stdio;
@@ -21,4 +22,5 @@ void main() {
 	println(sm.toString());
 	pm.makeLRZeroItemSets();
 	println(pm.itemsetsToString());
+	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 }

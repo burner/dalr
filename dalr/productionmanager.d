@@ -4,6 +4,7 @@ import dalr.item;
 import dalr.itemset;
 import dalr.symbolmanager;
 
+import hurt.conv.conv;
 import hurt.container.deque;
 import hurt.container.isr;
 import hurt.container.map;
@@ -43,9 +44,26 @@ class ProductionManager {
 		}
 	}
 
+	public Deque!(Deque!(int)) getProductions() {
+		return this.prod;
+	}
+
 	private int getSymbolFromProduction(const Item item) {
 		return this.getSymbolFromProduction(item.getProd(), 
 			item.getDotPosition());
+	}
+
+	public Deque!(ItemSet) getItemSets() {
+		Deque!(ItemSet) ret = new Deque!(ItemSet)(this.itemSets.getSize());
+		ISRIterator!(ItemSet) it = this.itemSets.begin();
+		for(size_t idx = 0; it.isValid(); it++, idx++) {
+			if((*it).getId() == -1) {
+				(*it).setId(conv!(size_t,long)(idx));
+			}
+			assert((*it).getId() != -1);
+			ret.pushBack(*it);
+		}
+		return ret;
 	}
 
 	private int getSymbolFromProduction(const size_t prodIdx, 
