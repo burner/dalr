@@ -278,9 +278,86 @@ class ProductionManager {
 		return ret.getString();
 	}
 
-	public void makeNormalFirstSet() {
-		this.firstNormal = new Map!(int,Set!(int));
+
+	/************************************************************************** 
+	 *  Computation of normal first symbols below
+	 *
+	 */
+
+	private static void insertIntoFirstNormal(Map!(int,Set!(int)) first, 
+			int sSymbol, Set!(int) firstSymbols) {
+
+		// copy all first symbols except epsilon
+		ISRIterator!(int) it = firstSymbols.begin();
+		for(; it.isValid(); it++) {
+			if(*it != -1) {
+				ProductionManager.insertIntoFirstNormal(first, sSymbol, *it);
+			}
+		}
 	}
+
+	private static void insertIntoFirstNormal(Map!(int,Set!(int)) first, 
+			int sSymbol, int firstSymbol) {
+
+		MapItem!(int, Set!(int)) f = first.find(sSymbol);
+		if(f !is null) {
+			f.getData().insert(firstSymbol);
+		} else {
+			Set!(int) tmp = new Set!(int)();
+			tmp.insert(firstSymbol);
+			first.insert(sSymbol, tmp);
+		}
+	}
+
+	private static bool isFirstComplete(int nTerm, 
+			Deque!(Deque!(int)) allProd) {
+		foreach(Deque!(int) it; allProd) {
+			assert(!it.isEmpty(), "empty productions are not allowed");
+			if(it[0] == nTerm) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private static bool isFirstOnlyEpislon(Set!(int) first) {
+		if(first.getSize() > 1) {
+			return false;
+		} else {
+			return first.contains(-2);
+		}
+	}
+
+	public void makeNormalFirstSet() {
+		Map!(int,Set!(int)) first = new Map!(int,Set!(int));
+		Deque!(Deque!(int)) allProd = new Deque!(Deque!(int))(this.prod);
+
+		// rule 2
+		while(!allProd.isEmpty()) {
+			Deque!(int) it = allProd.popFront();
+			if(it.getSize() == 1) { // epsilon prod
+				// -2 is epsilon
+				ProductionManager.insertIntoFirstNormal(first, it[0], -2);
+			} else if(!this.symbolManager.getKind(it[1])) { // fist is terminal
+				ProductionManager.insertIntoFirstNormal(first, it[0], it[1]);
+			} else {
+				Iterator!(int) jt = it.begin();
+				jt++;
+				for(; jt.isValid(); jt++) {
+					/*if(ProductionManager.isFirstComplete(*jt, allProd) &&
+						!ProductionManager.isFirstOnlyEpislon(first) {
+
+					}*/
+				}
+			}
+		}
+	}
+
+
+	/************************************************************************** 
+	 *  To String methodes for productions, items, item, itemsets and this
+	 *
+	 */
 
 	public string productionToString(Deque!(int) pro) {
 		assert(pro.getSize() > 0);
