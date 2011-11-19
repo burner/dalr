@@ -87,7 +87,7 @@ class ItemSet {
 
 	public override int opCmp(Object o) const {
 		ItemSet c = cast(ItemSet)o;
-		int cntT = 0, cntC = 0;
+		/*int cntT = 0, cntC = 0;
 		for(size_t idx = 0; idx < this.items.getSize(); idx++) {
 			if(idx >= c.items.getSize()) {
 				cntT++;
@@ -111,12 +111,38 @@ class ItemSet {
 		else if(cntT < cntC)
 			return -1;
 		else
-			assert(false, "invalid case");
+			assert(false, "invalid case");*/
+		ulong tCnt = 0;
+		ulong cCnt = 0;
+		for(size_t idx; idx < this.items.getSize(); idx++) {
+			tCnt += this.items.opIndexConst(idx).toHash();
+		}
+		for(size_t idx; idx < c.items.getSize(); idx++) {
+			cCnt += c.items.opIndexConst(idx).toHash();
+		}
+		if(tCnt > cCnt)
+			return 1;
+		else if(tCnt < cCnt)
+			return -1;
+		else 
+			return 0;
 	}
 
 	public override bool opEquals(Object o) const {
 		ItemSet item = cast(ItemSet)o;
-		return this.items == item.items;
+		if(item.items.getSize() != this.items.getSize())
+			return false;
+
+		outer: for(size_t idx = 0; idx < this.items.getSize(); idx++) {
+			for(size_t jdx = 0; jdx < item.items.getSize(); jdx++) {
+				if(this.items.opIndexConst(idx) == 
+						item.items.opIndexConst(jdx)) {
+					continue outer;
+				}
+			}
+			return false;
+		}
+		return true;
 	}
 
 	public override hash_t toHash() const {
@@ -137,6 +163,11 @@ unittest {
 	assert(map.contains(a), "item not contained");
 	de.pushBack(new Item(2,0));
 	ItemSet b = new ItemSet(de);
+
+	assert(a != b);
+	bool cmp = a < b;
+	assert((a > b) != cmp);
+
 	map.insert(b, 22);
 	assert(map.contains(a), "item not contained");
 	assert(map.contains(b), "item not contained");
