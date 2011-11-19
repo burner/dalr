@@ -24,6 +24,7 @@ class ItemSet {
 
 	public void addItem(Item item) {
 		assert(item !is null);
+		// check that there are not duplications
 		assert(!this.items.contains(item));
 		this.items.pushBack(item);
 	}
@@ -124,8 +125,10 @@ class ItemSet {
 			return 1;
 		else if(tCnt < cCnt)
 			return -1;
-		else 
+		else {
+			assert(this == c);
 			return 0;
+		}
 	}
 
 	public override bool opEquals(Object o) const {
@@ -164,6 +167,10 @@ unittest {
 	de.pushBack(new Item(2,0));
 	ItemSet b = new ItemSet(de);
 
+	assert(a <= a);
+	assert(a >= a);
+	assert(b >= b);
+	assert(b <= b);
 	assert(a != b);
 	bool cmp = a < b;
 	assert((a > b) != cmp);

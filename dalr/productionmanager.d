@@ -3,6 +3,7 @@ module dalr.productionmanager;
 import dalr.item;
 import dalr.itemset;
 import dalr.symbolmanager;
+import dalr.grammerparser;
 
 import hurt.container.deque;
 import hurt.container.isr;
@@ -32,6 +33,10 @@ class ProductionManager {
 	this(SymbolManager symbolManager) {
 		this();
 		this.symbolManager = symbolManager;
+	}
+
+	public Map!(int,Set!(int)) getFirstNormal() {
+		return this.firstNormal;
 	}
 
 	public ItemSet getFirstItemSet() {
@@ -285,10 +290,16 @@ class ProductionManager {
 	 */
 
 	private static void insertIntoFirstNormal(Map!(int,Set!(int)) first, 
-			int sSymbol, Set!(int) firstSymbols) {
+			int sSymbol, Map!(int,Set!(int)) toInsert, int toInsertIdx,
+			ProductionManager pm) {
 
 		// copy all first symbols except epsilon
-		ISRIterator!(int) it = firstSymbols.begin();
+		MapItem!(int, Set!(int)) mi = toInsert.find(toInsertIdx);
+		if(mi is null) {
+			assert(false, format("no first set with name for %s present",
+				pm.productionItemToString(toInsertIdx)));
+		}
+		ISRIterator!(int) it = mi.getData().begin();
 		for(; it.isValid(); it++) {
 			if(*it != -1) {
 				ProductionManager.insertIntoFirstNormal(first, sSymbol, *it);
@@ -320,11 +331,17 @@ class ProductionManager {
 		return true;
 	}
 
-	private static bool isFirstOnlyEpislon(Set!(int) first) {
-		if(first.getSize() > 1) {
+	private static bool isFirstOnlyEpislon(Map!(int,Set!(int)) first, int idx,
+			ProductionManager pm) {
+		MapItem!(int, Set!(int)) mi = first.find(idx);
+		if(mi is null) {
+			assert(false, format("no first set with name for %s present",
+				pm.productionItemToString(idx)));
+		}
+		if(mi.getData().getSize() > 1) {
 			return false;
 		} else {
-			return first.contains(-2);
+			return mi.getData().contains(-2);
 		}
 	}
 
@@ -333,7 +350,7 @@ class ProductionManager {
 		Deque!(Deque!(int)) allProd = new Deque!(Deque!(int))(this.prod);
 
 		// rule 2
-		while(!allProd.isEmpty()) {
+		outer: while(!allProd.isEmpty()) {
 			Deque!(int) it = allProd.popFront();
 			if(it.getSize() == 1) { // epsilon prod
 				// -2 is epsilon
@@ -344,13 +361,29 @@ class ProductionManager {
 				Iterator!(int) jt = it.begin();
 				jt++;
 				for(; jt.isValid(); jt++) {
-					/*if(ProductionManager.isFirstComplete(*jt, allProd) &&
-						!ProductionManager.isFirstOnlyEpislon(first) {
+					if(ProductionManager.isFirstComplete(*jt, allProd) &&
+							!ProductionManager.isFirstOnlyEpislon(first, *jt, 
+							this)) {
 
-					}*/
+						ProductionManager.insertIntoFirstNormal(first, it[0],
+							first, *jt, this);	
+						continue outer;
+					} else if(ProductionManager.isFirstComplete(*jt, allProd) &&
+							ProductionManager.isFirstOnlyEpislon(first, *jt, 
+							this)) {
+						continue;
+					} else if(!ProductionManager.isFirstComplete(*jt, 
+							allProd)) {
+						allProd.pushBack(it);	
+						continue outer;
+					} else {
+						assert(false, "this should be unreachable");
+					}
 				}
+				ProductionManager.insertIntoFirstNormal(first, it[0], -2);
 			}
 		}
+		this.firstNormal = first;
 	}
 
 
@@ -358,6 +391,33 @@ class ProductionManager {
 	 *  To String methodes for productions, items, item, itemsets and this
 	 *
 	 */
+
+	public string normalFirstSetToString() {
+		return this.normalFirstSetToString(this.firstNormal);
+	}
+
+	private string normalFirstSetToString(Map!(int, Set!(int)) map) {
+		ISRIterator!(MapItem!(int, Set!(int))) it = map.begin();
+		StringBuffer!(char) sb = new StringBuffer!(char)(map.getSize() * 20);
+		for(size_t idx = 0; it.isValid(); it++) {
+			sb.pushBack("First(");
+			sb.pushBack(this.productionItemToString((*it).getKey()));
+			sb.pushBack(") = {");
+			ISRIterator!(int) jt = (*it).getData().begin();
+			int cnt = 0;
+			for(; jt.isValid(); jt++) {
+				cnt++;
+				sb.pushBack(this.productionItemToString(*jt));
+				sb.pushBack(", ");
+			}
+			if(cnt > 0) {
+				sb.popBack();
+				sb.popBack();
+			}
+			sb.pushBack("}\n");
+		}
+		return sb.getString();
+	}
 
 	public string productionToString(Deque!(int) pro) {
 		assert(pro.getSize() > 0);
@@ -456,4 +516,64 @@ unittest {
 	}
 	assert(thrown);
 	assert("1" == pm.productionItemToString(1));
+}
+
+unittest {
+	SymbolManager sm = new SymbolManager();
+	GrammerParser gp = new GrammerParser(sm);
+	ProductionManager pm = new ProductionManager(sm);
+	pm.insertProduction(gp.processProduction("S := A B C"));
+	pm.insertProduction(gp.processProduction("A :="));
+	pm.insertProduction(gp.processProduction("B :="));
+	pm.insertProduction(gp.processProduction("C :="));
+	pm.makeNormalFirstSet();
+	Map!(int,Set!(int)) map = pm.getFirstNormal();
+	assert(map !is null);
+	MapItem!(int,Set!(int)) mi = map.find(sm.getSymbolId("S"));
+	assert(mi !is null);
+	assert(mi.getData().contains(-2));
+
+	sm = new SymbolManager();
+	gp = new GrammerParser(sm);
+	pm = new ProductionManager(sm);
+	pm.insertProduction(gp.processProduction("S := A B C"));
+	pm.insertProduction(gp.processProduction("A :="));
+	pm.insertProduction(gp.processProduction("B := a"));
+	pm.insertProduction(gp.processProduction("C :="));
+	pm.makeLRZeroItemSets();
+	pm.makeExtendedGrammer();
+	//print(pm.extendedGrammerToString());
+	pm.makeNormalFirstSet();
+	map = null;
+	map = pm.getFirstNormal();
+	mi = null;
+	mi = map.find(sm.getSymbolId("S"));
+	assert(mi !is null);
+	assert(mi.getData().contains(sm.getSymbolId("a")));
+	mi = null;
+	mi = map.find(sm.getSymbolId("B"));
+	assert(mi !is null);
+	assert(mi.getData().contains(sm.getSymbolId("a")));
+
+	sm = new SymbolManager();
+	gp = new GrammerParser(sm);
+	pm = new ProductionManager(sm);
+	pm.insertProduction(gp.processProduction("S := A B C"));
+	pm.insertProduction(gp.processProduction("A :="));
+	pm.insertProduction(gp.processProduction("B :="));
+	pm.insertProduction(gp.processProduction("C := a"));
+	pm.makeLRZeroItemSets();
+	pm.makeExtendedGrammer();
+	//print(pm.extendedGrammerToString());
+	pm.makeNormalFirstSet();
+	map = null;
+	map = pm.getFirstNormal();
+	mi = null;
+	mi = map.find(sm.getSymbolId("S"));
+	assert(mi !is null);
+	assert(mi.getData().contains(sm.getSymbolId("a")));
+	mi = null;
+	mi = map.find(sm.getSymbolId("C"));
+	assert(mi !is null);
+	assert(mi.getData().contains(sm.getSymbolId("a")));
 }
