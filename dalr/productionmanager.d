@@ -1,5 +1,6 @@
 module dalr.productionmanager;
 
+import dalr.extendeditem;
 import dalr.item;
 import dalr.itemset;
 import dalr.symbolmanager;
@@ -18,6 +19,7 @@ import hurt.string.stringbuffer;
 class ProductionManager {
 	private Deque!(Deque!(int)) prod;
 	private Deque!(Deque!(int)) extGrammer;
+	private Deque!(Deque!(ExtendedItem)) extGrammerComplex;
 
 	private Map!(int,Set!(int)) firstNormal;
 	private Map!(int,Set!(int)) firstExtended;
@@ -34,6 +36,12 @@ class ProductionManager {
 		this();
 		this.symbolManager = symbolManager;
 	}
+
+
+	/************************************************************************** 
+	 *  Getter
+	 *
+	 */
 
 	public Map!(int,Set!(int)) getFirstNormal() {
 		return this.firstNormal;
@@ -101,6 +109,12 @@ class ProductionManager {
 		}
 		return ret;
 	}
+
+
+	/************************************************************************** 
+	 *  Computation of item sets
+	 *
+	 */
 
 	private bool isDotAtEndOfProduction(const Item item) {
 		Deque!(int) pro = this.getProduction(item.getProd());
@@ -211,6 +225,12 @@ class ProductionManager {
 		this.finalizeItemSet();
 	}
 
+
+	/************************************************************************** 
+	 *  Computation of the extended Grammer rules
+	 *
+	 */
+
 	public void makeExtendedGrammer() {
 		// This looks ugly because itemset numbers as well
 		// as items are mixed and both are encoded as ints.
@@ -232,16 +252,38 @@ class ProductionManager {
 				}
 			}
 		}
+
 		this.extGrammer = extendedGrammer;
+		this.extGrammerComplex = this.constructExtendedItem(extendedGrammer);
 	}
 
-	public string extendedGrammerToString() {
-		StringBuffer!(char) ret = new StringBuffer!(char)(128);
-		foreach(it; this.extGrammer) {
-			ret.pushBack(this.extendedGrammerRuleToString(it));
-			ret.pushBack("\n");
+	private Deque!(Deque!(ExtendedItem)) constructExtendedItem(
+			Deque!(Deque!(int)) ext) {
+
+		Deque!(Deque!(ExtendedItem)) ret = 
+			new Deque!(Deque!(ExtendedItem))(ext.getSize());
+
+		foreach(size_t idx, Deque!(int) it; ext) {
+			Deque!(ExtendedItem) tmpDe = new Deque!(ExtendedItem)(it.getSize());
+			ExtendedItem tmp = new ExtendedItem();
+			foreach(size_t jdx, int jt; it) {
+				if(jdx == 0) {
+					tmp.setLeft(jt);
+				} else if(jdx == 1) {
+					tmp.setItem(jt);
+				} else if(jdx == 2) {
+					tmp.setRight(jt);
+					tmpDe.pushBack(tmp);
+				} else {
+					if(jdx / 3 == 0) {
+						tmp = new ExtendedItem(it[jdx-2], it[jdx-1], it[jdx]);	
+						tmpDe.pushBack(tmp);
+					}
+				}
+			}
+			ret.pushBack(tmpDe);
 		}
-		return ret.getString();
+		return ret;
 	}
 
 	public void insertProduction(Deque!(int) toInsert) {
@@ -255,32 +297,6 @@ class ProductionManager {
 			size_t oldSize = this.prod.getSize();
 			this.prod.pushBack(toInsert);
 		}
-	}
-
-	public string extendedGrammerRuleToString(Deque!(int) pro) {
-		StringBuffer!(char) ret = new StringBuffer!(char)(pro.getSize() * 4);
-		for(size_t idx = 0; idx < 3; idx++) {
-			if(idx % 2 == 0) {
-				if(pro[idx] == -1) 
-					ret.pushBack('$');
-				else
-					ret.pushBack(conv!(int,string)(pro[idx]));
-			} else {
-				ret.pushBack(this.symbolManager.getSymbolName(pro[idx]));
-			}
-		}
-		ret.pushBack(" => ");
-		for(size_t idx = 3; idx < pro.getSize(); idx++) {
-			if(idx % 2 == 1) {
-				if(pro[idx] == -1) 
-					ret.pushBack('$');
-				else
-					ret.pushBack(conv!(int,string)(pro[idx]));
-			} else {
-				ret.pushBack(this.symbolManager.getSymbolName(pro[idx]));
-			}
-		}
-		return ret.getString();
 	}
 
 
@@ -491,6 +507,41 @@ class ProductionManager {
 			sb.pushBack(this.itemsetToString(*it));
 		}
 		return sb.getString();
+	}
+
+	public string extendedGrammerToString() {
+		StringBuffer!(char) ret = new StringBuffer!(char)(128);
+		foreach(it; this.extGrammer) {
+			ret.pushBack(this.extendedGrammerRuleToString(it));
+			ret.pushBack("\n");
+		}
+		return ret.getString();
+	}
+
+	public string extendedGrammerRuleToString(Deque!(int) pro) {
+		StringBuffer!(char) ret = new StringBuffer!(char)(pro.getSize() * 4);
+		for(size_t idx = 0; idx < 3; idx++) {
+			if(idx % 2 == 0) {
+				if(pro[idx] == -1) 
+					ret.pushBack('$');
+				else
+					ret.pushBack(conv!(int,string)(pro[idx]));
+			} else {
+				ret.pushBack(this.symbolManager.getSymbolName(pro[idx]));
+			}
+		}
+		ret.pushBack(" => ");
+		for(size_t idx = 3; idx < pro.getSize(); idx++) {
+			if(idx % 2 == 1) {
+				if(pro[idx] == -1) 
+					ret.pushBack('$');
+				else
+					ret.pushBack(conv!(int,string)(pro[idx]));
+			} else {
+				ret.pushBack(this.symbolManager.getSymbolName(pro[idx]));
+			}
+		}
+		return ret.getString();
 	}
 	
 	public override string toString() {
