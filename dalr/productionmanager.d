@@ -264,21 +264,13 @@ class ProductionManager {
 			new Deque!(Deque!(ExtendedItem))(ext.getSize());
 
 		foreach(size_t idx, Deque!(int) it; ext) {
-			Deque!(ExtendedItem) tmpDe = new Deque!(ExtendedItem)(it.getSize());
-			ExtendedItem tmp = new ExtendedItem();
-			foreach(size_t jdx, int jt; it) {
-				if(jdx == 0) {
-					tmp.setLeft(jt);
-				} else if(jdx == 1) {
-					tmp.setItem(jt);
-				} else if(jdx == 2) {
-					tmp.setRight(jt);
+			Deque!(ExtendedItem) tmpDe = new Deque!(ExtendedItem)();
+			ExtendedItem tmp = new ExtendedItem(it[0], it[1], it[2]);
+			tmpDe.pushBack(tmp);
+			for(size_t jdx = 4; jdx < it.getSize(); jdx++) {
+				if(jdx % 2 == 1) {
+					tmp = new ExtendedItem(it[jdx-2], it[jdx-1], it[jdx]);
 					tmpDe.pushBack(tmp);
-				} else {
-					if(jdx / 3 == 0) {
-						tmp = new ExtendedItem(it[jdx-2], it[jdx-1], it[jdx]);	
-						tmpDe.pushBack(tmp);
-					}
 				}
 			}
 			ret.pushBack(tmpDe);
@@ -507,6 +499,32 @@ class ProductionManager {
 			sb.pushBack(this.itemsetToString(*it));
 		}
 		return sb.getString();
+	}
+
+	public string extendedGrammerItemsToString() {
+		StringBuffer!(char) ret = new StringBuffer!(char)(128);
+		foreach(it; this.extGrammerComplex) {
+			ret.pushBack(this.extendedGrammerItemRuleToString(it));
+			ret.pushBack("\n");
+		}
+		return ret.getString();
+	}
+
+	public string extendedGrammerItemRuleToString(Deque!(ExtendedItem) pro) {
+		StringBuffer!(char) ret = new StringBuffer!(char)(pro.getSize() * 4);
+		foreach(idx, it; pro) {
+			if(idx == 1) {
+				ret.pushBack(" => ");
+			}
+			ret.pushBack(it.getLeft() != -1 ? conv!(int,string)(it.getLeft())
+				: "$");
+			ret.pushBack(this.symbolManager.getSymbolName(it.getItem()));
+			ret.pushBack(it.getRight() != - 1 ? 
+				conv!(int,string)(it.getRight()) : 
+				"$");
+			ret.pushBack(" ");
+		}
+		return ret.getString();
 	}
 
 	public string extendedGrammerToString() {
