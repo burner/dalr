@@ -19,10 +19,12 @@ import hurt.string.stringbuffer;
 class ProductionManager {
 	private Deque!(Deque!(int)) prod;
 	private Deque!(Deque!(int)) extGrammer;
+
 	private Deque!(Deque!(ExtendedItem)) extGrammerComplex;
+	private Map!(ExtendedItem,bool) extGrammerKind;
 
 	private Map!(int,Set!(int)) firstNormal;
-	private Map!(int,Set!(int)) firstExtended;
+	private Map!(ExtendedItem,Set!(int)) firstExtended;
 
 	private Set!(ItemSet) itemSets;
 	private SymbolManager symbolManager;
@@ -290,22 +292,30 @@ class ProductionManager {
 			this.prod.pushBack(toInsert);
 		}
 	}
-
+	
 
 	/************************************************************************** 
-	 *  Computation of normal first symbols below
+	 *  generic for first symbol
 	 *
 	 */
 
-	private static void insertIntoFirstNormal(Map!(int,Set!(int)) first, 
-			int sSymbol, Map!(int,Set!(int)) toInsert, int toInsertIdx,
+	private static void insertIntoFirstNormalSet(T)(Map!(T,Set!(int)) first, 
+			T sSymbol, Map!(T,Set!(int)) toInsert, T toInsertIdx,
 			ProductionManager pm) {
 
 		// copy all first symbols except epsilon
-		MapItem!(int, Set!(int)) mi = toInsert.find(toInsertIdx);
+		MapItem!(T, Set!(int)) mi = toInsert.find(toInsertIdx);
 		if(mi is null) {
-			assert(false, format("no first set with name for %s present",
-				pm.productionItemToString(toInsertIdx)));
+			static if(is(T == int)) {
+				assert(false, format("no first set with name for %s present",
+					pm.productionItemToString(toInsertIdx)));
+			} else {
+				assert(false, 
+					format("no first set with name for %d%s%d present",
+					toInsertIdx.getLeft(), 
+					pm.productionItemToString(toInsertIdx.getItem()),
+					toInsertIdx.getRight()));
+			}
 		}
 		ISRIterator!(int) it = mi.getData().begin();
 		for(; it.isValid(); it++) {
@@ -315,10 +325,10 @@ class ProductionManager {
 		}
 	}
 
-	private static void insertIntoFirstNormal(Map!(int,Set!(int)) first, 
-			int sSymbol, int firstSymbol) {
+	private static void insertIntoFirstNormal(T)(Map!(T,Set!(int)) first, 
+			T sSymbol, int firstSymbol) {
 
-		MapItem!(int, Set!(int)) f = first.find(sSymbol);
+		MapItem!(T, Set!(int)) f = first.find(sSymbol);
 		if(f !is null) {
 			f.getData().insert(firstSymbol);
 		} else {
@@ -328,9 +338,9 @@ class ProductionManager {
 		}
 	}
 
-	private static bool isFirstComplete(int nTerm, 
-			Deque!(Deque!(int)) allProd) {
-		foreach(Deque!(int) it; allProd) {
+	private static bool isFirstComplete(T)(T nTerm, 
+			Deque!(Deque!(T)) allProd) {
+		foreach(Deque!(T) it; allProd) {
 			assert(!it.isEmpty(), "empty productions are not allowed");
 			if(it[0] == nTerm) {
 				return false;
@@ -339,12 +349,19 @@ class ProductionManager {
 		return true;
 	}
 
-	private static bool isFirstOnlyEpislon(Map!(int,Set!(int)) first, int idx,
+	private static bool isFirstOnlyEpislon(T)(Map!(T,Set!(int)) first, T idx, 
 			ProductionManager pm) {
-		MapItem!(int, Set!(int)) mi = first.find(idx);
+		MapItem!(T, Set!(int)) mi = first.find(idx);
 		if(mi is null) {
-			assert(false, format("no first set with name for %s present",
-				pm.productionItemToString(idx)));
+			static if(is(T == int)) {
+				assert(false, format("no first set with name for %s present",
+					pm.productionItemToString(idx)));
+			} else {
+				assert(false, 
+					format("no first set with name for %d%s%d present",
+					idx.getLeft(), pm.productionItemToString(idx.getItem()),
+					idx.getRight()));
+			}
 		}
 		if(mi.getData().getSize() > 1) {
 			return false;
@@ -352,6 +369,92 @@ class ProductionManager {
 			return mi.getData().contains(-2);
 		}
 	}
+
+
+	/************************************************************************** 
+	 *  Computation of the extended first symbols (extended grammer rules)
+	 *
+	 */
+
+	private bool testExtendedItemKind(const ExtendedItem toTest) {
+		foreach(Deque!(ExtendedItem) it; this.extGrammerComplex) {
+			foreach(size_t idx, ExtendedItem jt; it) {
+				if(jt == toTest && idx == 0) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private void constructExtendedKind() {
+		this.extGrammerKind = new Map!(ExtendedItem,bool)();
+		foreach(Deque!(ExtendedItem) it; this.extGrammerComplex) {
+			foreach(size_t idx, ExtendedItem jt; it) {
+				if(this.extGrammerKind.contains(jt)) {
+					continue;	
+				} else {
+					this.extGrammerKind.insert(jt, 
+						this.testExtendedItemKind(jt));
+				}
+			}
+		}
+	}
+
+	public void makeExtendedFirstSet() {
+		this.constructExtendedKind();
+
+		Map!(ExtendedItem,Set!(int)) first = new Map!(ExtendedItem,Set!(int));
+		Deque!(Deque!(ExtendedItem)) allProd = 
+			new Deque!(Deque!(ExtendedItem))(this.extGrammerComplex);
+
+		// rule 2
+		outer: while(!allProd.isEmpty()) {
+			Deque!(ExtendedItem) it = allProd.popFront();
+			if(it.getSize() == 1) { // epsilon prod
+				// -2 is epsilon
+				ProductionManager.insertIntoFirstNormal(first, it[0], -2);
+
+				// first is terminal
+			} else if(!this.extGrammerKind.find(it[1]).getData()) { 
+				ProductionManager.
+					insertIntoFirstNormal!(ExtendedItem)(first, it[0], 
+					it[1].getItem());
+			} else {
+				// rule 3
+				Iterator!(ExtendedItem) jt = it.begin();
+				jt++;
+				for(; jt.isValid(); jt++) {
+					if(ProductionManager.isFirstComplete(*jt, allProd) &&
+							!ProductionManager.isFirstOnlyEpislon(first, *jt, 
+							this)) {
+
+						ProductionManager.insertIntoFirstNormalSet(first, it[0],
+							first, *jt, this);	
+						continue outer;
+					} else if(ProductionManager.isFirstComplete(*jt, allProd) &&
+							ProductionManager.isFirstOnlyEpislon(first, *jt, 
+							this)) {
+						continue;
+					} else if(!ProductionManager.isFirstComplete(*jt, 
+							allProd)) {
+						allProd.pushBack(it);	
+						continue outer;
+					} else {
+						assert(false, "this should be unreachable");
+					}
+				}
+				ProductionManager.insertIntoFirstNormal(first, it[0], -2);
+			}
+		}
+		this.firstExtended = first;
+	}
+
+
+	/************************************************************************** 
+	 *  Computation of normal first symbols below
+	 *
+	 */
 
 	public void makeNormalFirstSet() {
 		Map!(int,Set!(int)) first = new Map!(int,Set!(int));
@@ -363,9 +466,10 @@ class ProductionManager {
 			if(it.getSize() == 1) { // epsilon prod
 				// -2 is epsilon
 				ProductionManager.insertIntoFirstNormal(first, it[0], -2);
-			} else if(!this.symbolManager.getKind(it[1])) { // fist is terminal
+			} else if(!this.symbolManager.getKind(it[1])) { // first is terminal
 				ProductionManager.insertIntoFirstNormal(first, it[0], it[1]);
 			} else {
+				// rule 3
 				Iterator!(int) jt = it.begin();
 				jt++;
 				for(; jt.isValid(); jt++) {
@@ -373,7 +477,7 @@ class ProductionManager {
 							!ProductionManager.isFirstOnlyEpislon(first, *jt, 
 							this)) {
 
-						ProductionManager.insertIntoFirstNormal(first, it[0],
+						ProductionManager.insertIntoFirstNormalSet(first, it[0],
 							first, *jt, this);	
 						continue outer;
 					} else if(ProductionManager.isFirstComplete(*jt, allProd) &&
@@ -514,7 +618,7 @@ class ProductionManager {
 		StringBuffer!(char) ret = new StringBuffer!(char)(pro.getSize() * 4);
 		foreach(idx, it; pro) {
 			if(idx == 1) {
-				ret.pushBack(" => ");
+				ret.pushBack("=> ");
 			}
 			ret.pushBack(it.getLeft() != -1 ? conv!(int,string)(it.getLeft())
 				: "$");

@@ -19,10 +19,12 @@ class Item {
 	}
 
 	public override int opCmp(Object o) const {
-		Item c = cast(Item)o;
-		if(this.toHash() > c.toHash())
+		Item i = cast(Item)o;
+		hash_t t = this.toHash();
+		hash_t c = i.toHash();
+		if(t > c)
 			return 1;
-		else if(this.toHash() < c.toHash())
+		else if(t < c)
 			return -1;
 		else
 			return 0;

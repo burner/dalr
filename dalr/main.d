@@ -21,7 +21,6 @@ void main() {
 	pm.makeLRZeroItemSets();
 	pm.makeExtendedGrammer();
 	print(pm.extendedGrammerToString());
-	println();
 	print(pm.extendedGrammerItemsToString());
 	pm.makeNormalFirstSet();
 	print(pm.normalFirstSetToString());
