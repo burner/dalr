@@ -503,6 +503,35 @@ class ProductionManager {
 	 *  To String methodes for productions, items, item, itemsets and this
 	 *
 	 */
+	public string extendedFirstSetToString() {
+		return this.extendedFirstSetToString(this.firstExtended);
+	}
+
+	private string extendedFirstSetToString(Map!(ExtendedItem, Set!(int)) map) {
+		ISRIterator!(MapItem!(ExtendedItem, Set!(int))) it = map.begin();
+		StringBuffer!(char) sb = new StringBuffer!(char)(map.getSize() * 20);
+		for(size_t idx = 0; it.isValid(); idx++, it++) {
+			sb.pushBack(format("First(%s%s%s) = {", 
+				(*it).getKey().getLeft() == -1 ? "$" : 
+				conv!(int,string)((*it).getKey().getLeft()),
+				this.productionItemToString((*it).getKey().getItem()), 
+				(*it).getKey().getRight() == -1 ? "$" : 
+				conv!(int,string)((*it).getKey().getRight())));
+			ISRIterator!(int) jt = (*it).getData().begin();
+			int cnt = 0;
+			for(; jt.isValid(); jt++) {
+				cnt++;
+				sb.pushBack(this.productionItemToString(*jt));
+				sb.pushBack(", ");
+			}
+			if(cnt > 0) {
+				sb.popBack();
+				sb.popBack();
+			}
+			sb.pushBack("}\n");
+		}
+		return sb.getString();
+	}
 
 	public string normalFirstSetToString() {
 		return this.normalFirstSetToString(this.firstNormal);
