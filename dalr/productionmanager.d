@@ -13,6 +13,7 @@ import hurt.container.set;
 import hurt.conv.conv;
 import hurt.conv.conv;
 import hurt.io.stdio;
+import hurt.util.slog;
 import hurt.string.formatter;
 import hurt.string.stringbuffer;
 
@@ -118,6 +119,13 @@ class ProductionManager {
 	 *
 	 */
 
+	private void createExplicitStartProduction() {
+		Deque!(int)	newStart = new Deque!(int)();
+		newStart.pushBack(this.symbolManager.insertSymbol("S'", true));
+		newStart.pushBack(this.prod[0][0]);
+		this.prod.pushFront(newStart);
+	}
+
 	private bool isDotAtEndOfProduction(const Item item) {
 		Deque!(int) pro = this.getProduction(item.getProd());
 		return pro.getSize() == item.getDotPosition();
@@ -209,6 +217,7 @@ class ProductionManager {
 	}
 
 	public void makeLRZeroItemSets() {
+		//this.createExplicitStartProduction();
 		ItemSet iSet = this.getFirstItemSet();
 		this.completeItemSet(iSet);
 		this.fillFollowSet(iSet);
@@ -225,6 +234,38 @@ class ProductionManager {
 			this.insertItemsToProcess(processed, stack, iSet.getFollowSet());
 		}
 		this.finalizeItemSet();
+	}
+
+	/************************************************************************** 
+	 *  Generic functions for the follow set
+	 *
+	 */
+
+
+	/************************************************************************** 
+	 *  Generic functions for the follow set
+	 *
+	 */
+
+	public void makeNormalFollow() {
+		Deque!(Deque!(int)) grammer = new Deque!(Deque!(int))(
+			this.prod);
+
+		Map!(int,Set!(int)) followSets = new Map!(int,Set!(int))();
+		Set!(int) tmp = new Set!(int)();
+		/* the first non terminal of the first prod should contain the 
+		 * $ Symbol aka -1 */
+		tmp.insert(-1); 
+		followSets.insert(grammer[0][0], tmp);
+
+		tmp = null;
+
+		bool hasChanged = false;
+
+		do {
+
+		} while(hasChanged);
+
 	}
 
 
@@ -503,6 +544,7 @@ class ProductionManager {
 	 *  To String methodes for productions, items, item, itemsets and this
 	 *
 	 */
+
 	public string extendedFirstSetToString() {
 		return this.extendedFirstSetToString(this.firstExtended);
 	}
