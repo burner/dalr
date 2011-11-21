@@ -26,6 +26,9 @@ class ProductionManager {
 	private Map!(int,Set!(int)) firstNormal;
 	private Map!(ExtendedItem,Set!(int)) firstExtended;
 
+	private Map!(int,Set!(int)) followNormal;
+	private Map!(ExtendedItem,Set!(int)) followExtended;
+
 	private Set!(ItemSet) itemSets;
 	private SymbolManager symbolManager;
 
@@ -243,11 +246,10 @@ class ProductionManager {
 	private static bool insertFollowItems(T)(Map!(T,Set!(int)) follow,
 			T into, Map!(T,Set!(int)) first, T from) {
 
-		MapItem!(T,Set!(int)) firstMapItem = first.find(into);
 		MapItem!(T,Set!(int)) followMapItem = follow.find(into);
 		Set!(int) followSet;
 		bool created = false;
-		if(firstMapItem is null) {
+		if(followMapItem is null) {
 			followSet = new Set!(int)();	
 			follow.insert(into, followSet);
 			created = true;
@@ -258,11 +260,16 @@ class ProductionManager {
 
 		size_t oldSize = followSet.getSize();
 
-		ISRIterator!(int) it = firstMapItem.getData().begin();
-		for(; it.isValid(); it++) {
-			if(*it != -2) {
-				followSet.insert(*it);
+		MapItem!(T,Set!(int)) firstMapItem = first.find(from);
+		if(firstMapItem !is null) {
+			ISRIterator!(int) it = firstMapItem.getData().begin();
+			for(; it.isValid(); it++) {
+				if(*it != -2) {
+					followSet.insert(*it);
+				}
 			}
+		} else {
+			followSet.insert(from);
 		}
 
 		return oldSize != followSet.getSize() || created;
@@ -275,6 +282,7 @@ class ProductionManager {
 	 */
 
 	public void makeNormalFollowSet() {
+		assert(this.firstNormal !is null);
 		Deque!(Deque!(int)) grammer = new Deque!(Deque!(int))(
 			this.prod);
 
@@ -284,7 +292,6 @@ class ProductionManager {
 		 * $ Symbol aka -1 */
 		tmp.insert(-1); 
 		followSets.insert(grammer[0][0], tmp);
-		log();
 
 		tmp = null;
 
@@ -293,11 +300,10 @@ class ProductionManager {
 		outer: do {
 			hasChanged = false;
 			foreach(size_t idx, Deque!(int) it; grammer) {
-				log();
 				foreach(size_t jdx, int jt; it) {
 					if(jdx == 0) {
 						continue;
-					} else if(jdx+1 < it.getSize()) {
+					} else if(jdx+1 < it.getSize()) { // rule 2
 						if(this.symbolManager.getKind(jt)) {
 							hasChanged = ProductionManager.insertFollowItems(
 								followSets, jt, this.firstNormal, it[jdx+1]);
@@ -305,18 +311,18 @@ class ProductionManager {
 								continue outer;
 							}
 						}
-					} else if(jdx+1 == it.getSize()) {
-						if(this.symbolManager.getKind(jt)) {
-							hasChanged = ProductionManager.insertFollowItems(
-								followSets, it[0], this.firstNormal, jt);
-							if(hasChanged) {
-								continue outer;
-							}
-						}
+					}
+				}
+				if(this.symbolManager.getKind(it.back)) {
+					hasChanged = ProductionManager.insertFollowItems(
+						followSets, it.back, followSets, it[0]);
+					if(hasChanged) {
+						continue outer;
 					}
 				}
 			}
 		} while(hasChanged);
+		this.followNormal = followSets;
 	}
 
 
@@ -610,6 +616,33 @@ class ProductionManager {
 				this.productionItemToString((*it).getKey().getItem()), 
 				(*it).getKey().getRight() == -1 ? "$" : 
 				conv!(int,string)((*it).getKey().getRight())));
+			ISRIterator!(int) jt = (*it).getData().begin();
+			int cnt = 0;
+			for(; jt.isValid(); jt++) {
+				cnt++;
+				sb.pushBack(this.productionItemToString(*jt));
+				sb.pushBack(", ");
+			}
+			if(cnt > 0) {
+				sb.popBack();
+				sb.popBack();
+			}
+			sb.pushBack("}\n");
+		}
+		return sb.getString();
+	}
+
+	public string normalFollowSetToString() {
+		return this.normalFollowSetToString(this.followNormal);
+	}
+
+	private string normalFollowSetToString(Map!(int, Set!(int)) map) {
+		ISRIterator!(MapItem!(int, Set!(int))) it = map.begin();
+		StringBuffer!(char) sb = new StringBuffer!(char)(map.getSize() * 20);
+		for(size_t idx = 0; it.isValid(); it++) {
+			sb.pushBack("Follow(");
+			sb.pushBack(this.productionItemToString((*it).getKey()));
+			sb.pushBack(") = {");
 			ISRIterator!(int) jt = (*it).getData().begin();
 			int cnt = 0;
 			for(; jt.isValid(); jt++) {
