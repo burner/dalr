@@ -11,7 +11,6 @@ import hurt.container.isr;
 import hurt.container.map;
 import hurt.container.set;
 import hurt.conv.conv;
-import hurt.conv.conv;
 import hurt.io.stdio;
 import hurt.util.slog;
 import hurt.string.formatter;
@@ -241,13 +240,41 @@ class ProductionManager {
 	 *
 	 */
 
+	private static bool insertFollowItems(T)(Map!(T,Set!(int)) follow,
+			T into, Map!(T,Set!(int)) first, T from) {
+
+		MapItem!(T,Set!(int)) firstMapItem = first.find(into);
+		MapItem!(T,Set!(int)) followMapItem = follow.find(into);
+		Set!(int) followSet;
+		bool created = false;
+		if(firstMapItem is null) {
+			followSet = new Set!(int)();	
+			follow.insert(into, followSet);
+			created = true;
+		} else {
+			followSet = followMapItem.getData();
+		}
+		assert(followSet !is null);
+
+		size_t oldSize = followSet.getSize();
+
+		ISRIterator!(int) it = firstMapItem.getData().begin();
+		for(; it.isValid(); it++) {
+			if(*it != -2) {
+				followSet.insert(*it);
+			}
+		}
+
+		return oldSize != followSet.getSize() || created;
+	}
+
 
 	/************************************************************************** 
-	 *  Generic functions for the follow set
+	 *  functions for the normal follow set
 	 *
 	 */
 
-	public void makeNormalFollow() {
+	public void makeNormalFollowSet() {
 		Deque!(Deque!(int)) grammer = new Deque!(Deque!(int))(
 			this.prod);
 
@@ -257,15 +284,39 @@ class ProductionManager {
 		 * $ Symbol aka -1 */
 		tmp.insert(-1); 
 		followSets.insert(grammer[0][0], tmp);
+		log();
 
 		tmp = null;
 
 		bool hasChanged = false;
 
-		do {
-
+		outer: do {
+			hasChanged = false;
+			foreach(size_t idx, Deque!(int) it; grammer) {
+				log();
+				foreach(size_t jdx, int jt; it) {
+					if(jdx == 0) {
+						continue;
+					} else if(jdx+1 < it.getSize()) {
+						if(this.symbolManager.getKind(jt)) {
+							hasChanged = ProductionManager.insertFollowItems(
+								followSets, jt, this.firstNormal, it[jdx+1]);
+							if(hasChanged) {
+								continue outer;
+							}
+						}
+					} else if(jdx+1 == it.getSize()) {
+						if(this.symbolManager.getKind(jt)) {
+							hasChanged = ProductionManager.insertFollowItems(
+								followSets, it[0], this.firstNormal, jt);
+							if(hasChanged) {
+								continue outer;
+							}
+						}
+					}
+				}
+			}
 		} while(hasChanged);
-
 	}
 
 

@@ -25,6 +25,7 @@ void main() {
 	pm.makeNormalFirstSet();
 	print(pm.normalFirstSetToString());
 	pm.makeExtendedFirstSet();
+	pm.makeNormalFollowSet();
 	print(pm.extendedFirstSetToString());
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 }
