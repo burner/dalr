@@ -20,7 +20,7 @@ void main() {
 	pm.insertProduction(gp.processProduction("V := * E"));
 	pm.makeLRZeroItemSets();
 	pm.makeExtendedGrammer();
-	//print(pm.extendedGrammerToString());
+	print(pm.extendedGrammerToString());
 	//print(pm.extendedGrammerItemsToString());
 	pm.makeNormalFirstSet();
 	//print(pm.normalFirstSetToString());
