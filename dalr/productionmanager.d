@@ -250,8 +250,8 @@ class ProductionManager {
 	 */
 
 	private static bool insertFollowItems(T)(Map!(T,Set!(int)) follow,
-			T into, Map!(T,Set!(int)) first, T from) if(is(T == int) || 
-			is(T == ExtendedItem)) {
+			T into, Map!(T,Set!(int)) first, T from, bool kind = false) 
+				if(is(T == int) || is(T == ExtendedItem)) {
 
 		MapItem!(T,Set!(int)) followMapItem = follow.find(into);
 		Set!(int) followSet;
@@ -259,10 +259,11 @@ class ProductionManager {
 		if(followMapItem is null) {
 			followSet = new Set!(int)();	
 			follow.insert(into, followSet);
-			created = true;
+			return true;
 		} else {
 			followSet = followMapItem.getData();
 		}
+		
 		assert(followSet !is null);
 
 		size_t oldSize = followSet.getSize();
@@ -279,18 +280,31 @@ class ProductionManager {
 			static if(is(T == int)) {
 				followSet.insert(from);
 			} else {
-				followSet.insert(from.getItem());
+				if(!kind) {
+					followSet.insert(from.getItem());
+				}
 			}
 		}
 
-		return oldSize != followSet.getSize() || created;
+		return oldSize != followSet.getSize();
 	}
 
 
 	/************************************************************************** 
-	 *  functions for the normal follow set
+	 *  functions for the extended follow set
 	 *
 	 */
+
+	private ExtendedItem findFirstItemOfExtendedItem(
+			Deque!(Deque!(ExtendedItem)) toFindIn) {
+		foreach(size_t idx, Deque!(ExtendedItem) it; toFindIn) {
+			assert(it.getSize() > 0);
+			if(it[0].getRight() == -1) {
+				return it[0];
+			}
+		}
+		assert(false, "well you should have found $ by now");
+	}
 
 	public void makeExtendedFollowSet() {
 		assert(this.firstExtended !is null);
@@ -304,7 +318,7 @@ class ProductionManager {
 		/* the first non terminal of the first prod should contain the 
 		 * $ Symbol aka -1 */
 		tmp.insert(-1); 
-		followSets.insert(grammer[0][0], tmp);
+		followSets.insert(this.findFirstItemOfExtendedItem(grammer), tmp);
 
 		tmp = null;
 
@@ -332,15 +346,21 @@ class ProductionManager {
 						}
 					}
 				}
-				MapItem!(ExtendedItem,bool) kindItem = 
-					this.extGrammerKind.find(it.back());
-				assert(kindItem !is null);
-				bool kind = kindItem.getData();
-				if(kind) {
-					hasChanged = ProductionManager.insertFollowItems
-						!(ExtendedItem)(followSets, it.back, followSets, it[0]);
-					if(hasChanged) {
-						continue outer;
+			}
+			inner:
+			printf("%s\n",this.extendedTSetToString!("Follow")(followSets));
+			foreach(size_t idx, Deque!(ExtendedItem) it; grammer) {
+				foreach(size_t jdx, ExtendedItem jt; it) {
+					MapItem!(ExtendedItem,bool) kindItem = 
+						this.extGrammerKind.find(it.back());
+					assert(kindItem !is null);
+					bool kind = kindItem.getData();
+					if(kind) {
+						hasChanged = ProductionManager.insertFollowItems
+							!(ExtendedItem)(followSets, it.back, followSets, it[0],true);
+						if(hasChanged) {
+							goto inner;
+						}
 					}
 				}
 			}
@@ -386,11 +406,16 @@ class ProductionManager {
 						}
 					}
 				}
-				if(this.symbolManager.getKind(it.back)) {
-					hasChanged = ProductionManager.insertFollowItems(
-						followSets, it.back, followSets, it[0]);
-					if(hasChanged) {
-						continue outer;
+			}
+			inner:
+			foreach(size_t idx, Deque!(int) it; grammer) {
+				foreach(size_t jdx, int jt; it) {
+					if(this.symbolManager.getKind(it.back)) {
+						hasChanged = ProductionManager.insertFollowItems(
+							followSets, it.back, followSets, it[0]);
+						if(hasChanged) {
+							goto inner;
+						}
 					}
 				}
 			}

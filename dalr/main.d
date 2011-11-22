@@ -20,14 +20,14 @@ void main() {
 	pm.insertProduction(gp.processProduction("V := * E"));
 	pm.makeLRZeroItemSets();
 	pm.makeExtendedGrammer();
-	print(pm.extendedGrammerToString());
-	//print(pm.extendedGrammerItemsToString());
+	//print(pm.extendedGrammerToString());
 	pm.makeNormalFirstSet();
 	//print(pm.normalFirstSetToString());
 	pm.makeExtendedFirstSet();
 	//print(pm.extendedFirstSetToString());
 	pm.makeNormalFollowSet();
-	//print(pm.normalFollowSetToString());
+	println(pm.normalFollowSetToString());
+	println(pm.extendedGrammerItemsToString());
 	pm.makeExtendedFollowSet();
 	print(pm.extendedFollowSetToString());
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
