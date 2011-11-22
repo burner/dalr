@@ -17,19 +17,25 @@ import hurt.string.formatter;
 import hurt.string.stringbuffer;
 
 class ProductionManager {
+	// The grammer
 	private Deque!(Deque!(int)) prod;
 	private Deque!(Deque!(int)) extGrammer;
 
+	// The extended grammer
 	private Deque!(Deque!(ExtendedItem)) extGrammerComplex;
 	private Map!(ExtendedItem,bool) extGrammerKind;
 
+	// The first sets for normal and extended grammer
 	private Map!(int,Set!(int)) firstNormal;
 	private Map!(ExtendedItem,Set!(int)) firstExtended;
 
+	// The follow sets for normal and extended grammer
 	private Map!(int,Set!(int)) followNormal;
 	private Map!(ExtendedItem,Set!(int)) followExtended;
 
+	// The lr0 graph
 	private Set!(ItemSet) itemSets;
+
 	private SymbolManager symbolManager;
 
 	this() {
@@ -244,7 +250,8 @@ class ProductionManager {
 	 */
 
 	private static bool insertFollowItems(T)(Map!(T,Set!(int)) follow,
-			T into, Map!(T,Set!(int)) first, T from) {
+			T into, Map!(T,Set!(int)) first, T from) if(is(T == int) || 
+			is(T == ExtendedItem)) {
 
 		MapItem!(T,Set!(int)) followMapItem = follow.find(into);
 		Set!(int) followSet;
@@ -269,10 +276,76 @@ class ProductionManager {
 				}
 			}
 		} else {
-			followSet.insert(from);
+			static if(is(T == int)) {
+				followSet.insert(from);
+			} else {
+				followSet.insert(from.getItem());
+			}
 		}
 
 		return oldSize != followSet.getSize() || created;
+	}
+
+
+	/************************************************************************** 
+	 *  functions for the normal follow set
+	 *
+	 */
+
+	public void makeExtendedFollowSet() {
+		assert(this.firstExtended !is null);
+		Deque!(Deque!(ExtendedItem)) grammer = new Deque!(Deque!(ExtendedItem))(
+			this.extGrammerComplex);
+
+		Map!(ExtendedItem,Set!(int)) followSets = 
+			new Map!(ExtendedItem,Set!(int))();
+
+		Set!(int) tmp = new Set!(int)();
+		/* the first non terminal of the first prod should contain the 
+		 * $ Symbol aka -1 */
+		tmp.insert(-1); 
+		followSets.insert(grammer[0][0], tmp);
+
+		tmp = null;
+
+		bool hasChanged = false;
+
+		outer: do {
+			printf("%s\n",this.extendedTSetToString!("Follow")(followSets));
+			hasChanged = false;
+			foreach(size_t idx, Deque!(ExtendedItem) it; grammer) {
+				foreach(size_t jdx, ExtendedItem jt; it) {
+					if(jdx == 0) {
+						continue;
+					} else if(jdx+1 < it.getSize()) { // rule 2
+						MapItem!(ExtendedItem,bool) kindItem = 
+							this.extGrammerKind.find(jt);
+						assert(kindItem !is null);
+						bool kind = kindItem.getData();
+						if(kind) {
+							hasChanged = ProductionManager.insertFollowItems
+								!(ExtendedItem)(followSets, jt, 
+								this.firstExtended, it[jdx+1]);
+							if(hasChanged) {
+								continue outer;
+							}
+						}
+					}
+				}
+				MapItem!(ExtendedItem,bool) kindItem = 
+					this.extGrammerKind.find(it.back());
+				assert(kindItem !is null);
+				bool kind = kindItem.getData();
+				if(kind) {
+					hasChanged = ProductionManager.insertFollowItems
+						!(ExtendedItem)(followSets, it.back, followSets, it[0]);
+					if(hasChanged) {
+						continue outer;
+					}
+				}
+			}
+		} while(hasChanged);
+		this.followExtended = followSets;
 	}
 
 
@@ -603,14 +676,20 @@ class ProductionManager {
 	 */
 
 	public string extendedFirstSetToString() {
-		return this.extendedFirstSetToString(this.firstExtended);
+		return this.extendedTSetToString!("First")(this.firstExtended);
 	}
 
-	private string extendedFirstSetToString(Map!(ExtendedItem, Set!(int)) map) {
+	public string extendedFollowSetToString() {
+		return this.extendedTSetToString!("Follow")(this.followExtended);
+	}
+
+	private string extendedTSetToString(string type)(Map!(ExtendedItem, 
+			Set!(int)) map) {
 		ISRIterator!(MapItem!(ExtendedItem, Set!(int))) it = map.begin();
 		StringBuffer!(char) sb = new StringBuffer!(char)(map.getSize() * 20);
 		for(size_t idx = 0; it.isValid(); idx++, it++) {
-			sb.pushBack(format("First(%s%s%s) = {", 
+			sb.pushBack(type);
+			sb.pushBack(format("(%s%s%s) = {", 
 				(*it).getKey().getLeft() == -1 ? "$" : 
 				conv!(int,string)((*it).getKey().getLeft()),
 				this.productionItemToString((*it).getKey().getItem()), 

@@ -23,10 +23,12 @@ void main() {
 	//print(pm.extendedGrammerToString());
 	//print(pm.extendedGrammerItemsToString());
 	pm.makeNormalFirstSet();
-	print(pm.normalFirstSetToString());
+	//print(pm.normalFirstSetToString());
 	pm.makeExtendedFirstSet();
-	print(pm.extendedFirstSetToString());
+	//print(pm.extendedFirstSetToString());
 	pm.makeNormalFollowSet();
-	print(pm.normalFollowSetToString());
+	//print(pm.normalFollowSetToString());
+	pm.makeExtendedFollowSet();
+	print(pm.extendedFollowSetToString());
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 }
