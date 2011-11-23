@@ -306,6 +306,23 @@ class ProductionManager {
 		assert(false, "well you should have found $ by now");
 	}
 
+	private static bool areExtendedItemEpsilon(size_t idx, size_t jdx, 
+			Deque!(Deque!(ExtendedItem)) prod) {
+		Deque!(ExtendedItem) items = prod[idx];
+		foreach(size_t j, ExtendedItem jt; items) {
+			if(j < jdx) {
+				continue;
+			}
+
+			foreach(Deque!(ExtendedItem) it; prod) {
+				if(it.front() == jt) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	public void makeExtendedFollowSet() {
 		assert(this.firstExtended !is null);
 		Deque!(Deque!(ExtendedItem)) grammer = new Deque!(Deque!(ExtendedItem))(
@@ -325,7 +342,6 @@ class ProductionManager {
 		bool hasChanged = false;
 
 		outer: do {
-			printf("%s\n",this.extendedTSetToString!("Follow")(followSets));
 			hasChanged = false;
 			foreach(size_t idx, Deque!(ExtendedItem) it; grammer) {
 				foreach(size_t jdx, ExtendedItem jt; it) {
@@ -348,16 +364,18 @@ class ProductionManager {
 				}
 			}
 			inner:
-			printf("%s\n",this.extendedTSetToString!("Follow")(followSets));
-			foreach(size_t idx, Deque!(ExtendedItem) it; grammer) {
+			foreach(size_t idx, Deque!(ExtendedItem) it; grammer) { // rule 3
 				foreach(size_t jdx, ExtendedItem jt; it) {
 					MapItem!(ExtendedItem,bool) kindItem = 
 						this.extGrammerKind.find(it.back());
 					assert(kindItem !is null);
 					bool kind = kindItem.getData();
-					if(kind) {
+					if(kind && ( (jdx+1 == it.getSize()) || 
+							ProductionManager.areExtendedItemEpsilon(idx,
+							jdx, grammer))) {
 						hasChanged = ProductionManager.insertFollowItems
-							!(ExtendedItem)(followSets, it.back, followSets, it[0],true);
+							!(ExtendedItem)(followSets, it.back, followSets, 
+							it[0],true);
 						if(hasChanged) {
 							goto inner;
 						}
