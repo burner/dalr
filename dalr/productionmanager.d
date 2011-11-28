@@ -146,7 +146,8 @@ class ProductionManager {
 	private Deque!(Deque!(int)) computeTranslationTable() {
 		Deque!(Deque!(int)) ret = new Deque!(Deque!(int))(
 			this.itemSets.getSize()+1);
-		Deque!(int) tmp = new Deque!(int)(this.symbolManager.getSize()+1);
+		Deque!(int) tmp = new Deque!(int)(this.symbolManager.getSize());
+
 		Pair!(Set!(int),Set!(int)) tAnT = 
 			this.symbolManager.getTermAndNonTerm();
 
@@ -159,29 +160,22 @@ class ProductionManager {
 		for(; ntIt.isValid(); ntIt++) {
 			tmp.pushBack(*ntIt);
 		}
+		assert(tmp.getSize() == this.symbolManager.getSize());
+		foreach(int it; tmp) {
+			assert(this.symbolManager.containsSymbol(it));
+		}
 		ret.pushBack(tmp);
 
-		ISRIterator!(ItemSet) it = this.itemSets.begin();
-		for(; it.isValid(); it++) {
+		Deque!(ItemSet) iSet = this.getItemSets();
+		foreach(ItemSet it; iSet) {
 			Deque!(int) tmp2 = new Deque!(int)(this.symbolManager.getSize()+1);
-			tmp2.pushBack(conv!(long,int)((*it).getId()));
-			//foreach(size_t idx, int jt; tmp) {
-			tIt = tAnT.first.begin();
-			for(; tIt.isValid(); tIt++) {
-				printfln("%d %s %d", (*it).getId(), 
-					this.symbolManager.getSymbolName(*tIt), 
-					(*it).getFollowOnInput(*tIt));
-				tmp2.pushBack(conv!(long,int)((*it).getFollowOnInput(*tIt)));
-			}
-			ntIt = tAnT.second.begin();
-			for(; ntIt.isValid(); ntIt++) {
-				printfln("%d %s %d", (*it).getId(), 
-					this.symbolManager.getSymbolName(*ntIt), 
-					(*it).getFollowOnInput(*ntIt));
-				tmp2.pushBack(conv!(long,int)((*it).getFollowOnInput(*ntIt)));
+			tmp2.pushBack(conv!(long,int)(it.getId()));
+			foreach(size_t idx, int jt; tmp) {
+				tmp2.pushBack(conv!(long,int)(it.getFollowOnInput(jt)));
 			}
 			ret.pushBack(tmp2);
 		}
+		println();
 
 		return ret;
 	}
@@ -811,8 +805,9 @@ class ProductionManager {
 					ret.pushBack(format(stringFormat, 
 						this.symbolManager.getSymbolName(jt)));
 				} else {
-					printfln("%d %s %d", it[0], 
-						this.symbolManager.getSymbolName(table[0][j-1]), jt); 
+					/*printfln("%d %s %d", it[0], 
+						this.symbolManager.getSymbolName(table[0][j-1]), jt);
+					*/
 					ret.pushBack(format(longFormat, jt));
 				}
 			}
