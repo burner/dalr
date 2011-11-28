@@ -172,26 +172,33 @@ class ProductionManager {
 				return a.getId() < b.getId();
 			});
 
-		version(unittest) {
-			foreach(size_t idx, ItemSet it; sortById) {
-				if(idx > 0) {
-					assert(it.getId() != -1);
-				} else {
-					assert(it.getId() != -1);
-					assert(it.getId() <= sortById[idx-1].getId());
-				}
+		// test the sorting
+		foreach(size_t idx, ItemSet it; sortById) {
+			if(idx > 0) {
+				assert(it.getId() != -1);
+			} else {
+				assert(it.getId() != -1);
+				assert(it.getId() <= sortById[idx-1].getId());
 			}
 		}
+		idx = 1;
 
 		// sorted deque entries to the table
-		foreach(size_t idx, ItemSet it; sortById) {
-			ret[idx+1] = new long[ret[0].length];
+		foreach(ItemSet it; sortById) {
+			ret[idx] = new long[ret[0].length];
 			foreach(size_t jdx, long sym; ret[0]) {
 				if(jdx == 0) {
-					ret[idx+1][0] = it.getId();
+					ret[idx][jdx] = it.getId();
+					assert(ret[idx][jdx] != -1);
+				} else {
+					printfln("%d %s %d", ret[idx][0], 
+						this.symbolManager.getSymbolName(conv!(long,int)(
+						ret[0][jdx])), it.getFollowOnInput(
+						conv!(long,int)(ret[0][jdx])));
+					ret[idx][jdx] = it.getFollowOnInput( conv!(long,int)(sym) );
 				}
-				ret[idx+1][jdx] = it.getFollowOnInput( conv!(long,int)(sym) );
 			}
+			idx++;
 		}
 
 		return ret;
@@ -810,22 +817,13 @@ class ProductionManager {
 
 					size = this.symbolManager.getSymbolName(
 						conv!(long,int)(jt)).length;
-				} else if(bigger(jt,size)) {
-					size = jt;
 				}
 			}
 		}
-		log("%d", size);
-		int howManyBlanks = 2;
-		while(size > 0) {
-			howManyBlanks++;
-			size /= 10;
-		}
-		assert(howManyBlanks >= 1);
-
 		
-		string stringFormat = "%" ~ conv!(int,string)(howManyBlanks) ~ "s";
-		string longFormat = "%" ~ conv!(int,string)(howManyBlanks) ~ "d";
+		// create the table
+		string stringFormat = "%" ~ conv!(size_t,string)(size) ~ "s";
+		string longFormat = "%" ~ conv!(size_t,string)(size) ~ "d";
 		foreach(size_t i, long[] it; table) {
 			foreach(size_t j, long jt; it) {
 				if(i == 0 && j == 0) {

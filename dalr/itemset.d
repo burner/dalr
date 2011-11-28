@@ -77,7 +77,11 @@ class ItemSet {
 	public long getFollowOnInput(int input) {
 		assert(this.followSets !is null);	
 		MapItem!(int, ItemSet) found = this.followSets.find(input);
-		return found !is null ? found.getData().getId() : -1;
+		if(found !is null) {
+			return found.getData().getId();
+		} else {
+			return -1;
+		}
 	}
 
 	public void setFollow(Map!(int,ItemSet) follow) {
