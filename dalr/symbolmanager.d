@@ -2,10 +2,12 @@ module dalr.symbolmanager;
 
 import hurt.container.deque;
 import hurt.container.map;
+import hurt.container.set;
 import hurt.container.isr;
 import hurt.io.stdio;
 import hurt.string.formatter;
 import hurt.string.stringbuffer;
+import hurt.util.pair;
 
 public class Symbol {
 	private string symbolName; // the name of the symbol
@@ -75,6 +77,27 @@ public class SymbolManager {
 			}
 			return newId;
 		}
+	}
+
+	public Map!(int,Symbol) getIntSymbols() {
+		return this.intSymbols;
+	}
+
+	public Pair!(Set!(int), Set!(int)) getTermAndNonTerm() {
+		Set!(int) term = new Set!(int)();
+		Set!(int) nonTerm = new Set!(int)();
+		
+		ISRIterator!(MapItem!(int,Symbol)) it = this.intSymbols.begin();
+		for(; it.isValid(); it++) {
+			if((*it).getData().whatKind()) {
+				nonTerm.insert((*it).getKey());
+			} else {
+				term.insert((*it).getKey());
+			}
+		}
+		assert(term.getSize() + nonTerm.getSize() == 
+			this.intSymbols.getSize());
+		return Pair!(Set!(int),Set!(int))(term, nonTerm);
 	}
 
 	public bool containsSymbol(string sym) {
@@ -150,6 +173,11 @@ public class SymbolManager {
 		} else {
 			return f.getData();
 		}
+	}
+
+	public size_t getSize() const {
+		assert(this.intSymbols.getSize() == this.stringSymbols.getSize());
+		return this.intSymbols.getSize();
 	}
 
 	public override string toString() {

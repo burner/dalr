@@ -15,6 +15,7 @@ import hurt.io.stdio;
 import hurt.util.slog;
 import hurt.string.formatter;
 import hurt.string.stringbuffer;
+import hurt.util.pair;
 
 class ProductionManager {
 	// The grammer
@@ -32,6 +33,10 @@ class ProductionManager {
 	// The follow sets for normal and extended grammer
 	private Map!(int,Set!(int)) followNormal;
 	private Map!(ExtendedItem,Set!(int)) followExtended;
+
+
+	// Translation Table
+	private int[][] translationTable;
 
 	// The lr0 graph
 	private Set!(ItemSet) itemSets;
@@ -118,6 +123,38 @@ class ProductionManager {
 				ret.pushBack(idx);
 			}
 		}
+		return ret;
+	}
+	
+
+	/************************************************************************** 
+	 *  Computation of the translation table
+	 *
+	 */
+
+	public int[][] getTranslationTable() {
+		if(this.translationTable !is null) {
+			return this.translationTable;
+		} else {
+			this.translationTable = this.computeTranslationTable();
+			return this.translationTable;
+		}
+	}
+
+	private int[][] computeTranslationTable() {
+		int[][] ret = new int[][this.itemSets.getSize()+1];
+		ret[0] = new int[this.symbolManager.getSize()+1];
+		Pair!(Set!(int),Set!(int)) tAnT = this.symbolManager.getTermAndNonTerm();
+		ISRIterator!(int) tIt = tAnT.first.begin();
+		size_t idx = 1;
+		for(; tIt.isValid(); tIt++) {
+			ret[0][idx++] = *tIt;
+		}
+		ISRIterator!(int) ntIt = tAnT.first.begin();
+		for(; ntIt.isValid(); ntIt++) {
+			ret[0][idx++] = *ntIt;
+		}
+
 		return ret;
 	}
 
