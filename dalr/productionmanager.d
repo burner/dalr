@@ -6,6 +6,7 @@ import dalr.itemset;
 import dalr.symbolmanager;
 import dalr.grammerparser;
 
+import hurt.algo.sorting;
 import hurt.container.deque;
 import hurt.container.isr;
 import hurt.container.map;
@@ -13,6 +14,7 @@ import hurt.container.set;
 import hurt.conv.conv;
 import hurt.io.stdio;
 import hurt.util.slog;
+import hurt.math.mathutil;
 import hurt.string.formatter;
 import hurt.string.stringbuffer;
 import hurt.util.pair;
@@ -36,7 +38,7 @@ class ProductionManager {
 
 
 	// Translation Table
-	private int[][] translationTable;
+	private long[][] translationTable;
 
 	// The lr0 graph
 	private Set!(ItemSet) itemSets;
@@ -132,7 +134,7 @@ class ProductionManager {
 	 *
 	 */
 
-	public int[][] getTranslationTable() {
+	public long[][] getTranslationTable() {
 		if(this.translationTable !is null) {
 			return this.translationTable;
 		} else {
@@ -141,18 +143,55 @@ class ProductionManager {
 		}
 	}
 
-	private int[][] computeTranslationTable() {
-		int[][] ret = new int[][this.itemSets.getSize()+1];
-		ret[0] = new int[this.symbolManager.getSize()+1];
-		Pair!(Set!(int),Set!(int)) tAnT = this.symbolManager.getTermAndNonTerm();
+	private long[][] computeTranslationTable() {
+		long[][] ret = new long[][this.itemSets.getSize()+1];
+		ret[0] = new long[this.symbolManager.getSize()+1];
+		Pair!(Set!(int),Set!(int)) tAnT = 
+			this.symbolManager.getTermAndNonTerm();
 		ISRIterator!(int) tIt = tAnT.first.begin();
 		size_t idx = 1;
+
+		// the first row with term and non-term names
 		for(; tIt.isValid(); tIt++) {
-			ret[0][idx++] = *tIt;
+			ret[0][idx++] = conv!(int,long)(*tIt);
 		}
-		ISRIterator!(int) ntIt = tAnT.first.begin();
+		ISRIterator!(int) ntIt = tAnT.second.begin();
 		for(; ntIt.isValid(); ntIt++) {
-			ret[0][idx++] = *ntIt;
+			ret[0][idx++] = conv!(int,long)(*ntIt);
+		}
+
+		// create a deque sorted by the ids, this is used to create the itemset
+		// table entries desecending by their id
+		ISRIterator!(ItemSet) isIt = this.itemSets.begin();
+		Deque!(ItemSet) sortById = new Deque!(ItemSet)(this.itemSets.getSize());
+		for(; isIt.isValid(); isIt++) {
+			sortById.pushBack(*isIt);
+		}
+		sortDeque!(ItemSet)(sortById, 
+			function(in ItemSet a, in ItemSet b) {
+				return a.getId() < b.getId();
+			});
+
+		version(unittest) {
+			foreach(size_t idx, ItemSet it; sortById) {
+				if(idx > 0) {
+					assert(it.getId() != -1);
+				} else {
+					assert(it.getId() != -1);
+					assert(it.getId() <= sortById[idx-1].getId());
+				}
+			}
+		}
+
+		// sorted deque entries to the table
+		foreach(size_t idx, ItemSet it; sortById) {
+			ret[idx+1] = new long[ret[0].length];
+			foreach(size_t jdx, long sym; ret[0]) {
+				if(jdx == 0) {
+					ret[idx+1][0] = it.getId();
+				}
+				ret[idx+1][jdx] = it.getFollowOnInput( conv!(long,int)(sym) );
+			}
 		}
 
 		return ret;
@@ -754,6 +793,55 @@ class ProductionManager {
 	 *  To String methodes for productions, items, item, itemsets and this
 	 *
 	 */
+
+	public string transitionTableToString() {
+		long[][] table = this.getTranslationTable();
+		StringBuffer!(char) ret = new StringBuffer!(char)(
+			table.length * table[0].length * 3);
+
+		// For every 10 states the length of the output per item must be
+		// increased by one so no two string occupy the same space.
+		size_t size = "ItemSet".length;
+		foreach(size_t i, long[] it; table) {
+			foreach(size_t j, long jt; it) {
+				if(i == 0 && j > 0 && 
+						this.symbolManager.getSymbolName(
+						conv!(long,int)(jt)).length > size) {
+
+					size = this.symbolManager.getSymbolName(
+						conv!(long,int)(jt)).length;
+				} else if(bigger(jt,size)) {
+					size = jt;
+				}
+			}
+		}
+		log("%d", size);
+		int howManyBlanks = 2;
+		while(size > 0) {
+			howManyBlanks++;
+			size /= 10;
+		}
+		assert(howManyBlanks >= 1);
+
+		
+		string stringFormat = "%" ~ conv!(int,string)(howManyBlanks) ~ "s";
+		string longFormat = "%" ~ conv!(int,string)(howManyBlanks) ~ "d";
+		foreach(size_t i, long[] it; table) {
+			foreach(size_t j, long jt; it) {
+				if(i == 0 && j == 0) {
+					ret.pushBack(format(stringFormat, "ItemSet"));
+				} else if(i == 0 && j > 0) {
+					ret.pushBack(format(stringFormat, 
+						this.symbolManager.getSymbolName(conv!(long,int)(jt))));
+				} else {
+					ret.pushBack(format(longFormat, jt));
+				}
+			}
+			ret.pushBack("\n");
+		}
+		ret.pushBack("\n");
+		return ret.getString();
+	}
 
 	public string extendedFirstSetToString() {
 		return this.extendedTSetToString!("First")(this.firstExtended);

@@ -30,6 +30,7 @@ void main() {
 	println(pm.extendedGrammerItemsToString());
 	pm.makeExtendedFollowSet();
 	pm.getTranslationTable();
+	println(pm.transitionTableToString());
 	print(pm.extendedFollowSetToString());
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 }
