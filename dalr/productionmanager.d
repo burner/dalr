@@ -38,7 +38,7 @@ class ProductionManager {
 
 
 	// Translation Table
-	private long[][] translationTable;
+	private Deque!(Deque!(int)) translationTable;
 
 	// The lr0 graph
 	private Set!(ItemSet) itemSets;
@@ -134,7 +134,7 @@ class ProductionManager {
 	 *
 	 */
 
-	public long[][] getTranslationTable() {
+	public Deque!(Deque!(int)) getTranslationTable() {
 		if(this.translationTable !is null) {
 			return this.translationTable;
 		} else {
@@ -143,69 +143,51 @@ class ProductionManager {
 		}
 	}
 
-	private long[][] computeTranslationTable() {
-		long[][] ret = new long[][this.itemSets.getSize()+1];
-		ret[0] = new long[this.symbolManager.getSize()+1];
+	private Deque!(Deque!(int)) computeTranslationTable() {
+		Deque!(Deque!(int)) ret = new Deque!(Deque!(int))(
+			this.itemSets.getSize()+1);
+		Deque!(int) tmp = new Deque!(int)(this.symbolManager.getSize()+1);
 		Pair!(Set!(int),Set!(int)) tAnT = 
 			this.symbolManager.getTermAndNonTerm();
-		ISRIterator!(int) tIt = tAnT.first.begin();
-		size_t idx = 1;
 
 		// the first row with term and non-term names
+		ISRIterator!(int) tIt = tAnT.first.begin();
 		for(; tIt.isValid(); tIt++) {
-			ret[0][idx++] = conv!(int,long)(*tIt);
+			tmp.pushBack(*tIt);
 		}
 		ISRIterator!(int) ntIt = tAnT.second.begin();
 		for(; ntIt.isValid(); ntIt++) {
-			ret[0][idx++] = conv!(int,long)(*ntIt);
+			tmp.pushBack(*ntIt);
 		}
+		ret.pushBack(tmp);
 
-		// create a deque sorted by the ids, this is used to create the itemset
-		// table entries desecending by their id
-		ISRIterator!(ItemSet) isIt = this.itemSets.begin();
-		Deque!(ItemSet) sortById = new Deque!(ItemSet)(this.itemSets.getSize());
-		for(; isIt.isValid(); isIt++) {
-			sortById.pushBack(*isIt);
-		}
-		sortDeque!(ItemSet)(sortById, 
-			function(in ItemSet a, in ItemSet b) {
-				return a.getId() < b.getId();
-			});
-
-		// test the sorting
-		foreach(size_t idx, ItemSet it; sortById) {
-			if(idx > 0) {
-				assert(it.getId() != -1);
-			} else {
-				assert(it.getId() != -1);
-				assert(it.getId() <= sortById[idx-1].getId());
+		ISRIterator!(ItemSet) it = this.itemSets.begin();
+		for(; it.isValid(); it++) {
+			Deque!(int) tmp2 = new Deque!(int)(this.symbolManager.getSize()+1);
+			tmp2.pushBack(conv!(long,int)((*it).getId()));
+			//foreach(size_t idx, int jt; tmp) {
+			tIt = tAnT.first.begin();
+			for(; tIt.isValid(); tIt++) {
+				printfln("%d %s %d", (*it).getId(), 
+					this.symbolManager.getSymbolName(*tIt), 
+					(*it).getFollowOnInput(*tIt));
+				tmp2.pushBack(conv!(long,int)((*it).getFollowOnInput(*tIt)));
 			}
-		}
-		idx = 1;
-
-		// sorted deque entries to the table
-		foreach(ItemSet it; sortById) {
-			ret[idx] = new long[ret[0].length];
-			foreach(size_t jdx, long sym; ret[0]) {
-				if(jdx == 0) {
-					ret[idx][jdx] = it.getId();
-					assert(ret[idx][jdx] != -1);
-				} else {
-					printfln("%d %s %d", ret[idx][0], 
-						this.symbolManager.getSymbolName(conv!(long,int)(
-						ret[0][jdx])), it.getFollowOnInput(
-						conv!(long,int)(ret[0][jdx])));
-					ret[idx][jdx] = it.getFollowOnInput( conv!(long,int)(sym) );
-				}
+			ntIt = tAnT.second.begin();
+			for(; ntIt.isValid(); ntIt++) {
+				printfln("%d %s %d", (*it).getId(), 
+					this.symbolManager.getSymbolName(*ntIt), 
+					(*it).getFollowOnInput(*ntIt));
+				tmp2.pushBack(conv!(long,int)((*it).getFollowOnInput(*ntIt)));
 			}
-			idx++;
+			ret.pushBack(tmp2);
 		}
 
 		return ret;
 	}
 
 
-	/************************************************************************** 
+	/**************************************************************************
 	 *  Computation of item sets
 	 *
 	 */
@@ -726,11 +708,11 @@ class ProductionManager {
 							!ProductionManager.isFirstOnlyEpislon(first, *jt, 
 							this)) {
 
-						ProductionManager.insertIntoFirstNormalSet(first, it[0],
-							first, *jt, this);	
+						ProductionManager.insertIntoFirstNormalSet(first, 
+							it[0], first, *jt, this);	
 						continue outer;
-					} else if(ProductionManager.isFirstComplete(*jt, allProd) &&
-							ProductionManager.isFirstOnlyEpislon(first, *jt, 
+					} else if(ProductionManager.isFirstComplete(*jt, allProd)
+							&& ProductionManager.isFirstOnlyEpislon(first, *jt,
 							this)) {
 						continue;
 					} else if(!ProductionManager.isFirstComplete(*jt, 
@@ -748,7 +730,7 @@ class ProductionManager {
 	}
 
 
-	/************************************************************************** 
+	/************************************************************************* 
 	 *  Computation of normal first symbols below
 	 *
 	 */
@@ -763,7 +745,7 @@ class ProductionManager {
 			if(it.getSize() == 1) { // epsilon prod
 				// -2 is epsilon
 				ProductionManager.insertIntoFirstNormal(first, it[0], -2);
-			} else if(!this.symbolManager.getKind(it[1])) { // first is terminal
+			} else if(!this.symbolManager.getKind(it[1])) { //first is terminal
 				ProductionManager.insertIntoFirstNormal(first, it[0], it[1]);
 			} else {
 				// rule 3
@@ -774,11 +756,11 @@ class ProductionManager {
 							!ProductionManager.isFirstOnlyEpislon(first, *jt, 
 							this)) {
 
-						ProductionManager.insertIntoFirstNormalSet(first, it[0],
-							first, *jt, this);	
+						ProductionManager.insertIntoFirstNormalSet(first, 
+							it[0], first, *jt, this);	
 						continue outer;
-					} else if(ProductionManager.isFirstComplete(*jt, allProd) &&
-							ProductionManager.isFirstOnlyEpislon(first, *jt, 
+					} else if(ProductionManager.isFirstComplete(*jt, allProd) 
+							&& ProductionManager.isFirstOnlyEpislon(first, *jt,
 							this)) {
 						continue;
 					} else if(!ProductionManager.isFirstComplete(*jt, 
@@ -796,27 +778,25 @@ class ProductionManager {
 	}
 
 
-	/************************************************************************** 
+	/************************************************************************* 
 	 *  To String methodes for productions, items, item, itemsets and this
 	 *
 	 */
 
 	public string transitionTableToString() {
-		long[][] table = this.getTranslationTable();
+		Deque!(Deque!(int)) table = this.getTranslationTable();
 		StringBuffer!(char) ret = new StringBuffer!(char)(
-			table.length * table[0].length * 3);
+			table.getSize() * table[0].getSize() * 3);
 
 		// For every 10 states the length of the output per item must be
 		// increased by one so no two string occupy the same space.
 		size_t size = "ItemSet".length;
-		foreach(size_t i, long[] it; table) {
-			foreach(size_t j, long jt; it) {
+		foreach(size_t i, Deque!(int) it; table) {
+			foreach(size_t j, int jt; it) {
 				if(i == 0 && j > 0 && 
-						this.symbolManager.getSymbolName(
-						conv!(long,int)(jt)).length > size) {
+						this.symbolManager.getSymbolName(jt).length > size) {
 
-					size = this.symbolManager.getSymbolName(
-						conv!(long,int)(jt)).length;
+					size = this.symbolManager.getSymbolName(jt).length;
 				}
 			}
 		}
@@ -824,14 +804,15 @@ class ProductionManager {
 		// create the table
 		string stringFormat = "%" ~ conv!(size_t,string)(size) ~ "s";
 		string longFormat = "%" ~ conv!(size_t,string)(size) ~ "d";
-		foreach(size_t i, long[] it; table) {
-			foreach(size_t j, long jt; it) {
-				if(i == 0 && j == 0) {
-					ret.pushBack(format(stringFormat, "ItemSet"));
-				} else if(i == 0 && j > 0) {
+		ret.pushBack(format(stringFormat, "ItemSet"));
+		foreach(size_t i, Deque!(int) it; table) {
+			foreach(size_t j, int jt; it) {
+				if(i == 0) {
 					ret.pushBack(format(stringFormat, 
-						this.symbolManager.getSymbolName(conv!(long,int)(jt))));
+						this.symbolManager.getSymbolName(jt)));
 				} else {
+					printfln("%d %s %d", it[0], 
+						this.symbolManager.getSymbolName(table[0][j-1]), jt); 
 					ret.pushBack(format(longFormat, jt));
 				}
 			}
