@@ -20,6 +20,9 @@ import hurt.string.formatter;
 import hurt.string.stringbuffer;
 import hurt.util.pair;
 
+// -1 is $
+// -2 is epsilon
+
 class ProductionManager {
 	// The grammer
 	private Deque!(Deque!(int)) prod;
@@ -212,15 +215,20 @@ class ProductionManager {
 		for(; tIt.isValid(); tIt++) {
 			tmp.pushBack(FinalItem(Type.Term, *tIt));
 		}
+		tmp.pushBack(FinalItem(Type.Term, -1)); // $ should also be placed
 		ISRIterator!(int) ntIt = tAnT.second.begin();
 		for(; ntIt.isValid(); ntIt++) {
 			tmp.pushBack(FinalItem(Type.NonTerm, *ntIt));
 		}
-		assert(tmp.getSize() == this.symbolManager.getSize());
+		assert(tmp.getSize() == this.symbolManager.getSize()+1);
 		foreach(FinalItem it; tmp) {
+			if(it.number == -1) {
+				continue;
+			}
 			assert(this.symbolManager.containsSymbol(it.number));
 		}
 		ret.pushBack(tmp);
+
 		return ret;
 	}
 
