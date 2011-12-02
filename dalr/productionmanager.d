@@ -1,6 +1,7 @@
 module dalr.productionmanager;
 
 import dalr.extendeditem;
+import dalr.finalitem;
 import dalr.item;
 import dalr.itemset;
 import dalr.symbolmanager;
@@ -56,7 +57,7 @@ class ProductionManager {
 	}
 
 
-	/************************************************************************** 
+	/************************************************************************* 
 	 *  Getter
 	 *
 	 */
@@ -129,7 +130,7 @@ class ProductionManager {
 	}
 	
 
-	/************************************************************************** 
+	/************************************************************************* 
 	 *  Computation of the translation table
 	 *
 	 */
@@ -179,6 +180,39 @@ class ProductionManager {
 
 		return ret;
 	}
+
+
+	/************************************************************************* 
+	 *  Computation of the final table
+	 *
+	 */
+	
+	private Deque!(Deque!(FinalItem)) computeFinalTable() {
+		Deque!(Deque!(FinalItem)) ret = new Deque!(Deque!(FinalItem))(
+			this.itemSets.getSize()+1);
+		Deque!(FinalItem) tmp = 
+			new Deque!(FinalItem)(this.symbolManager.getSize());
+
+		Pair!(Set!(int),Set!(int)) tAnT = 
+			this.symbolManager.getTermAndNonTerm();
+
+		// the first row with term and non-term names
+		ISRIterator!(int) tIt = tAnT.first.begin();
+		for(; tIt.isValid(); tIt++) {
+			tmp.pushBack(FinalItem(Type.Term, *tIt));
+		}
+		ISRIterator!(int) ntIt = tAnT.second.begin();
+		for(; ntIt.isValid(); ntIt++) {
+			tmp.pushBack(FinalItem(Type.NonTerm, *ntIt));
+		}
+		assert(tmp.getSize() == this.symbolManager.getSize());
+		foreach(FinalItem it; tmp) {
+			assert(this.symbolManager.containsSymbol(it.number));
+		}
+		ret.pushBack(tmp);
+		return ret;
+	}
+
 
 
 	/**************************************************************************
@@ -303,7 +337,7 @@ class ProductionManager {
 		this.finalizeItemSet();
 	}
 
-	/************************************************************************** 
+	/************************************************************************* 
 	 *  Generic functions for the follow set
 	 *
 	 */
@@ -349,7 +383,7 @@ class ProductionManager {
 	}
 
 
-	/************************************************************************** 
+	/************************************************************************* 
 	 *  functions for the extended follow set
 	 *
 	 */
@@ -384,8 +418,8 @@ class ProductionManager {
 
 	public void makeExtendedFollowSet() {
 		assert(this.firstExtended !is null);
-		Deque!(Deque!(ExtendedItem)) grammer = new Deque!(Deque!(ExtendedItem))(
-			this.extGrammerComplex);
+		Deque!(Deque!(ExtendedItem)) grammer = 
+			new Deque!(Deque!(ExtendedItem))(this.extGrammerComplex);
 
 		Map!(ExtendedItem,Set!(int)) followSets = 
 			new Map!(ExtendedItem,Set!(int))();
@@ -446,7 +480,7 @@ class ProductionManager {
 	}
 
 
-	/************************************************************************** 
+	/************************************************************************* 
 	 *  functions for the normal follow set
 	 *
 	 */
@@ -501,7 +535,7 @@ class ProductionManager {
 	}
 
 
-	/************************************************************************** 
+	/************************************************************************* 
 	 *  Computation of the extended Grammer rules
 	 *
 	 */
@@ -567,7 +601,7 @@ class ProductionManager {
 	}
 	
 
-	/************************************************************************** 
+	/************************************************************************* 
 	 *  generic for first symbol
 	 *
 	 */
@@ -644,7 +678,7 @@ class ProductionManager {
 	}
 
 
-	/************************************************************************** 
+	/************************************************************************* 
 	 *  Computation of the extended first symbols (extended grammer rules)
 	 *
 	 */
