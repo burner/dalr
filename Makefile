@@ -20,10 +20,13 @@ fine: $(OBJS)
 	sh IncreBuildId.sh
 	dmd $(OBJS) $(CFLAGS) buildinfo.d ../libhurt/libhurt.a -gc -ofDalr
 
-dalr.main.o: dalr/main.d dalr/productionmanager.d dalr/symbolmanager.d Makefile
+dalr.main.o: dalr/main.d dalr/productionmanager.d dalr/dotfilewriter.d \
+dalr/symbolmanager.d dalr/grammerparser.d Makefile
 	dmd $(CFLAGS) -c dalr/main.d -ofdalr.main.o
 
-dalr.productionmanager.o: dalr/productionmanager.d dalr/item.d dalr/itemset.d dalr/symbolmanager.d Makefile
+dalr.productionmanager.o: dalr/productionmanager.d dalr/item.d dalr/itemset.d \
+dalr/symbolmanager.d dalr/finalitem.d dalr/extendeditem.d dalr/grammerparser.d \
+Makefile
 	dmd $(CFLAGS) -c dalr/productionmanager.d -ofdalr.productionmanager.o
 
 dalr.item.o: dalr/item.d Makefile
@@ -44,5 +47,6 @@ dalr.itemset.o: dalr/itemset.d dalr/item.d Makefile
 dalr.symbolmanager.o: dalr/symbolmanager.d Makefile
 	dmd $(CFLAGS) -c dalr/symbolmanager.d -ofdalr.symbolmanager.o
 
-dalr.dotfilewriter.o: dalr/dotfilewriter.d dalr/item.d dalr/itemset.d Makefile
+dalr.dotfilewriter.o: dalr/dotfilewriter.d dalr/symbolmanager.d dalr/item.d \
+dalr/itemset.d Makefile
 	dmd $(CFLAGS) -c dalr/dotfilewriter.d -ofdalr.dotfilewriter.o

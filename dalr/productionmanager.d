@@ -37,9 +37,11 @@ class ProductionManager {
 	private Map!(int,Set!(int)) followNormal;
 	private Map!(ExtendedItem,Set!(int)) followExtended;
 
-
 	// Translation Table
 	private Deque!(Deque!(int)) translationTable;
+
+	// Final Table
+	private Deque!(Deque!(FinalItem)) finalTable;
 
 	// The lr0 graph
 	private Set!(ItemSet) itemSets;
@@ -186,6 +188,15 @@ class ProductionManager {
 	 *  Computation of the final table
 	 *
 	 */
+
+	public Deque!(Deque!(FinalItem)) getFinalTable() {
+		if(this.finalTable !is null) {
+			return this.finalTable;
+		} else {
+			this.finalTable = this.computeFinalTable();
+			return this.finalTable;
+		}
+	}
 	
 	private Deque!(Deque!(FinalItem)) computeFinalTable() {
 		Deque!(Deque!(FinalItem)) ret = new Deque!(Deque!(FinalItem))(
