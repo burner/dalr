@@ -4,6 +4,7 @@ import dalr.dotfilewriter;
 import dalr.grammerparser;
 import dalr.productionmanager;
 import dalr.symbolmanager;
+import dalr.finalitem;
 
 import hurt.container.deque;
 import hurt.io.stdio;
@@ -29,9 +30,11 @@ void main() {
 	println(pm.normalFollowSetToString());
 	println(pm.extendedGrammerItemsToString());
 	pm.makeExtendedFollowSet();
+	println(pm.extendedFollowSetToString());
 	pm.getTranslationTable();
 	pm.getFinalTable();
 	println(pm.transitionTableToString!(int)());
-	print(pm.extendedFollowSetToString());
+	println(pm.transitionTableToString!(FinalItem)());
+	println(pm.extendedFollowSetToString());
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 }

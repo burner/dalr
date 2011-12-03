@@ -103,11 +103,13 @@ public class SymbolManager {
 			if((*it).getData().whatKind()) {
 				nonTerm.insert((*it).getKey());
 			} else {
-				term.insert((*it).getKey());
+				if((*it).getKey() != -1 && (*it).getKey() != -2) {
+					term.insert((*it).getKey());
+				}
 			}
 		}
 		assert(term.getSize() + nonTerm.getSize() == 
-			this.intSymbols.getSize());
+			this.intSymbols.getSize()-2);
 		return Pair!(Set!(int),Set!(int))(term, nonTerm);
 	}
 

@@ -9,6 +9,12 @@ class ExtendedItem {
 		this.item = -99;
 	}
 
+	this(const ExtendedItem toCopy) {
+		this.left = toCopy.getLeft();
+		this.item = toCopy.getItem();
+		this.right = toCopy.getRight();
+	}
+
 	this(int left, int item, int right) {
 		this.left = left;
 		this.item = item;

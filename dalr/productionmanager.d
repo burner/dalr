@@ -14,11 +14,11 @@ import hurt.container.map;
 import hurt.container.set;
 import hurt.conv.conv;
 import hurt.io.stdio;
-import hurt.util.slog;
 import hurt.math.mathutil;
 import hurt.string.formatter;
 import hurt.string.stringbuffer;
 import hurt.util.pair;
+import hurt.util.slog;
 
 // -1 is $
 // -2 is epsilon
@@ -31,6 +31,7 @@ class ProductionManager {
 	// The extended grammer
 	private Deque!(Deque!(ExtendedItem)) extGrammerComplex;
 	private Map!(ExtendedItem,bool) extGrammerKind;
+	private Deque!(Pair!(Deque!(ExtendedItem),Set!(int))) extGrammerFollow;
 
 	// The first sets for normal and extended grammer
 	private Map!(int,Set!(int)) firstNormal;
@@ -166,7 +167,7 @@ class ProductionManager {
 		for(; ntIt.isValid(); ntIt++) {
 			tmp.pushBack(*ntIt);
 		}
-		assert(tmp.getSize() == this.symbolManager.getSize());
+		assert(tmp.getSize() == this.symbolManager.getSize()-2);
 		foreach(int it; tmp) {
 			assert(this.symbolManager.containsSymbol(it));
 		}
@@ -208,7 +209,20 @@ class ProductionManager {
 		}
 		return false;
 	}
-	
+
+	private void mapExtendendFollowSetToGrammer() {
+		this.extGrammerFollow = new Deque!(Pair!(Deque!(ExtendedItem),
+			Set!(int)))(this.extGrammer.getSize());
+
+		foreach(size_t idx, Deque!(ExtendedItem) it; this.extGrammer) {
+			Deque!(ExtendedItem) tmpG = new Deque!(ExtendendItem)(
+				it.getSize());
+			foreach(size_t jdx, ExtendendItem jt; it) {
+				tmpG.pushBack(new ExtendedItem(jt));
+			}
+		}
+	}
+
 	private Deque!(Deque!(FinalItem)) computeFinalTable() {
 		Deque!(Deque!(FinalItem)) ret = new Deque!(Deque!(FinalItem))(
 			this.itemSets.getSize()+1);
@@ -228,7 +242,7 @@ class ProductionManager {
 		for(; ntIt.isValid(); ntIt++) {
 			tmp.pushBack(FinalItem(Type.NonTerm, *ntIt));
 		}
-		assert(tmp.getSize() == this.symbolManager.getSize()+1);
+		assert(tmp.getSize() == this.symbolManager.getSize()-1);
 		foreach(FinalItem it; tmp) {
 			if(it.number == -1) {
 				continue;
@@ -873,7 +887,11 @@ class ProductionManager {
 	 */
 
 	public string transitionTableToString(T)() {
-		Deque!(Deque!(T)) table = this.getTranslationTable();
+		static if(is(T == int)) {
+			Deque!(Deque!(T)) table = this.getTranslationTable();
+		} else {
+			Deque!(Deque!(T)) table = this.computeFinalTable();
+		}
 		StringBuffer!(char) ret = new StringBuffer!(char)(
 			table.getSize() * table[0].getSize() * 3);
 
@@ -882,33 +900,77 @@ class ProductionManager {
 		size_t size = "ItemSet".length;
 		foreach(size_t i, Deque!(T) it; table) {
 			foreach(size_t j, T jt; it) {
+				static if(is(T == int)) {
 				if(i == 0 && j > 0 && 
 						this.symbolManager.getSymbolName(jt).length > size) {
 
 					size = this.symbolManager.getSymbolName(jt).length;
 				}
+				} else {
+				if(i == 0 && j > 0 && 
+						this.symbolManager.getSymbolName(jt.number).length 
+						> size) {
+
+					size = this.symbolManager.getSymbolName(jt.number).length;
+				}
+				}
 			}
 		}
 		
 		// create the table
-		string stringFormat = "%" ~ conv!(size_t,string)(size) ~ "s";
-		string longFormat = "%" ~ conv!(size_t,string)(size) ~ "d";
-		ret.pushBack(format(stringFormat, "ItemSet"));
+		static if(is(T == int)) {
+			immutable string stringFormat = "%" ~ conv!(size_t,string)(size) 
+				~ "s";
+			immutable string longFormat = "%" ~ conv!(size_t,string)(size) 
+				~ "d";
+			immutable string inputFormat = "%" ~ conv!(size_t,string)(size) 
+				~ "s";
+		} else static if(is(T == FinalItem)) {
+			immutable string shiftFormat = "%" ~ conv!(size_t,string)(size-1) 
+				~ "ds";
+			immutable string reduceFormat = "%" ~ conv!(size_t,string)(size-1) 
+				~ "dr";
+			immutable string gotFormat = "%" ~ conv!(size_t,string)(size) 
+				~ "d";
+			immutable string inputFormat = "%" ~ conv!(size_t,string)(size) 
+				~ "s";
+			immutable string longFormat = "%" ~ conv!(size_t,string)(size) 
+				~ "d";
+			immutable string acceptFormat = "%" ~ conv!(size_t,string)(size) 
+				~ "s";
+		}
+		ret.pushBack(format(inputFormat, "ItemSet"));
 		foreach(size_t i, Deque!(T) it; table) {
 			foreach(size_t j, T jt; it) {
 				static if(is(T == FinalItem)) {
 					if(i == 0) {
-						ret.pushBack(format(stringFormat, 
-							this.symbolManager.getSymbolName(jt)));
+						ret.pushBack(format(inputFormat, 
+							this.symbolManager.getSymbolName(jt.number)));
+					} else if(j == 0) {
+						ret.pushBack(format(longFormat, jt.number));
+					} else if(jt.typ == Type.Reduce) {
+						ret.pushBack(format(shiftFormat, jt.number));
+					} else if(jt.typ == Type.Shift) {
+						ret.pushBack(format(shiftFormat, jt.number));
+					} else if(jt.typ == Type.Accept) {
+						ret.pushBack(format(acceptFormat, "$"));
 					} else {
-						ret.pushBack(format(longFormat, jt));
+						if(jt.number == -99 || jt.number == -98) {
+							ret.pushBack(format(inputFormat, " "));
+						} else {
+							ret.pushBack(format(longFormat, jt.number));
+						}
 					}
-				} else {
+				} else static if(is(T == int)) {
 					if(i == 0) {
 						ret.pushBack(format(stringFormat, 
 							this.symbolManager.getSymbolName(jt)));
 					} else {
-						ret.pushBack(format(longFormat, jt));
+						if(jt != -99) {
+							ret.pushBack(format(longFormat, jt));
+						} else {
+							ret.pushBack(format(stringFormat, " "));
+						}
 					}
 				}
 			}
