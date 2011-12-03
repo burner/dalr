@@ -62,7 +62,7 @@ public class SymbolManager {
 		Symbol d = new Symbol("$", -1, false);
 		this.intSymbols.insert(d.getId(), d);
 		this.stringSymbols.insert(d.getSymbolName(), d);
-		Symbol e = new Symbol("epsilon" -2, false);
+		Symbol e = new Symbol("epsilon", -2, false);
 		this.intSymbols.insert(e.getId(), e);
 		this.stringSymbols.insert(e.getSymbolName(), e);
 

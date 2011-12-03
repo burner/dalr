@@ -245,12 +245,27 @@ class ProductionManager {
 			tmp2.pushBack(FinalItem(Type.ItemSet,conv!(long,int)(it.getId())));
 			foreach(size_t idx, FinalItem jt; tmp) {
 				if(jt.typ == Type.Term && jt.number == -1) {
+					if(this.isAcceptingFinalState(it)) {
+						tmp2.pushBack(FinalItem(Type.Accept, -1));
+					} else {
+						tmp2.pushBack(FinalItem(Type.Error, -99));	
+					}
 				} else if(jt.typ == Type.Term && jt.number != -1) {
-					tmp2.pushBack(FinalItem(Type.Term, 
-						conv!(long,int)(it.getFollowOnInput(jt.number))));
-				} else if(jt.typ == Type.NonTerm) {
-					tmp2.pushBack(FinalItem(Type.Goto, 
-						conv!(long,int)(it.getFollowOnInput(jt.number))));
+					long follow = it.getFollowOnInput(jt.number);
+					if(follow == -99) {
+						tmp2.pushBack(FinalItem(Type.Error, -99));
+					} else {
+						tmp2.pushBack(FinalItem(Type.Shift, 
+							conv!(long,int)(follow)));
+					}
+				} else if(jt.typ == Type.NonTerm && jt.number != -1) {
+					long follow = it.getFollowOnInput(jt.number);
+					if(follow == -99) {
+						tmp2.pushBack(FinalItem(Type.Error, -98));
+					} else {
+						tmp2.pushBack(FinalItem(Type.Goto, 
+							conv!(long,int)(follow)));
+					}
 				}
 			}
 			ret.pushBack(tmp2);

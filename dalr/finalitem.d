@@ -1,12 +1,14 @@
 module dalr.finalitem;
 
 enum Type {
-	Term,
+	Accept,
+	Error,
+	Goto,
+	ItemSet,
 	NonTerm,
 	Reduce,
 	Shift,
-	Goto,
-	ItemSet
+	Term
 }
 
 struct FinalItem {
