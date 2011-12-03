@@ -80,7 +80,7 @@ class ItemSet {
 		if(found !is null) {
 			return found.getData().getId();
 		} else {
-			return -1;
+			return -99;
 		}
 	}
 

@@ -5,6 +5,7 @@ enum Type {
 	NonTerm,
 	Reduce,
 	Shift,
+	Goto,
 	ItemSet
 }
 

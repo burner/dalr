@@ -181,7 +181,6 @@ class ProductionManager {
 			}
 			ret.pushBack(tmp2);
 		}
-		println();
 
 		return ret;
 	}
@@ -199,6 +198,15 @@ class ProductionManager {
 			this.finalTable = this.computeFinalTable();
 			return this.finalTable;
 		}
+	}
+
+	private bool isAcceptingFinalState(ItemSet iSet) {
+		foreach(Item it; iSet.getItems()) {
+			if(it.getProd() == 0 && this.isDotAtEndOfProduction(it)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private Deque!(Deque!(FinalItem)) computeFinalTable() {
@@ -228,6 +236,25 @@ class ProductionManager {
 			assert(this.symbolManager.containsSymbol(it.number));
 		}
 		ret.pushBack(tmp);
+
+		Deque!(ItemSet) iSet = this.getItemSets();
+		foreach(ItemSet it; iSet) {
+			Deque!(FinalItem) tmp2 = 
+				new Deque!(FinalItem)(this.symbolManager.getSize()+1);
+
+			tmp2.pushBack(FinalItem(Type.ItemSet,conv!(long,int)(it.getId())));
+			foreach(size_t idx, FinalItem jt; tmp) {
+				if(jt.typ == Type.Term && jt.number == -1) {
+				} else if(jt.typ == Type.Term && jt.number != -1) {
+					tmp2.pushBack(FinalItem(Type.Term, 
+						conv!(long,int)(it.getFollowOnInput(jt.number))));
+				} else if(jt.typ == Type.NonTerm) {
+					tmp2.pushBack(FinalItem(Type.Goto, 
+						conv!(long,int)(it.getFollowOnInput(jt.number))));
+				}
+			}
+			ret.pushBack(tmp2);
+		}
 
 		return ret;
 	}
@@ -858,9 +885,6 @@ class ProductionManager {
 					ret.pushBack(format(stringFormat, 
 						this.symbolManager.getSymbolName(jt)));
 				} else {
-					/*printfln("%d %s %d", it[0], 
-						this.symbolManager.getSymbolName(table[0][j-1]), jt);
-					*/
 					ret.pushBack(format(longFormat, jt));
 				}
 			}
