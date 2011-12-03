@@ -31,7 +31,7 @@ void main() {
 	pm.makeExtendedFollowSet();
 	pm.getTranslationTable();
 	pm.getFinalTable();
-	println(pm.transitionTableToString());
+	println(pm.transitionTableToString!(int)());
 	print(pm.extendedFollowSetToString());
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 }

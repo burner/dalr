@@ -55,6 +55,17 @@ public class SymbolManager {
 	this() {
 		this.intSymbols = new Map!(int,Symbol)(ISRType.HashTable);
 		this.stringSymbols = new Map!(string,Symbol)(ISRType.HashTable);
+		this.makeDollarAndEpsilon();
+	}
+
+	private void makeDollarAndEpsilon() {
+		Symbol d = new Symbol("$", -1, false);
+		this.intSymbols.insert(d.getId(), d);
+		this.stringSymbols.insert(d.getSymbolName(), d);
+		Symbol e = new Symbol("epsilon" -2, false);
+		this.intSymbols.insert(e.getId(), e);
+		this.stringSymbols.insert(e.getSymbolName(), e);
+
 	}
 
 	public int insertSymbol(string sym, bool kind) {

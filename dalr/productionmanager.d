@@ -857,16 +857,16 @@ class ProductionManager {
 	 *
 	 */
 
-	public string transitionTableToString() {
-		Deque!(Deque!(int)) table = this.getTranslationTable();
+	public string transitionTableToString(T)() {
+		Deque!(Deque!(T)) table = this.getTranslationTable();
 		StringBuffer!(char) ret = new StringBuffer!(char)(
 			table.getSize() * table[0].getSize() * 3);
 
 		// For every 10 states the length of the output per item must be
 		// increased by one so no two string occupy the same space.
 		size_t size = "ItemSet".length;
-		foreach(size_t i, Deque!(int) it; table) {
-			foreach(size_t j, int jt; it) {
+		foreach(size_t i, Deque!(T) it; table) {
+			foreach(size_t j, T jt; it) {
 				if(i == 0 && j > 0 && 
 						this.symbolManager.getSymbolName(jt).length > size) {
 
@@ -879,13 +879,22 @@ class ProductionManager {
 		string stringFormat = "%" ~ conv!(size_t,string)(size) ~ "s";
 		string longFormat = "%" ~ conv!(size_t,string)(size) ~ "d";
 		ret.pushBack(format(stringFormat, "ItemSet"));
-		foreach(size_t i, Deque!(int) it; table) {
-			foreach(size_t j, int jt; it) {
-				if(i == 0) {
-					ret.pushBack(format(stringFormat, 
-						this.symbolManager.getSymbolName(jt)));
+		foreach(size_t i, Deque!(T) it; table) {
+			foreach(size_t j, T jt; it) {
+				static if(is(T == FinalItem)) {
+					if(i == 0) {
+						ret.pushBack(format(stringFormat, 
+							this.symbolManager.getSymbolName(jt)));
+					} else {
+						ret.pushBack(format(longFormat, jt));
+					}
 				} else {
-					ret.pushBack(format(longFormat, jt));
+					if(i == 0) {
+						ret.pushBack(format(stringFormat, 
+							this.symbolManager.getSymbolName(jt)));
+					} else {
+						ret.pushBack(format(longFormat, jt));
+					}
 				}
 			}
 			ret.pushBack("\n");
