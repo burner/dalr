@@ -210,16 +210,28 @@ class ProductionManager {
 		return false;
 	}
 
-	private void mapExtendendFollowSetToGrammer() {
+	private void mapExtendedFollowSetToGrammer() {
 		this.extGrammerFollow = new Deque!(Pair!(Deque!(ExtendedItem),
-			Set!(int)))(this.extGrammer.getSize());
+			Set!(int)))(this.extGrammerComplex.getSize());
 
-		foreach(size_t idx, Deque!(ExtendedItem) it; this.extGrammer) {
-			Deque!(ExtendedItem) tmpG = new Deque!(ExtendendItem)(
+		foreach(size_t idx, Deque!(ExtendedItem) it; this.extGrammerComplex) {
+			Deque!(ExtendedItem) tmpG = new Deque!(ExtendedItem)(
 				it.getSize());
-			foreach(size_t jdx, ExtendendItem jt; it) {
+			foreach(size_t jdx, ExtendedItem jt; it) {
 				tmpG.pushBack(new ExtendedItem(jt));
 			}
+			MapItem!(ExtendedItem, Set!(int)) item = this.followExtended.
+				find(tmpG[0]);
+			if(item is null) {
+				continue;
+			}
+			ISRIterator!(int) lt = item.getData().begin();
+			Set!(int) tmpS = new Set!(int)();
+			for(; lt.isValid(); lt++) {
+				tmpS.insert(*lt);
+			}
+			this.extGrammerFollow.pushBack(Pair!(Deque!(ExtendedItem),
+				Set!(int))(tmpG, tmpS));
 		}
 	}
 
@@ -228,6 +240,8 @@ class ProductionManager {
 			this.itemSets.getSize()+1);
 		Deque!(FinalItem) tmp = 
 			new Deque!(FinalItem)(this.symbolManager.getSize());
+
+		this.mapExtendedFollowSetToGrammer();
 
 		Pair!(Set!(int),Set!(int)) tAnT = 
 			this.symbolManager.getTermAndNonTerm();
