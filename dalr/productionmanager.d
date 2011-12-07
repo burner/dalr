@@ -45,7 +45,7 @@ class ProductionManager {
 	private Deque!(Deque!(int)) translationTable;
 
 	// Final Table
-	private Deque!(Deque!(FinalItem)) finalTable;
+	private Deque!(Deque!(Deque!(FinalItem))) finalTable;
 
 	// The lr0 graph
 	private Set!(ItemSet) itemSets;
@@ -192,7 +192,7 @@ class ProductionManager {
 	 *
 	 */
 
-	public Deque!(Deque!(FinalItem)) getFinalTable() {
+	public Deque!(Deque!(Deque!(FinalItem))) getFinalTable() {
 		if(this.finalTable !is null) {
 			return this.finalTable;
 		} else {
@@ -921,23 +921,28 @@ class ProductionManager {
 		// For every 10 states the length of the output per item must be
 		// increased by one so no two string occupy the same space.
 		size_t size = "ItemSet".length;
+
+		static if(is(T == int)) {
 		foreach(size_t i, Deque!(T) it; table) {
 			foreach(size_t j, T jt; it) {
-				static if(is(T == int)) {
 				if(i == 0 && j > 0 && 
 						this.symbolManager.getSymbolName(jt).length > size) {
-
 					size = this.symbolManager.getSymbolName(jt).length;
-				} T == Deque!(FinalItem)
-				} else {
-				if(i == 0 && j > 0 && 
-						this.symbolManager.getSymbolName(jt.number).length 
+				} 
+			}
+		}
+		} else { // T == Deque!(FinalItem)
+		foreach(size_t i, Deque!(Deque!(T)) it; table) {
+			foreach(size_t j, Deque!(T) jt; it) {
+				foreach(size_t k, T kt; jt) {
+					if(i == 0 && j > 0 && 
+						this.symbolManager.getSymbolName(kt.number).length 
 						> size) {
-
-					size = this.symbolManager.getSymbolName(jt.number).length;
+					size = this.symbolManager.getSymbolName(kt.number).length;
 				}
 				}
 			}
+		}
 		}
 		
 		// create the table
@@ -963,28 +968,35 @@ class ProductionManager {
 				~ "s";
 		}
 		ret.pushBack(format(inputFormat, "ItemSet"));
-		foreach(size_t i, Deque!(T) it; table) {
-			foreach(size_t j, T jt; it) {
-				static if(is(T == FinalItem)) {
-					if(i == 0) {
-						ret.pushBack(format(inputFormat, 
-							this.symbolManager.getSymbolName(jt.number)));
-					} else if(j == 0) {
-						ret.pushBack(format(longFormat, jt.number));
-					} else if(jt.typ == Type.Reduce) {
-						ret.pushBack(format(shiftFormat, jt.number));
-					} else if(jt.typ == Type.Shift) {
-						ret.pushBack(format(shiftFormat, jt.number));
-					} else if(jt.typ == Type.Accept) {
-						ret.pushBack(format(acceptFormat, "$"));
-					} else {
-						if(jt.number == -99 || jt.number == -98) {
-							ret.pushBack(format(inputFormat, " "));
+		static if(is(T == FinalItem)) {
+			foreach(size_t i, Deque!(Deque!(T)) it; table) {
+				foreach(size_t j, Deque!(T) jt; it) {
+					foreach(size_t k, T kt; jt) {
+						if(i == 0) {
+							ret.pushBack(format(inputFormat, 
+								this.symbolManager.getSymbolName(kt.number)));
+						} else if(j == 0) {
+							ret.pushBack(format(longFormat, kt.number));
+						} else if(kt.typ == Type.Reduce) {
+							ret.pushBack(format(shiftFormat, kt.number));
+						} else if(kt.typ == Type.Shift) {
+							ret.pushBack(format(shiftFormat, kt.number));
+						} else if(kt.typ == Type.Accept) {
+							ret.pushBack(format(acceptFormat, "$"));
 						} else {
-							ret.pushBack(format(longFormat, jt.number));
+							if(kt.number == -99 || kt.number == -98) {
+								ret.pushBack(format(inputFormat, " "));
+							} else {
+								ret.pushBack(format(longFormat, kt.number));
+							}
 						}
 					}
-				} else static if(is(T == int)) {
+				}
+				ret.pushBack("\n");
+			}
+		} else static if(is(T == int)) {
+			foreach(size_t i, Deque!(T) it; table) {
+				foreach(size_t j, T jt; it) {
 					if(i == 0) {
 						ret.pushBack(format(stringFormat, 
 							this.symbolManager.getSymbolName(jt)));
