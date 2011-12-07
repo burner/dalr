@@ -235,11 +235,11 @@ class ProductionManager {
 		}
 	}
 
-	private Deque!(Deque!(FinalItem)) computeFinalTable() {
-		Deque!(Deque!(FinalItem)) ret = new Deque!(Deque!(FinalItem))(
-			this.itemSets.getSize()+1);
-		Deque!(FinalItem) tmp = 
-			new Deque!(FinalItem)(this.symbolManager.getSize());
+	private Deque!(Deque!(Deque!(FinalItem))) computeFinalTable() {
+		Deque!(Deque!(Deque!(FinalItem))) ret = 
+			new Deque!(Deque!(Deque!(FinalItem)))(this.itemSets.getSize()+1);
+		Deque!(Deque!(FinalItem)) tmp = 
+			new Deque!(Deque!(FinalItem))(this.symbolManager.getSize());
 
 		this.mapExtendedFollowSetToGrammer();
 
@@ -247,15 +247,24 @@ class ProductionManager {
 			this.symbolManager.getTermAndNonTerm();
 
 		// the first row with term and non-term names
+		// termianl symbols
 		ISRIterator!(int) tIt = tAnT.first.begin();
 		for(; tIt.isValid(); tIt++) {
-			tmp.pushBack(FinalItem(Type.Term, *tIt));
+			Deque!(FinalItem) fi = new Deque!(FinalItem)();
+			fi.pushBack(FinalItem(Type.Term, *tIt));
+			tmp.pushBack(fi);
 		}
-		tmp.pushBack(FinalItem(Type.Term, -1)); // $ should also be placed
+		// $ should also be placed
+		tmp.pushBack(new Deque!(FinalItem)([FinalItem(Type.Term, -1)])); 
+
+		// non-termianl symbols
 		ISRIterator!(int) ntIt = tAnT.second.begin();
 		for(; ntIt.isValid(); ntIt++) {
-			tmp.pushBack(FinalItem(Type.NonTerm, *ntIt));
+			Deque!(FinalItem) fi = new Deque!(FinalItem)();
+			fi.pushBack(FinalItem(Type.Term, *ntIt));
+			tmp.pushBack(fi);
 		}
+
 		assert(tmp.getSize() == this.symbolManager.getSize()-1);
 		foreach(FinalItem it; tmp) {
 			if(it.number == -1) {
@@ -904,7 +913,7 @@ class ProductionManager {
 		static if(is(T == int)) {
 			Deque!(Deque!(T)) table = this.getTranslationTable();
 		} else {
-			Deque!(Deque!(T)) table = this.computeFinalTable();
+			Deque!(Deque!(Deque!(T))) table = this.computeFinalTable();
 		}
 		StringBuffer!(char) ret = new StringBuffer!(char)(
 			table.getSize() * table[0].getSize() * 3);
@@ -919,7 +928,7 @@ class ProductionManager {
 						this.symbolManager.getSymbolName(jt).length > size) {
 
 					size = this.symbolManager.getSymbolName(jt).length;
-				}
+				} T == Deque!(FinalItem)
 				} else {
 				if(i == 0 && j > 0 && 
 						this.symbolManager.getSymbolName(jt.number).length 
