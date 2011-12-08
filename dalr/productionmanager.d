@@ -210,26 +210,39 @@ class ProductionManager {
 		return false;
 	}
 
+	/** This maps the followItem of the extended follow set to the
+	 *  extendend grammer rules.
+	 *
+	 *	For example:
+	 *		4E5 := 5t4 4z5 ( $, t, z)
+	 */
 	private void mapExtendedFollowSetToGrammer() {
 		this.extGrammerFollow = new Deque!(Pair!(Deque!(ExtendedItem),
 			Set!(int)))(this.extGrammerComplex.getSize());
 
 		foreach(size_t idx, Deque!(ExtendedItem) it; this.extGrammerComplex) {
+			// copy the grammer rule
 			Deque!(ExtendedItem) tmpG = new Deque!(ExtendedItem)(
 				it.getSize());
 			foreach(size_t jdx, ExtendedItem jt; it) {
 				tmpG.pushBack(new ExtendedItem(jt));
 			}
+
+			// get the follow set for the first item of the copyed rule
 			MapItem!(ExtendedItem, Set!(int)) item = this.followExtended.
 				find(tmpG[0]);
 			if(item is null) {
 				continue;
 			}
+
+			// copy the items into a new set
 			ISRIterator!(int) lt = item.getData().begin();
 			Set!(int) tmpS = new Set!(int)();
 			for(; lt.isValid(); lt++) {
 				tmpS.insert(*lt);
 			}
+
+			// pair the copied rule and the set
 			this.extGrammerFollow.pushBack(Pair!(Deque!(ExtendedItem),
 				Set!(int))(tmpG, tmpS));
 		}
@@ -266,30 +279,39 @@ class ProductionManager {
 		}
 
 		assert(tmp.getSize() == this.symbolManager.getSize()-1);
-		foreach(Deque!(FinalItem) it; tmp) {
-			foreach(FinalItem jt; it) {
-				if(jt.number == -1) {
-					continue;
+		debug {
+			foreach(Deque!(FinalItem) it; tmp) {
+				foreach(FinalItem jt; it) {
+					if(jt.number == -1) {
+						continue;
+					}
+					assert(this.symbolManager.containsSymbol(jt.number));
 				}
-				assert(this.symbolManager.containsSymbol(jt.number));
 			}
 		}
 		ret.pushBack(tmp);
 
+		// make the shift symbols
 		Deque!(ItemSet) iSet = this.getItemSets();
 		foreach(ItemSet it; iSet) {
 			Deque!(Deque!(FinalItem)) tmp2 = 
 				new Deque!(Deque!(FinalItem))(this.symbolManager.getSize()+1);
 
+			// what itemset aka row
 			tmp2.pushBack(new Deque!(FinalItem)(
 				[FinalItem(Type.ItemSet,conv!(long,int)(it.getId()))] ));
+
+			// travel all terms non-term and $
 			foreach(size_t idx, Deque!(FinalItem) jt; tmp) {
+				// check the $ aka -1 
 				if(jt[0].typ == Type.Term && jt[0].number == -1) {
+					// check if the itemset is accepting
 					if(this.isAcceptingFinalState(it)) {
 						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Accept, -1)]));
 					} else {
 						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Error, -99)]));	
 					}
+				// if itemset contains the term mark for shift
 				} else if(jt[0].typ == Type.Term && jt[0].number != -1) {
 					long follow = it.getFollowOnInput(jt[0].number);
 					if(follow == -99) {
@@ -298,6 +320,7 @@ class ProductionManager {
 						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Shift, 
 							conv!(long,int)(follow))]));
 					}
+				// if itemset contains the non-term mark for goto
 				} else if(jt[0].typ == Type.NonTerm && jt[0].number != -1) {
 					long follow = it.getFollowOnInput(jt[0].number);
 					if(follow == -99) {
@@ -310,6 +333,9 @@ class ProductionManager {
 			}
 			ret.pushBack(tmp2);
 		}
+
+		// make the reduce stuff into the table
+
 
 		return ret;
 	}
