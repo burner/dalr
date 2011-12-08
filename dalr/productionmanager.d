@@ -266,42 +266,45 @@ class ProductionManager {
 		}
 
 		assert(tmp.getSize() == this.symbolManager.getSize()-1);
-		foreach(FinalItem it; tmp) {
-			if(it.number == -1) {
-				continue;
+		foreach(Deque!(FinalItem) it; tmp) {
+			foreach(FinalItem jt; it) {
+				if(jt.number == -1) {
+					continue;
+				}
+				assert(this.symbolManager.containsSymbol(jt.number));
 			}
-			assert(this.symbolManager.containsSymbol(it.number));
 		}
 		ret.pushBack(tmp);
 
 		Deque!(ItemSet) iSet = this.getItemSets();
 		foreach(ItemSet it; iSet) {
-			Deque!(FinalItem) tmp2 = 
-				new Deque!(FinalItem)(this.symbolManager.getSize()+1);
+			Deque!(Deque!(FinalItem)) tmp2 = 
+				new Deque!(Deque!(FinalItem))(this.symbolManager.getSize()+1);
 
-			tmp2.pushBack(FinalItem(Type.ItemSet,conv!(long,int)(it.getId())));
-			foreach(size_t idx, FinalItem jt; tmp) {
-				if(jt.typ == Type.Term && jt.number == -1) {
+			tmp2.pushBack(new Deque!(FinalItem)(
+				[FinalItem(Type.ItemSet,conv!(long,int)(it.getId()))] ));
+			foreach(size_t idx, Deque!(FinalItem) jt; tmp) {
+				if(jt[0].typ == Type.Term && jt[0].number == -1) {
 					if(this.isAcceptingFinalState(it)) {
-						tmp2.pushBack(FinalItem(Type.Accept, -1));
+						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Accept, -1)]));
 					} else {
-						tmp2.pushBack(FinalItem(Type.Error, -99));	
+						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Error, -99)]));	
 					}
-				} else if(jt.typ == Type.Term && jt.number != -1) {
-					long follow = it.getFollowOnInput(jt.number);
+				} else if(jt[0].typ == Type.Term && jt[0].number != -1) {
+					long follow = it.getFollowOnInput(jt[0].number);
 					if(follow == -99) {
-						tmp2.pushBack(FinalItem(Type.Error, -99));
+						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Error, -99)]));
 					} else {
-						tmp2.pushBack(FinalItem(Type.Shift, 
-							conv!(long,int)(follow)));
+						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Shift, 
+							conv!(long,int)(follow))]));
 					}
-				} else if(jt.typ == Type.NonTerm && jt.number != -1) {
-					long follow = it.getFollowOnInput(jt.number);
+				} else if(jt[0].typ == Type.NonTerm && jt[0].number != -1) {
+					long follow = it.getFollowOnInput(jt[0].number);
 					if(follow == -99) {
-						tmp2.pushBack(FinalItem(Type.Error, -98));
+						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Error, -98)]));
 					} else {
-						tmp2.pushBack(FinalItem(Type.Goto, 
-							conv!(long,int)(follow)));
+						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Goto, 
+							conv!(long,int)(follow))]));
 					}
 				}
 			}
@@ -923,26 +926,26 @@ class ProductionManager {
 		size_t size = "ItemSet".length;
 
 		static if(is(T == int)) {
-		foreach(size_t i, Deque!(T) it; table) {
-			foreach(size_t j, T jt; it) {
-				if(i == 0 && j > 0 && 
-						this.symbolManager.getSymbolName(jt).length > size) {
-					size = this.symbolManager.getSymbolName(jt).length;
-				} 
-			}
-		}
-		} else { // T == Deque!(FinalItem)
-		foreach(size_t i, Deque!(Deque!(T)) it; table) {
-			foreach(size_t j, Deque!(T) jt; it) {
-				foreach(size_t k, T kt; jt) {
+			foreach(size_t i, Deque!(T) it; table) {
+				foreach(size_t j, T jt; it) {
 					if(i == 0 && j > 0 && 
-						this.symbolManager.getSymbolName(kt.number).length 
-						> size) {
-					size = this.symbolManager.getSymbolName(kt.number).length;
-				}
+							this.symbolManager.getSymbolName(jt).length > size) {
+						size = this.symbolManager.getSymbolName(jt).length;
+					} 
 				}
 			}
-		}
+		} else { // T == Deque!(FinalItem)
+			foreach(size_t i, Deque!(Deque!(T)) it; table) {
+				foreach(size_t j, Deque!(T) jt; it) {
+					foreach(size_t k, T kt; jt) {
+						if(i == 0 && j > 0 && 
+							this.symbolManager.getSymbolName(kt.number).length 
+							> size) {
+						size = this.symbolManager.getSymbolName(kt.number).length;
+					}
+					}
+				}
+			}
 		}
 		
 		// create the table
@@ -968,9 +971,13 @@ class ProductionManager {
 				~ "s";
 		}
 		ret.pushBack(format(inputFormat, "ItemSet"));
+		// their might be multiple items in a single cell (conflicts), this leads to
+		// the extra foreach loop
+		StringBuffer!(char) tStrBuf = new StringBuffer!(char)(size);
 		static if(is(T == FinalItem)) {
 			foreach(size_t i, Deque!(Deque!(T)) it; table) {
 				foreach(size_t j, Deque!(T) jt; it) {
+					tStrBuf.clear();
 					foreach(size_t k, T kt; jt) {
 						if(i == 0) {
 							ret.pushBack(format(inputFormat, 
@@ -978,9 +985,13 @@ class ProductionManager {
 						} else if(j == 0) {
 							ret.pushBack(format(longFormat, kt.number));
 						} else if(kt.typ == Type.Reduce) {
-							ret.pushBack(format(shiftFormat, kt.number));
+							//ret.pushBack(format(shiftFormat, kt.number));
+							tStrBuf.pushBack(conv!(int,string)(kt.number));
+							tStrBuf.pushBack('r');
 						} else if(kt.typ == Type.Shift) {
-							ret.pushBack(format(shiftFormat, kt.number));
+							tStrBuf.pushBack(conv!(int,string)(kt.number));
+							tStrBuf.pushBack('s');
+							//ret.pushBack(format(shiftFormat, kt.number));
 						} else if(kt.typ == Type.Accept) {
 							ret.pushBack(format(acceptFormat, "$"));
 						} else {
@@ -990,6 +1001,9 @@ class ProductionManager {
 								ret.pushBack(format(longFormat, kt.number));
 							}
 						}
+					}
+					if(tStrBuf.getSize() > 0) {
+						ret.pushBack(format(inputFormat, tStrBuf.getString));
 					}
 				}
 				ret.pushBack("\n");
@@ -1008,8 +1022,8 @@ class ProductionManager {
 						}
 					}
 				}
+				ret.pushBack("\n");
 			}
-			ret.pushBack("\n");
 		}
 		ret.pushBack("\n");
 		return ret.getString();
