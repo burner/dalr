@@ -2,10 +2,11 @@ module dalr.productionmanager;
 
 import dalr.extendeditem;
 import dalr.finalitem;
+import dalr.grammerparser;
 import dalr.item;
 import dalr.itemset;
+import dalr.mergedreduction;
 import dalr.symbolmanager;
-import dalr.grammerparser;
 
 import hurt.algo.sorting;
 import hurt.container.deque;
@@ -254,6 +255,16 @@ class ProductionManager {
 	 *  and end on the same number. This could lead to reduce reduce confilcts.
 	 */
 	private void reduceExtGrammerFollow() {
+		Map!(int, MergedReduction) mr = new Map!(int,MergedReduction)();
+		Set!(size_t) allreadyProcessed = new Set!(size_t)();
+		foreach(size_t idx, Pair!(Deque!(ExtendedItem), Set!(int)) it; 
+				this.extGrammerFollow) {
+			// allready processed extended rules doesn't need to be processed
+			if(allreadyProcessed.contains(conv!(int,size_t)(idx))) {
+				continue;
+			}
+
+		}
 
 	}
 
