@@ -248,6 +248,15 @@ class ProductionManager {
 		}
 	}
 
+	/** Merge rules of the extendend rule follow set.
+	 *
+	 *  What we gone do is to find rules that start with the same Non-Term
+	 *  and end on the same number. This could lead to reduce reduce confilcts.
+	 */
+	private void reduceExtGrammerFollow() {
+
+	}
+
 	private Deque!(Deque!(Deque!(FinalItem))) computeFinalTable() {
 		Deque!(Deque!(Deque!(FinalItem))) ret = 
 			new Deque!(Deque!(Deque!(FinalItem)))(this.itemSets.getSize()+1);
