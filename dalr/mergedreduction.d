@@ -29,16 +29,16 @@ class MergedReduction {
 		}
 
 		// the old rule
-		mi = extFollow.find(followItem);
-		if(mi !is null) {
-			mi.getData().insert(extRule);
+		MapItem!(int, Set!(size_t)) mj = extFollow.find(followItem);
+		if(mj !is null) {
+			mj.getData().insert(extRule);
 		} else {
 			Set!(size_t) tmp = new Set!(size_t)();
 			tmp.insert(extRule);
 			this.extFollow.insert(followItem, tmp);
 		}
 
-		debug {
+		/*debug {
 			ISRIterator!(MapItem!(int, Set!(size_t))) it = follow.begin();
 			for(; it.isValid(); it++) {
 				MapItem!(int,Set!(size_t)) jt = this.extFollow.find((*it).getKey());
@@ -46,7 +46,7 @@ class MergedReduction {
 				assert((*it).getData().getSize() == jt.getData().getSize(),
 					format("%d != %d", (*it).getData().getSize(), jt.getData().getSize()));
 			}
-		}
+		}*/
 	}
 
 	public Map!(int, Set!(size_t)) getFollowMap() {
