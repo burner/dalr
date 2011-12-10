@@ -297,7 +297,7 @@ class ProductionManager {
 	 *  What we gone do is to find rules that start with the same Non-Term
 	 *  and end on the same number. This could lead to reduce reduce confilcts.
 	 */
-	private void reduceExtGrammerFollow() {
+	public void reduceExtGrammerFollow() {
 		Map!(size_t, MergedReduction) mr = 
 			new Map!(size_t,MergedReduction)();
 		Set!(size_t) allreadyProcessed = new Set!(size_t)();
@@ -1057,22 +1057,25 @@ class ProductionManager {
 		ISRIterator!(MapItem!(size_t, MergedReduction)) it = this.mergedExtended.begin();
 		string followSymbolFormat = "%" 
 			~ conv!(size_t,string)(this.symbolManager.longestItem()) ~ "s\n";
-/*
-		for( ; it.isValid(); it++) {
+		string prodFormat = "%" ~ 
+			conv!(size_t,string)(this.longestProduction() + 5) ~ "s\n";
+
+		for(; it.isValid(); it++) {
 			ret.pushBack(format("%u\n", (*it).getKey()));
 			Map!(int, Set!(size_t)) theFollowMapSet = (*it).getData().getFollowMap();
 
 			ISRIterator!(MapItem!(int, Set!(size_t))) jt = theFollowMapSet.begin();
 			for(; jt.isValid(); jt++) {
 				ret.pushBack(format(followSymbolFormat, 
-					this.symbolManager.getSymbolName((*jt).getKey());
+					this.symbolManager.getSymbolName((*jt).getKey())));
 
-				ISRIterator!(int) kt = (*jt).getData();
+				ISRIterator!(size_t) kt = (*jt).getData().begin();
+				for(; kt.isValid(); kt++) {
+					ret.pushBack(format(prodFormat,
+						this.productionToString(this.prod[*kt])));
+				}
 			}
-
-
-
-		}*/
+		}
 		return ret.getString();
 	}
 

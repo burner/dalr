@@ -36,5 +36,7 @@ void main() {
 	println(pm.transitionTableToString!(int)());
 	println(pm.transitionTableToString!(FinalItem)());
 	println(pm.extendedFollowSetToString());
+	pm.reduceExtGrammerFollow();
+	println(pm.mergedExtendedToString());
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 }
