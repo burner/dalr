@@ -249,20 +249,64 @@ class ProductionManager {
 		}
 	}
 
+	private static bool compareExtended(Deque!(ExtendedItem) a, 
+			Deque!(ExtendedItem) b) {
+		if(a.getSize() != b.getSize()) {
+			return false;
+		}
+		foreach(size_t idx, ExtendedItem it; a) {
+			if(b[idx].getItem() != it.getItem()) {
+				return false;
+			}
+		}
+		return a.back().getRight() == b.back().getRight();
+	}
+
+	private static MergedReduction getOrCreate(
+			Map!(size_t, MergedReduction) map, size_t idx) {
+		MapItem!(size_t, MergedReduction) mi = map.find(idx);
+		if(mi !is null) {
+			return mi.getData();
+		} else {
+			MergedReduction ret = new MergedReduction(idx);
+			map.insert(idx, ret);
+			return ret;
+		}
+	}
+
 	/** Merge rules of the extendend rule follow set.
 	 *
 	 *  What we gone do is to find rules that start with the same Non-Term
 	 *  and end on the same number. This could lead to reduce reduce confilcts.
 	 */
 	private void reduceExtGrammerFollow() {
-		Map!(int, MergedReduction) mr = new Map!(int,MergedReduction)();
+		Map!(size_t, MergedReduction) mr = 
+			new Map!(size_t,MergedReduction)();
 		Set!(size_t) allreadyProcessed = new Set!(size_t)();
 		foreach(size_t idx, Pair!(Deque!(ExtendedItem), Set!(int)) it; 
 				this.extGrammerFollow) {
 			// allready processed extended rules doesn't need to be processed
-			if(allreadyProcessed.contains(conv!(int,size_t)(idx))) {
+			if(allreadyProcessed.contains(idx)) {
 				continue;
 			}
+
+			// store which pairs are to merge
+			Deque!(size_t) which = new Deque!(size_t)([idx]);
+
+			// iterator over all following pairs
+			Iterator!(Pair!(Deque!(ExtendedItem), Set!(int))) jt = 
+				this.extGrammerFollow.iterator(idx+1);
+			for(size_t kdx = idx+1; jt.isValid(); jt++, kdx++) {
+				// handle if they can be merged
+				if(ProductionManager.compareExtended(it.first, (*jt).first)) {
+					which.pushBack(kdx);
+					allreadyProcessed.insert(kdx);
+				}
+			}
+			
+			// join the which deque into the MergedProduction
+			MergedReduction tmp = ProductionManager.getOrCreate(mr, 
+				it.first.back().getRight());
 
 		}
 
@@ -327,27 +371,31 @@ class ProductionManager {
 				if(jt[0].typ == Type.Term && jt[0].number == -1) {
 					// check if the itemset is accepting
 					if(this.isAcceptingFinalState(it)) {
-						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Accept, -1)]));
+						tmp2.pushBack(new Deque!(FinalItem)(
+							[FinalItem(Type.Accept, -1)] ));
 					} else {
-						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Error, -99)]));	
+						tmp2.pushBack(new Deque!(FinalItem)(
+							[FinalItem(Type.Error, -99)] ));	
 					}
 				// if itemset contains the term mark for shift
 				} else if(jt[0].typ == Type.Term && jt[0].number != -1) {
 					long follow = it.getFollowOnInput(jt[0].number);
 					if(follow == -99) {
-						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Error, -99)]));
+						tmp2.pushBack(new Deque!(FinalItem)(
+							[FinalItem(Type.Error, -99)] ));
 					} else {
-						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Shift, 
-							conv!(long,int)(follow))]));
+						tmp2.pushBack(new Deque!(FinalItem)(
+							[FinalItem(Type.Shift, conv!(long,int)(follow))]));
 					}
 				// if itemset contains the non-term mark for goto
 				} else if(jt[0].typ == Type.NonTerm && jt[0].number != -1) {
 					long follow = it.getFollowOnInput(jt[0].number);
 					if(follow == -99) {
-						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Error, -98)]));
+						tmp2.pushBack(new Deque!(FinalItem)(
+							[FinalItem(Type.Error, -98)] ));
 					} else {
-						tmp2.pushBack(new Deque!(FinalItem)([FinalItem(Type.Goto, 
-							conv!(long,int)(follow))]));
+						tmp2.pushBack(new Deque!(FinalItem)(
+							[FinalItem(Type.Goto, conv!(long,int)(follow))]));
 					}
 				}
 			}

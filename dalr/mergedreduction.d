@@ -4,12 +4,21 @@ import hurt.container.deque;
 import hurt.container.set;
 
 class MergedReduction {
-	private int finalSet;
+	private size_t finalSet;
 	private Set!(int) followSet;
-	private Set!(int) rules;
-	private Set!(int) preMergedRules;
+	private Set!(size_t) rules;
+	private Set!(size_t) preMergedRules;
 
-	this(int finalSet) {
+	this(size_t finalSet) {
 		this.finalSet = finalSet;
 	}
+
+	public void insertRule(size_t rule) {
+		this.rules.insert(rule);
+	}
+
+	public void insertPreMergedRule(size_t rule) {
+		this.preMergedRules.insert(rule);
+	}
+
 }
