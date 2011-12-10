@@ -336,7 +336,7 @@ class ProductionManager {
 				// map the rule for all follow symbols
 				ISRIterator!(int) mt = this.extGrammerFollow[lt].second.begin();
 				for(; mt.isValid(); mt++) {
-					tmp.insert(*mt, theRule);
+					tmp.insert(*mt, theRule, lt);
 				}
 			}
 		}
@@ -1043,9 +1043,8 @@ class ProductionManager {
 		foreach(Deque!(int) it; this.prod) {
 			size_t tmp = 0;
 			foreach(int jt; it) {
-				tmp += 1 + this.symbolManager.getSymbolName(jt).length;
+				tmp = tmp + this.symbolManager.getSymbolName(jt).length + 1;
 			}
-			tmp += 3;
 			ret = tmp > ret ? tmp : ret;
 		}
 		assert(ret > 0);
@@ -1056,9 +1055,7 @@ class ProductionManager {
 		StringBuffer!(char) ret = new StringBuffer!(char)(256);
 		ISRIterator!(MapItem!(size_t, MergedReduction)) it = this.mergedExtended.begin();
 		string followSymbolFormat = "%" 
-			~ conv!(size_t,string)(this.symbolManager.longestItem()) ~ "s\n";
-		string prodFormat = "%" ~ 
-			conv!(size_t,string)(this.longestProduction() + 5) ~ "s\n";
+			~ conv!(size_t,string)(this.symbolManager.longestItem()) ~ "s";
 
 		for(; it.isValid(); it++) {
 			ret.pushBack(format("%u\n", (*it).getKey()));
@@ -1066,13 +1063,27 @@ class ProductionManager {
 
 			ISRIterator!(MapItem!(int, Set!(size_t))) jt = theFollowMapSet.begin();
 			for(; jt.isValid(); jt++) {
+				// the input symbol
 				ret.pushBack(format(followSymbolFormat, 
 					this.symbolManager.getSymbolName((*jt).getKey())));
 
+				// the old extended rules id
+				Map!(int, Set!(size_t)) oldRules = (*it).getData().getExtFollowMap();
+				MapItem!(int, Set!(size_t)) theRule = oldRules.find((*jt).getKey());
+
+				ISRIterator!(size_t) mt = theRule.getData().begin();
+				for(; mt.isValid(); mt++) {
+					ret.pushBack(format(" %d", *mt));
+				}
+				ret.pushBack("\n");
+
+				// the productions
 				ISRIterator!(size_t) kt = (*jt).getData().begin();
 				for(; kt.isValid(); kt++) {
-					ret.pushBack(format(prodFormat,
-						this.productionToString(this.prod[*kt])));
+					ret.pushBack(format(followSymbolFormat, " "));
+					ret.popBack();
+					ret.pushBack(this.productionToString(this.prod[*kt]));
+					ret.pushBack("\n");
 				}
 			}
 		}
@@ -1362,7 +1373,8 @@ class ProductionManager {
 
 	public string extendedGrammerItemsToString() {
 		StringBuffer!(char) ret = new StringBuffer!(char)(128);
-		foreach(it; this.extGrammerComplex) {
+		foreach(size_t idx, Deque!(ExtendedItem) it; this.extGrammerComplex) {
+			ret.pushBack(format("%2d: ", idx));
 			ret.pushBack(this.extendedGrammerItemRuleToString(it));
 			ret.pushBack("\n");
 		}
