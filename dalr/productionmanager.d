@@ -48,6 +48,9 @@ class ProductionManager {
 	// Final Table
 	private Deque!(Deque!(Deque!(FinalItem))) finalTable;
 
+	// Merged ExtendedRules
+	private Map!(size_t, MergedReduction) mergedExtended;
+
 	// The lr0 graph
 	private Set!(ItemSet) itemSets;
 
@@ -274,6 +277,21 @@ class ProductionManager {
 		}
 	}
 
+	private size_t getProductionIdFromExtended(Deque!(ExtendedItem) extGrm) {
+		outer: foreach(size_t idx, Deque!(int) it; this.prod) {
+			if(extGrm.getSize() != it.getSize()) {
+				continue;
+			}
+			foreach(size_t jdx, int jt; it) {
+				if(jt != extGrm[jdx].getItem()) {
+					continue outer;
+				}
+			}
+			return idx;
+		}
+		assert(false, "grammer rule not found");
+	}
+
 	/** Merge rules of the extendend rule follow set.
 	 *
 	 *  What we gone do is to find rules that start with the same Non-Term
@@ -308,8 +326,22 @@ class ProductionManager {
 			MergedReduction tmp = ProductionManager.getOrCreate(mr, 
 				it.first.back().getRight());
 
+			// get all merged productions in the which deque and put them into
+			// the MergedReduction
+			foreach(size_t lt; which) {
+				// get the index of the rule in the 
+				size_t theRule = this.getProductionIdFromExtended(
+					this.extGrammerFollow[lt].first);
+
+				// map the rule for all follow symbols
+				ISRIterator!(int) mt = this.extGrammerFollow[lt].second.begin();
+				for(; mt.isValid(); mt++) {
+					tmp.insert(*mt, theRule);
+				}
+			}
 		}
 
+		this.mergedExtended = mr;
 	}
 
 	private Deque!(Deque!(Deque!(FinalItem))) computeFinalTable() {
@@ -1005,6 +1037,44 @@ class ProductionManager {
 	 *  To String methodes for productions, items, item, itemsets and this
 	 *
 	 */
+
+	private size_t longestProduction() {
+		size_t ret = 0;
+		foreach(Deque!(int) it; this.prod) {
+			size_t tmp = 0;
+			foreach(int jt; it) {
+				tmp += 1 + this.symbolManager.getSymbolName(jt).length;
+			}
+			tmp += 3;
+			ret = tmp > ret ? tmp : ret;
+		}
+		assert(ret > 0);
+		return ret;
+	}
+
+	public string mergedExtendedToString() {
+		StringBuffer!(char) ret = new StringBuffer!(char)(256);
+		ISRIterator!(MapItem!(size_t, MergedReduction)) it = this.mergedExtended.begin();
+		string followSymbolFormat = "%" 
+			~ conv!(size_t,string)(this.symbolManager.longestItem()) ~ "s\n";
+/*
+		for( ; it.isValid(); it++) {
+			ret.pushBack(format("%u\n", (*it).getKey()));
+			Map!(int, Set!(size_t)) theFollowMapSet = (*it).getData().getFollowMap();
+
+			ISRIterator!(MapItem!(int, Set!(size_t))) jt = theFollowMapSet.begin();
+			for(; jt.isValid(); jt++) {
+				ret.pushBack(format(followSymbolFormat, 
+					this.symbolManager.getSymbolName((*jt).getKey());
+
+				ISRIterator!(int) kt = (*jt).getData();
+			}
+
+
+
+		}*/
+		return ret.getString();
+	}
 
 	public string transitionTableToString(T)() {
 		static if(is(T == int)) {

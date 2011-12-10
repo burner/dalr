@@ -2,23 +2,29 @@ module dalr.mergedreduction;
 
 import hurt.container.deque;
 import hurt.container.set;
+import hurt.container.map;
 
 class MergedReduction {
 	private size_t finalSet;
-	private Set!(int) followSet;
-	private Set!(size_t) rules;
-	private Set!(size_t) preMergedRules;
+	private Map!(int, Set!(size_t)) follow;
 
 	this(size_t finalSet) {
 		this.finalSet = finalSet;
+		this.follow = new Map!(int, Set!(size_t))();
 	}
 
-	public void insertRule(size_t rule) {
-		this.rules.insert(rule);
+	public void insert(int followItem, size_t followRule) {
+		MapItem!(int, Set!(size_t)) mi = follow.find(followItem);
+		if(mi !is null) {
+			mi.getData().insert(followRule);
+		} else {
+			Set!(size_t) tmp = new Set!(size_t)();
+			tmp.insert(followRule);
+			this.follow.insert(followItem, tmp);
+		}
 	}
 
-	public void insertPreMergedRule(size_t rule) {
-		this.preMergedRules.insert(rule);
+	public Map!(int, Set!(size_t)) getFollowMap() {
+		return this.follow;
 	}
-
 }

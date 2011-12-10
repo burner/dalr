@@ -94,6 +94,15 @@ public class SymbolManager {
 		return this.intSymbols;
 	}
 
+	public size_t longestItem() {
+		ISRIterator!(MapItem!(string, Symbol)) it = this.stringSymbols.begin();
+		size_t ret = 0;
+		for(; it.isValid(); it++) {
+			ret = (*it).getKey().length > ret ? (*it).getKey().length : ret;
+		}
+		return ret;
+	}
+
 	public Pair!(Set!(int), Set!(int)) getTermAndNonTerm() {
 		Set!(int) term = new Set!(int)();
 		Set!(int) nonTerm = new Set!(int)();
