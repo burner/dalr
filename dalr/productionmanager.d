@@ -232,7 +232,7 @@ class ProductionManager {
 				tmpG.pushBack(new ExtendedItem(jt));
 			}
 
-			// get the follow set for the first item of the copyed rule
+			// get the follow set for the first item of the copied rule
 			MapItem!(ExtendedItem, Set!(int)) item = this.followExtended.
 				find(tmpG[0]);
 			if(item is null) {
@@ -252,16 +252,22 @@ class ProductionManager {
 		}
 	}
 
+	/** This one checks if the two rules have the same item and end on the same
+	 *  number.
+	 */
 	private static bool compareExtended(Deque!(ExtendedItem) a, 
 			Deque!(ExtendedItem) b) {
+		// if the size is unequal they can't be equal
 		if(a.getSize() != b.getSize()) {
 			return false;
 		}
 		foreach(size_t idx, ExtendedItem it; a) {
+			// if only one item is unequal they can't be equal
 			if(b[idx].getItem() != it.getItem()) {
 				return false;
 			}
 		}
+		// compare the last number of the last item
 		return a.back().getRight() == b.back().getRight();
 	}
 
@@ -1037,6 +1043,56 @@ class ProductionManager {
 	 *  To String methodes for productions, items, item, itemsets and this
 	 *
 	 */
+
+	public string extFollowRulesToString() {
+		StringBuffer!(char) tmp = new StringBuffer!(char)(256);
+		Deque!(string) ruleString = new Deque!(string)(16);
+		Deque!(string) ruleFollow = new Deque!(string)(16);
+		size_t maxRuleLen = 0;
+		size_t maxFollowLen = 0;
+		foreach(size_t idx, Pair!(Deque!(ExtendedItem),Set!(int)) it; 
+				this.extGrammerFollow) {
+
+			// the extended rule to string
+			ruleString.pushBack(this.extendedGrammerItemRuleToString(it.first));
+
+			// for each follow symbol create string
+			tmp.clear();
+			tmp.pushBack("{");
+
+			ISRIterator!(int) jt = it.second.begin();
+			for(; jt.isValid(); jt++) {
+				tmp.pushBack(this.symbolManager.getSymbolName(*jt));	
+				tmp.pushBack(' ');
+			}
+			tmp.popBack();
+			tmp.pushBack("}");
+			ruleFollow.pushBack(tmp.getString());
+
+			// get the max length
+			maxRuleLen = ruleString.back().length > maxRuleLen ? 
+				ruleString.back().length : maxRuleLen;
+			maxFollowLen = ruleFollow.back().length > maxFollowLen ? 
+				ruleFollow.back().length : maxFollowLen;
+		}
+		assert(ruleString.getSize() == ruleFollow.getSize());
+
+		// make the format rules
+		string ruleFor = "%" ~ conv!(size_t,string)(maxRuleLen) ~ "s";
+		string ruleFol = "%" ~ conv!(size_t,string)(maxFollowLen) ~ "s";
+
+		// make the return string
+		StringBuffer!(char) ret = new StringBuffer!(char)(256);
+		foreach(size_t idx, string it; ruleString) {
+			ret.pushBack(format("%3d:  ", idx));
+			ret.pushBack(format(ruleFor, it));
+			ret.popBack();
+			ret.pushBack("   ");
+			ret.pushBack(format(ruleFol, ruleFollow[idx]));
+			ret.pushBack("\n");
+		}
+		return ret.getString();
+	}
 
 	private size_t longestProduction() {
 		size_t ret = 0;
