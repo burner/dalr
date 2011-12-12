@@ -8,8 +8,8 @@ import hurt.string.formatter;
 
 class MergedReduction {
 	private size_t finalSet;
-	private Map!(int, Set!(size_t)) follow;
-	private Map!(int, Set!(size_t)) extFollow;
+	private Map!(int, Set!(size_t)) follow; // needed
+	private Map!(int, Set!(size_t)) extFollow; // debug
 
 	this(size_t finalSet) {
 		this.finalSet = finalSet;
@@ -41,10 +41,12 @@ class MergedReduction {
 		/*debug {
 			ISRIterator!(MapItem!(int, Set!(size_t))) it = follow.begin();
 			for(; it.isValid(); it++) {
-				MapItem!(int,Set!(size_t)) jt = this.extFollow.find((*it).getKey());
+				MapItem!(int,Set!(size_t)) jt = this.extFollow.find((*it).
+					getKey());
 				assert(jt !is null);
 				assert((*it).getData().getSize() == jt.getData().getSize(),
-					format("%d != %d", (*it).getData().getSize(), jt.getData().getSize()));
+					format("%d != %d", (*it).getData().getSize(), jt.getData().
+					getSize()));
 			}
 		}*/
 	}

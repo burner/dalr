@@ -441,6 +441,18 @@ class ProductionManager {
 		}
 
 		// make the reduce stuff into the table
+		this.reduceExtGrammerFollow();
+
+		// run over all merged reductions
+		// the key is the row
+		ISRIterator!(MapItem!(size_t, MergedReduction)) it = 
+			this.mergedExtended.begin();
+		for(; it.isValid(); it++) {
+			Map!(int, Set!(size_t)) follow = (*it).getData().getFollowMap();
+			foreach(size_t idx, Deque!(FinalItem) it; tmp) {
+
+			}
+		}
 
 
 		return ret;
@@ -1109,23 +1121,28 @@ class ProductionManager {
 
 	public string mergedExtendedToString() {
 		StringBuffer!(char) ret = new StringBuffer!(char)(256);
-		ISRIterator!(MapItem!(size_t, MergedReduction)) it = this.mergedExtended.begin();
+		ISRIterator!(MapItem!(size_t, MergedReduction)) it = 
+			this.mergedExtended.begin();
 		string followSymbolFormat = "%" 
 			~ conv!(size_t,string)(this.symbolManager.longestItem()) ~ "s";
 
 		for(; it.isValid(); it++) {
 			ret.pushBack(format("%u\n", (*it).getKey()));
-			Map!(int, Set!(size_t)) theFollowMapSet = (*it).getData().getFollowMap();
+			Map!(int, Set!(size_t)) theFollowMapSet = (*it).getData().
+				getFollowMap();
 
-			ISRIterator!(MapItem!(int, Set!(size_t))) jt = theFollowMapSet.begin();
+			ISRIterator!(MapItem!(int, Set!(size_t))) jt = theFollowMapSet.
+				begin();
 			for(; jt.isValid(); jt++) {
 				// the input symbol
 				ret.pushBack(format(followSymbolFormat, 
 					this.symbolManager.getSymbolName((*jt).getKey())));
 
 				// the old extended rules id
-				Map!(int, Set!(size_t)) oldRules = (*it).getData().getExtFollowMap();
-				MapItem!(int, Set!(size_t)) theRule = oldRules.find((*jt).getKey());
+				Map!(int, Set!(size_t)) oldRules = (*it).getData().
+					getExtFollowMap();
+				MapItem!(int, Set!(size_t)) theRule = oldRules.find((*jt).
+					getKey());
 
 				ISRIterator!(size_t) mt = theRule.getData().begin();
 				for(; mt.isValid(); mt++) {
@@ -1163,7 +1180,8 @@ class ProductionManager {
 			foreach(size_t i, Deque!(T) it; table) {
 				foreach(size_t j, T jt; it) {
 					if(i == 0 && j > 0 && 
-							this.symbolManager.getSymbolName(jt).length > size) {
+							this.symbolManager.getSymbolName(jt).length 
+							> size) {
 						size = this.symbolManager.getSymbolName(jt).length;
 					} 
 				}
@@ -1173,10 +1191,11 @@ class ProductionManager {
 				foreach(size_t j, Deque!(T) jt; it) {
 					foreach(size_t k, T kt; jt) {
 						if(i == 0 && j > 0 && 
-							this.symbolManager.getSymbolName(kt.number).length 
-							> size) {
-						size = this.symbolManager.getSymbolName(kt.number).length;
-					}
+								this.symbolManager.getSymbolName(kt.number).
+								length > size) {
+							size = this.symbolManager.getSymbolName(kt.number).
+								length;
+						}
 					}
 				}
 			}
@@ -1205,8 +1224,8 @@ class ProductionManager {
 				~ "s";
 		}
 		ret.pushBack(format(inputFormat, "ItemSet"));
-		// their might be multiple items in a single cell (conflicts), this leads to
-		// the extra foreach loop
+		// their might be multiple items in a single cell (conflicts), this 
+		// leads to the extra foreach loop
 		StringBuffer!(char) tStrBuf = new StringBuffer!(char)(size);
 		static if(is(T == FinalItem)) {
 			foreach(size_t i, Deque!(Deque!(T)) it; table) {
