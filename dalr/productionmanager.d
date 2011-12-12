@@ -376,7 +376,7 @@ class ProductionManager {
 		ISRIterator!(int) ntIt = tAnT.second.begin();
 		for(; ntIt.isValid(); ntIt++) {
 			Deque!(FinalItem) fi = new Deque!(FinalItem)();
-			fi.pushBack(FinalItem(Type.Term, *ntIt));
+			fi.pushBack(FinalItem(Type.NonTerm, *ntIt));
 			tmp.pushBack(fi);
 		}
 
@@ -448,9 +448,26 @@ class ProductionManager {
 		ISRIterator!(MapItem!(size_t, MergedReduction)) it = 
 			this.mergedExtended.begin();
 		for(; it.isValid(); it++) {
-			Map!(int, Set!(size_t)) follow = (*it).getData().getFollowMap();
-			foreach(size_t idx, Deque!(FinalItem) it; tmp) {
+			// the row
+			Deque!(Deque!(FinalItem)) theRow = ret[(*it).getKey()];
 
+			Map!(int, Set!(size_t)) follow = (*it).getData().getFollowMap();
+			foreach(size_t idx, Deque!(FinalItem) kt; tmp) {
+				if(kt[0].typ == Type.Term) {
+					// get the follow set
+					MapItem!(int,Set!(size_t)) s = follow.find(kt[0].number);
+					if(s is null) {
+						continue;
+					} else {
+						// if the follow set exists add all items to the deque entry
+						ISRIterator!(size_t) jt = s.getData().begin();
+						for(; jt.isValid(); jt++) {
+							//theRow[idx+1].pushBack(FinalItem(Type.Reduce, conv!(size_t,int)(*jt)));
+							theRow[idx+1].pushBack(FinalItem(Type.Reduce, conv!(size_t,int)(*jt)));
+						}
+
+					}
+				}
 			}
 		}
 
@@ -1235,6 +1252,7 @@ class ProductionManager {
 						if(i == 0) {
 							ret.pushBack(format(inputFormat, 
 								this.symbolManager.getSymbolName(kt.number)));
+							break;
 						} else if(j == 0) {
 							ret.pushBack(format(longFormat, kt.number));
 						} else if(kt.typ == Type.Reduce) {
@@ -1244,6 +1262,9 @@ class ProductionManager {
 						} else if(kt.typ == Type.Shift) {
 							tStrBuf.pushBack(conv!(int,string)(kt.number));
 							tStrBuf.pushBack('s');
+						} else if(kt.typ == Type.Goto) {
+							tStrBuf.pushBack(conv!(int,string)(kt.number));
+							tStrBuf.pushBack('g');
 							//ret.pushBack(format(shiftFormat, kt.number));
 						} else if(kt.typ == Type.Accept) {
 							ret.pushBack(format(acceptFormat, "$"));

@@ -34,10 +34,10 @@ void main() {
 	pm.getTranslationTable();
 	pm.getFinalTable();
 	println(pm.transitionTableToString!(int)());
-	println(pm.transitionTableToString!(FinalItem)());
-	println(pm.extendedFollowSetToString());
-	//pm.reduceExtGrammerFollow();
-	println(pm.extFollowRulesToString());
 	println(pm.mergedExtendedToString());
+	println(pm.transitionTableToString!(FinalItem)());
+	//println(pm.extendedFollowSetToString());
+	//pm.reduceExtGrammerFollow();
+	//println(pm.extFollowRulesToString());
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 }
