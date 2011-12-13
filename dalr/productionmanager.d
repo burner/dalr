@@ -449,21 +449,30 @@ class ProductionManager {
 			this.mergedExtended.begin();
 		for(; it.isValid(); it++) {
 			// the row
-			Deque!(Deque!(FinalItem)) theRow = ret[(*it).getKey()];
+			assert((*it).getKey() == (*it).getData().getFinalSet());
+			//Deque!(Deque!(FinalItem)) theRow = ret[(*it).getKey()];
+			Deque!(Deque!(FinalItem)) theRow = null;
+			foreach(Deque!(Deque!(FinalItem)) ot; ret) {
+				if(ot.front().front().number == (*it).getKey()) {
+					theRow = ot;
+					break;
+				}
+			}
 
 			Map!(int, Set!(size_t)) follow = (*it).getData().getFollowMap();
-			foreach(size_t idx, Deque!(FinalItem) kt; tmp) {
-				if(kt[0].typ == Type.Term) {
+			foreach(size_t idx, Deque!(FinalItem) tt; tmp) {
+				if(tt[0].typ == Type.Term) {
 					// get the follow set
-					MapItem!(int,Set!(size_t)) s = follow.find(kt[0].number);
+					MapItem!(int,Set!(size_t)) s = follow.find(tt[0].number);
 					if(s is null) {
 						continue;
 					} else {
-						// if the follow set exists add all items to the deque entry
-						ISRIterator!(size_t) jt = s.getData().begin();
-						for(; jt.isValid(); jt++) {
-							//theRow[idx+1].pushBack(FinalItem(Type.Reduce, conv!(size_t,int)(*jt)));
-							theRow[idx+1].pushBack(FinalItem(Type.Reduce, conv!(size_t,int)(*jt)));
+						// if the follow set exists add all items to the deque 
+						// entry
+						ISRIterator!(size_t) rt = s.getData().begin();
+						for(; rt.isValid(); rt++) {
+							theRow[idx+1].pushBack(FinalItem(Type.Reduce, 
+								conv!(size_t,int)(*rt)));
 						}
 
 					}
@@ -1144,6 +1153,7 @@ class ProductionManager {
 			~ conv!(size_t,string)(this.symbolManager.longestItem()) ~ "s";
 
 		for(; it.isValid(); it++) {
+			// the itemset is stored in the key
 			ret.pushBack(format("%u\n", (*it).getKey()));
 			Map!(int, Set!(size_t)) theFollowMapSet = (*it).getData().
 				getFollowMap();

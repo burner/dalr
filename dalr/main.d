@@ -21,7 +21,7 @@ void main() {
 	pm.insertProduction(gp.processProduction("V := * E"));
 	pm.makeLRZeroItemSets();
 	pm.makeExtendedGrammer();
-	//print(pm.extendedGrammerToString());
+	print(pm.extendedGrammerToString());
 	pm.makeNormalFirstSet();
 	//print(pm.normalFirstSetToString());
 	pm.makeExtendedFirstSet();
@@ -33,11 +33,12 @@ void main() {
 	println(pm.extendedFollowSetToString());
 	pm.getTranslationTable();
 	pm.getFinalTable();
+	println(pm.toString());
 	println(pm.transitionTableToString!(int)());
 	println(pm.mergedExtendedToString());
 	println(pm.transitionTableToString!(FinalItem)());
 	//println(pm.extendedFollowSetToString());
 	//pm.reduceExtGrammerFollow();
-	//println(pm.extFollowRulesToString());
+	println(pm.extFollowRulesToString());
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 }

@@ -37,18 +37,10 @@ class MergedReduction {
 			tmp.insert(extRule);
 			this.extFollow.insert(followItem, tmp);
 		}
+	}
 
-		/*debug {
-			ISRIterator!(MapItem!(int, Set!(size_t))) it = follow.begin();
-			for(; it.isValid(); it++) {
-				MapItem!(int,Set!(size_t)) jt = this.extFollow.find((*it).
-					getKey());
-				assert(jt !is null);
-				assert((*it).getData().getSize() == jt.getData().getSize(),
-					format("%d != %d", (*it).getData().getSize(), jt.getData().
-					getSize()));
-			}
-		}*/
+	public size_t getFinalSet() const {
+		return this.finalSet;
 	}
 
 	public Map!(int, Set!(size_t)) getFollowMap() {
