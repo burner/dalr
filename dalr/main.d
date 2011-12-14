@@ -34,9 +34,8 @@ void main() {
 	pm.getTranslationTable();
 	pm.getFinalTable();
 	println(pm.toString());
-	println(pm.transitionTableToString!(int)());
+	println(pm.transitionTableToString());
 	println(pm.mergedExtendedToString());
-	println(pm.transitionTableToString!(FinalItem)());
 	//println(pm.extendedFollowSetToString());
 	//pm.reduceExtGrammerFollow();
 	println(pm.extFollowRulesToString());

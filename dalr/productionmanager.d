@@ -353,8 +353,11 @@ class ProductionManager {
 	private Deque!(Deque!(Deque!(FinalItem))) computeFinalTable() {
 		Deque!(Deque!(Deque!(FinalItem))) ret = 
 			new Deque!(Deque!(Deque!(FinalItem)))(this.itemSets.getSize()+1);
+
+		// the first row
 		Deque!(Deque!(FinalItem)) tmp = 
 			new Deque!(Deque!(FinalItem))(this.symbolManager.getSize());
+		tmp.pushBack(new Deque!(FinalItem)([FinalItem(Type.ItemSet, -1)]));
 
 		this.mapExtendedFollowSetToGrammer();
 
@@ -382,7 +385,7 @@ class ProductionManager {
 			tmp.pushBack(fi);
 		}
 
-		assert(tmp.getSize() == this.symbolManager.getSize()-1);
+		assert(tmp.getSize() == this.symbolManager.getSize());
 		debug { // check if the symbols got copied right
 			foreach(Deque!(FinalItem) it; tmp) {
 				foreach(FinalItem jt; it) {
@@ -1225,12 +1228,8 @@ class ProductionManager {
 		return ret.getString();
 	}
 
-	public string transitionTableToString(T)() {
-		static if(is(T == int)) {
-			Deque!(Deque!(T)) table = this.getTranslationTable();
-		} else {
-			Deque!(Deque!(Deque!(T))) table = this.computeFinalTable();
-		}
+	public string transitionTableToString() {
+		Deque!(Deque!(int)) table = this.getTranslationTable();
 		StringBuffer!(char) ret = new StringBuffer!(char)(
 			table.getSize() * table[0].getSize() * 3);
 
@@ -1238,116 +1237,43 @@ class ProductionManager {
 		// increased by one so no two string occupy the same space.
 		size_t size = "ItemSet".length;
 
-		static if(is(T == int)) {
-			foreach(size_t i, Deque!(T) it; table) {
-				foreach(size_t j, T jt; it) {
-					if(i == 0 && j > 0 && 
-							this.symbolManager.getSymbolName(jt).length 
-							> size) {
-						size = this.symbolManager.getSymbolName(jt).length;
-					} 
-				}
-			}
-		} else { // T == Deque!(FinalItem)
-			foreach(size_t i, Deque!(Deque!(T)) it; table) {
-				foreach(size_t j, Deque!(T) jt; it) {
-					foreach(size_t k, T kt; jt) {
-						if(i == 0 && j > 0 && 
-								this.symbolManager.getSymbolName(kt.number).
-								length > size) {
-							size = this.symbolManager.getSymbolName(kt.number).
-								length;
-						}
-					}
-				}
+		foreach(size_t i, Deque!(int) it; table) {
+			foreach(size_t j, int jt; it) {
+				if(i == 0 && j > 0 && 
+						this.symbolManager.getSymbolName(jt).length 
+						> size) {
+					size = this.symbolManager.getSymbolName(jt).length;
+				} 
 			}
 		}
 		
 		// create the table
-		static if(is(T == int)) {
-			immutable string stringFormat = "%" ~ conv!(size_t,string)(size) 
-				~ "s";
-			immutable string longFormat = "%" ~ conv!(size_t,string)(size) 
-				~ "d";
-			immutable string inputFormat = "%" ~ conv!(size_t,string)(size) 
-				~ "s";
-		} else static if(is(T == FinalItem)) {
-			immutable string shiftFormat = "%" ~ conv!(size_t,string)(size-1) 
-				~ "ds";
-			immutable string reduceFormat = "%" ~ conv!(size_t,string)(size-1) 
-				~ "dr";
-			immutable string gotFormat = "%" ~ conv!(size_t,string)(size) 
-				~ "d";
-			immutable string inputFormat = "%" ~ conv!(size_t,string)(size) 
-				~ "s";
-			immutable string longFormat = "%" ~ conv!(size_t,string)(size) 
-				~ "d";
-			immutable string acceptFormat = "%" ~ conv!(size_t,string)(size) 
-				~ "s";
-		}
+		immutable string stringFormat = "%" ~ conv!(size_t,string)(size) 
+			~ "s";
+		immutable string longFormat = "%" ~ conv!(size_t,string)(size) 
+			~ "d";
+		immutable string inputFormat = "%" ~ conv!(size_t,string)(size) 
+			~ "s";
 		ret.pushBack(format(inputFormat, "ItemSet"));
 		// their might be multiple items in a single cell (conflicts), this 
 		// leads to the extra foreach loop
 		StringBuffer!(char) tStrBuf = new StringBuffer!(char)(size);
-		static if(is(T == FinalItem)) {
-			foreach(size_t i, Deque!(Deque!(T)) it; table) {
-				foreach(size_t j, Deque!(T) jt; it) {
-					tStrBuf.clear();
-					foreach(size_t k, T kt; jt) {
-						if(i == 0) {
-							ret.pushBack(format(inputFormat, 
-								this.symbolManager.getSymbolName(kt.number)));
-							break;
-						} else if(j == 0) {
-							ret.pushBack(format(longFormat, kt.number));
-						} else if(kt.typ == Type.Reduce) {
-							//ret.pushBack(format(shiftFormat, kt.number));
-							tStrBuf.pushBack(conv!(int,string)(kt.number));
-							tStrBuf.pushBack('r');
-						} else if(kt.typ == Type.Shift) {
-							tStrBuf.pushBack(conv!(int,string)(kt.number));
-							tStrBuf.pushBack('s');
-						} else if(kt.typ == Type.Goto) {
-							tStrBuf.pushBack(conv!(int,string)(kt.number));
-							tStrBuf.pushBack('g');
-							//ret.pushBack(format(shiftFormat, kt.number));
-						} else if(kt.typ == Type.Accept) {
-							//ret.pushBack(format(acceptFormat, "$"));
-							tStrBuf.pushBack("$");
-						} else {
-							if(kt.number == -99 || kt.number == -98) {
-								//ret.pushBack(format(inputFormat, " "));
-								ret.pushBack(" ");
-							} else {
-								//ret.pushBack(format(longFormat, kt.number));
-								tStrBuf.pushBack(conv!(int,string)(kt.number));
-							}
-						}
-					}
-					if(tStrBuf.getSize() > 0) {
-						log("%s", tStrBuf.getString());
-						ret.pushBack(format(inputFormat, tStrBuf.getString()));
-					}
-				}
-				ret.pushBack("\n");
-			}
-		} else static if(is(T == int)) {
-			foreach(size_t i, Deque!(T) it; table) {
-				foreach(size_t j, T jt; it) {
-					if(i == 0) {
-						ret.pushBack(format(stringFormat, 
-							this.symbolManager.getSymbolName(jt)));
+		foreach(size_t i, Deque!(int) it; table) {
+			foreach(size_t j, int jt; it) {
+				if(i == 0) {
+					ret.pushBack(format(stringFormat, 
+						this.symbolManager.getSymbolName(jt)));
+				} else {
+					if(jt != -99) {
+						ret.pushBack(format(longFormat, jt));
 					} else {
-						if(jt != -99) {
-							ret.pushBack(format(longFormat, jt));
-						} else {
-							ret.pushBack(format(stringFormat, " "));
-						}
+						ret.pushBack(format(stringFormat, " "));
 					}
 				}
-				ret.pushBack("\n");
 			}
+			ret.pushBack("\n");
 		}
+		
 		ret.pushBack("\n");
 		return ret.getString();
 	}
