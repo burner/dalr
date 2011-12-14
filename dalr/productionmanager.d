@@ -365,6 +365,7 @@ class ProductionManager {
 		// termianl symbols
 		ISRIterator!(int) tIt = tAnT.first.begin();
 		for(; tIt.isValid(); tIt++) {
+			assert(this.symbolManager.getKind(*tIt) == false);
 			Deque!(FinalItem) fi = new Deque!(FinalItem)();
 			fi.pushBack(FinalItem(Type.Term, *tIt));
 			tmp.pushBack(fi);
@@ -375,19 +376,22 @@ class ProductionManager {
 		// non-termianl symbols
 		ISRIterator!(int) ntIt = tAnT.second.begin();
 		for(; ntIt.isValid(); ntIt++) {
+			assert(this.symbolManager.getKind(*ntIt) == true);
 			Deque!(FinalItem) fi = new Deque!(FinalItem)();
 			fi.pushBack(FinalItem(Type.NonTerm, *ntIt));
 			tmp.pushBack(fi);
 		}
 
 		assert(tmp.getSize() == this.symbolManager.getSize()-1);
-		debug {
+		debug { // check if the symbols got copied right
 			foreach(Deque!(FinalItem) it; tmp) {
 				foreach(FinalItem jt; it) {
-					if(jt.number == -1) {
-						continue;
-					}
 					assert(this.symbolManager.containsSymbol(jt.number));
+					if(jt.typ == Type.Term) {
+						assert(!this.symbolManager.getKind(jt.number));
+					} else if(jt.typ == Type.NonTerm) {
+						assert(this.symbolManager.getKind(jt.number));
+					}
 				}
 			}
 		}
@@ -439,6 +443,29 @@ class ProductionManager {
 			}
 			ret.pushBack(tmp2);
 		}
+		debug { // make sure the itemset numbers are sorted
+			foreach(size_t idx, Deque!(Deque!(FinalItem)) it; ret) {
+				if(idx > 2) {
+					if(it.front().front().typ == Type.ItemSet) {
+						assert(ret[idx-1].front().front().number < 
+							it.front().front().number, format("%u %u",
+							ret[idx-1].front().front().number < 
+							it.front().front().number));
+					}
+				}
+			}
+			size_t expSize = 0;
+			Iterator!(Deque!(Deque!(FinalItem))) ht = ret.iterator(1);
+			for(; ht.isValid(); ht++) {
+				if(expSize == 0) {
+					expSize = (*ht).getSize();
+				} else {
+					assert(expSize == (*ht).getSize(), format("%u %u", expSize, 
+						(*ht).getSize()));
+				}
+
+			}
+		}
 
 		// make the reduce stuff into the table
 		this.reduceExtGrammerFollow();
@@ -452,15 +479,22 @@ class ProductionManager {
 			assert((*it).getKey() == (*it).getData().getFinalSet());
 			//Deque!(Deque!(FinalItem)) theRow = ret[(*it).getKey()];
 			Deque!(Deque!(FinalItem)) theRow = null;
-			foreach(Deque!(Deque!(FinalItem)) ot; ret) {
-				if(ot.front().front().number == (*it).getKey()) {
-					theRow = ot;
-					break;
+			int found = 0;
+			Iterator!(Deque!(Deque!(FinalItem))) ot = ret.iterator(1);
+			//foreach(Deque!(Deque!(FinalItem)) ot; ret) {
+			for(; ot.isValid(); ot++) {
+				if((*ot).front().front().number == (*it).getKey()) {
+					theRow = *ot;
+					found++;
+					continue;
 				}
 			}
+			assert(found == 1, format("found %d %d", found, (*it).getKey()));
+			assert(theRow !is null);
 
 			Map!(int, Set!(size_t)) follow = (*it).getData().getFollowMap();
 			foreach(size_t idx, Deque!(FinalItem) tt; tmp) {
+				assert(tt.getSize() == 1);
 				if(tt[0].typ == Type.Term) {
 					// get the follow set
 					MapItem!(int,Set!(size_t)) s = follow.find(tt[0].number);
@@ -471,8 +505,9 @@ class ProductionManager {
 						// entry
 						ISRIterator!(size_t) rt = s.getData().begin();
 						for(; rt.isValid(); rt++) {
-							theRow[idx+1].pushBack(FinalItem(Type.Reduce, 
+							theRow[idx].pushBack(FinalItem(Type.Reduce, 
 								conv!(size_t,int)(*rt)));
+							log("%s %u %u", this.symbolManager.getSymbolName(tt[0].number), *rt, idx+1);
 						}
 
 					}
@@ -1277,17 +1312,21 @@ class ProductionManager {
 							tStrBuf.pushBack('g');
 							//ret.pushBack(format(shiftFormat, kt.number));
 						} else if(kt.typ == Type.Accept) {
-							ret.pushBack(format(acceptFormat, "$"));
+							//ret.pushBack(format(acceptFormat, "$"));
+							tStrBuf.pushBack("$");
 						} else {
 							if(kt.number == -99 || kt.number == -98) {
-								ret.pushBack(format(inputFormat, " "));
+								//ret.pushBack(format(inputFormat, " "));
+								ret.pushBack(" ");
 							} else {
-								ret.pushBack(format(longFormat, kt.number));
+								//ret.pushBack(format(longFormat, kt.number));
+								tStrBuf.pushBack(conv!(int,string)(kt.number));
 							}
 						}
 					}
 					if(tStrBuf.getSize() > 0) {
-						ret.pushBack(format(inputFormat, tStrBuf.getString));
+						log("%s", tStrBuf.getString());
+						ret.pushBack(format(inputFormat, tStrBuf.getString()));
 					}
 				}
 				ret.pushBack("\n");
