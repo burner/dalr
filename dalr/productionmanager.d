@@ -1301,6 +1301,7 @@ class ProductionManager {
 							Type.ItemSet);
 						row.pushBack(conv!(int,string)(jt[0].number));
 					} else {
+						// for every normal entry
 						StringBuffer!(char) sTmp = new StringBuffer!(char)(16);
 						foreach(FinalItem gt; jt) {
 							if(gt.typ == Type.Accept) {
@@ -1327,7 +1328,7 @@ class ProductionManager {
 				tmp.pushBack(row);
 			}
 		}
-		debug {
+		debug { // every row must have the same size
 			assert(tmp.getSize() > 0);
 			size_t unionSize = tmp[0].getSize();
 			foreach(Deque!(string) it; tmp) {
@@ -1336,14 +1337,18 @@ class ProductionManager {
 			assert(maxLength >= "ItemSet".length, format("%u", maxLength));
 		}
 
+		// make the return string
 		StringBuffer!(char) ret = new StringBuffer!(char)(tmp.getSize() *
 			tmp[0].getSize() * maxLength);
 		string formatString = "%" ~ conv!(size_t,string)(maxLength+1) ~ "s";
 		
+		// for every row
 		foreach(Deque!(string) it; tmp) {
+			// for every item in every row
 			foreach(string jt; it) {
 				ret.pushBack(format(formatString, jt));
 			}
+			// a line done
 			ret.pushBack("\n");
 		}
 		ret.pushBack("\n");
