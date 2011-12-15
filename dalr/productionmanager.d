@@ -357,6 +357,8 @@ class ProductionManager {
 		// the first row
 		Deque!(Deque!(FinalItem)) tmp = 
 			new Deque!(Deque!(FinalItem))(this.symbolManager.getSize());
+
+		// -1 and ItemSet marks the top left corner as the ItemSet string
 		tmp.pushBack(new Deque!(FinalItem)([FinalItem(Type.ItemSet, -1)]));
 
 		this.mapExtendedFollowSetToGrammer();
@@ -520,6 +522,10 @@ class ProductionManager {
 			}
 		}
 		debug {
+			if(ret.getSize() > 1) {
+				assert(ret[0].getSize() == ret[1].getSize(),
+					format("%u %u", ret[0].getSize(), ret[1].getSize()));
+			}
 			Iterator!(Deque!(Deque!(FinalItem))) gt = ret.iterator(1);
 			for(;gt.isValid(); gt++) {
 				foreach(size_t vdx, Deque!(FinalItem) vt; *gt) {
@@ -1258,6 +1264,94 @@ class ProductionManager {
 		return ret.getString();
 	}
 
+	public string finalTransitionTableToString() {
+		Deque!(Deque!(Deque!(FinalItem))) fi = this.getFinalTable();	
+		Deque!(Deque!(string)) tmp = new Deque!(Deque!(string))(fi.getSize());
+
+		// for alignment of the table
+		size_t maxLength = 0;
+
+		// tmp row, this is later inserted into fi
+		foreach(size_t idx, Deque!(Deque!(FinalItem)) it; fi) {
+			Deque!(string) row = new Deque!(string)(32);
+			// top row, simple because the third dimension should allways be
+			// one item long
+			if(idx == 0) {
+				foreach(Deque!(FinalItem) jt; it) {
+					assert(jt.getSize() == 1, format("%u", jt.getSize()));
+					// find the corner
+					if(jt[0].typ == Type.ItemSet && jt[0].number == -1) {
+						row.pushBack("ItemSet");
+					} else if(jt[0].typ == Type.Term || 
+							jt[0].typ == Type.NonTerm) {
+						row.pushBack(this.symbolManager.
+							getSymbolName(jt[0].number));
+					} else {
+						assert(false, "You shouldn't have reached this");
+					}
+					maxLength = row.back().length > maxLength ? 
+						row.back().length : maxLength;
+				}
+				tmp.pushBack(row);
+			} else {
+				foreach(size_t jdx, Deque!(FinalItem) jt; it) {
+					assert(jt.getSize() > 0, format("%u", jt.getSize()));
+					if(jdx == 0) {
+						assert(jt.getSize() == 1 && jt[0].typ == 
+							Type.ItemSet);
+						row.pushBack(conv!(int,string)(jt[0].number));
+					} else {
+						StringBuffer!(char) sTmp = new StringBuffer!(char)(16);
+						foreach(FinalItem gt; jt) {
+							if(gt.typ == Type.Accept) {
+								sTmp.pushBack("$");
+							} else if(gt.typ == Type.Shift) {
+								sTmp.pushBack(format("s%d,", gt.number));
+							} else if(gt.typ == Type.Reduce) {
+								sTmp.pushBack(format("r%d,", gt.number));
+							} else if(gt.typ == Type.Goto) {
+								sTmp.pushBack(format("g%d,", gt.number));
+							}
+						}
+						if(sTmp.getSize() > 0) {
+							sTmp.popBack();
+							row.pushBack(sTmp.getString());
+						} else {
+							row.pushBack(" ");
+						}
+
+					}
+					maxLength = row.back().length > maxLength ? 
+						row.back().length : maxLength;
+				}
+				tmp.pushBack(row);
+			}
+		}
+		debug {
+			assert(tmp.getSize() > 0);
+			size_t unionSize = tmp[0].getSize();
+			foreach(Deque!(string) it; tmp) {
+				assert(it.getSize() == unionSize);
+			}
+			assert(maxLength >= "ItemSet".length, format("%u", maxLength));
+		}
+
+		StringBuffer!(char) ret = new StringBuffer!(char)(tmp.getSize() *
+			tmp[0].getSize() * maxLength);
+		string formatString = "%" ~ conv!(size_t,string)(maxLength+1) ~ "s";
+		
+		foreach(Deque!(string) it; tmp) {
+			foreach(string jt; it) {
+				ret.pushBack(format(formatString, jt));
+			}
+			ret.pushBack("\n");
+		}
+		ret.pushBack("\n");
+
+
+		return ret.getString();
+	}
+
 	public string transitionTableToString() {
 		Deque!(Deque!(int)) table = this.getTranslationTable();
 		StringBuffer!(char) ret = new StringBuffer!(char)(
@@ -1486,7 +1580,7 @@ class ProductionManager {
 		StringBuffer!(char) ret = new StringBuffer!(char)(pro.getSize() * 4);
 		foreach(idx, it; pro) {
 			if(idx == 1) {
-				ret.pushBack("=> ");
+				ret.pushBack("-> ");
 			}
 			ret.pushBack(it.getLeft() != -1 ? conv!(int,string)(it.getLeft())
 				: "$");
@@ -1520,7 +1614,7 @@ class ProductionManager {
 				ret.pushBack(this.symbolManager.getSymbolName(pro[idx]));
 			}
 		}
-		ret.pushBack(" => ");
+		ret.pushBack(" -> ");
 		for(size_t idx = 3; idx < pro.getSize(); idx++) {
 			if(idx % 2 == 1) {
 				if(pro[idx] == -1) 
