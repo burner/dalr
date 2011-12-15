@@ -510,14 +510,44 @@ class ProductionManager {
 						for(; rt.isValid(); rt++) {
 							theRow[idx].pushBack(FinalItem(Type.Reduce, 
 								conv!(size_t,int)(*rt)));
-							log("%s %u %u", this.symbolManager.getSymbolName(tt[0].number), *rt, idx+1);
+							/*log("%s %u %u", 
+								this.symbolManager.getSymbolName(tt[0].number)
+								, *rt, idx+1);*/
 						}
 
 					}
 				}
 			}
 		}
-
+		debug {
+			Iterator!(Deque!(Deque!(FinalItem))) gt = ret.iterator(1);
+			for(;gt.isValid(); gt++) {
+				foreach(size_t vdx, Deque!(FinalItem) vt; *gt) {
+					if(vdx == 0) {
+						assert(vt.getSize() == 1);
+						assert(vt[0].typ == Type.ItemSet);
+					} else {
+						assert(vt.getSize() > 0);
+						Type columnType = tmp[vdx-1][0].typ;
+						foreach(FinalItem wt; vt) {
+							if(columnType == Type.Term) {
+								assert(wt.typ == Type.Shift ||
+									wt.typ == Type.Reduce ||
+									wt.typ == Type.Accept ||
+									wt.typ == Type.Error,
+									format("%s %s", typeToString(columnType),
+									typeToString(wt.typ)));
+							} else if(columnType == Type.NonTerm) {
+								assert(wt.typ == Type.Goto ||
+									wt.typ == Type.Error,
+									format("%s %s", typeToString(columnType),
+									typeToString(wt.typ)));
+							}
+						}
+					}
+				}
+			}
+		}
 
 		return ret;
 	}
