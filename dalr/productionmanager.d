@@ -12,6 +12,7 @@ import hurt.algo.sorting;
 import hurt.container.deque;
 import hurt.container.isr;
 import hurt.container.map;
+import hurt.container.mapset;
 import hurt.container.set;
 import hurt.conv.conv;
 import hurt.io.stdio;
@@ -340,7 +341,8 @@ class ProductionManager {
 					this.extGrammerFollow[lt].first);
 
 				// map the rule for all follow symbols
-				ISRIterator!(int) mt = this.extGrammerFollow[lt].second.begin();
+				ISRIterator!(int) mt = this.extGrammerFollow[lt].second.
+					begin();
 				for(; mt.isValid(); mt++) {
 					tmp.insert(*mt, theRule, lt);
 				}
@@ -465,7 +467,7 @@ class ProductionManager {
 				if(expSize == 0) {
 					expSize = (*ht).getSize();
 				} else {
-					assert(expSize == (*ht).getSize(), format("%u %u", expSize, 
+					assert(expSize == (*ht).getSize(), format("%u %u", expSize,
 						(*ht).getSize()));
 				}
 
@@ -1055,7 +1057,62 @@ class ProductionManager {
 
 	public void makeExtendedFirstSet() {
 		this.constructExtendedKind();
+		//new Deque!(Deque!(ExtendedItem))(this.extGrammerComplex);
 
+		MapSet!(ExtendedItem,int) first = new MapSet!(ExtendedItem,int)();
+		bool change = true;
+		while(change) { // as long as anything changes, continue
+			change = false;
+			// cycle all productions
+			level2: foreach(size_t idx, Deque!(ExtendedItem) it; 
+					this.extGrammerComplex) {
+				if(it.getSize() == 1) { // epsilon prod
+					change = first.insert(it[0], -2) ? true : change;
+					// terminal
+				} else if(!this.extGrammerKind.find(it[1]).getData()) { 
+					change = first.insert(it[0], it[1].getItem()) ? true : 
+						change;
+				} else { // rule 3
+					Iterator!(ExtendedItem) jt = it.iterator(1);
+					for(; jt.isValid(); jt++) {
+						// if the nonterm only contains epsilon move to the
+						// next term or nonterm
+						if(*jt == it[0]) { 
+							// well first(A) to first(A) makes no sense
+							continue level2;
+						} else if(first.containsOnly(*jt, -2)) {
+							continue;
+						} else if(!this.extGrammerKind.find(*jt).getData()) {
+							// found a term in the production
+							change = first.insert(it[0], (*jt).getItem()) ? 
+								true : change;
+							continue level2;
+						} else if(!this.extGrammerKind.find(*jt).getData()) {
+						//} else if(this.symbolManager.getKind(*jt)) {
+							// found a nonterm that doesn't contain only
+							// epsilon, so wie copy the first set
+							ISRIterator!(int) kt = first.iterator(*jt);
+							if(kt is null) {
+								continue level2;
+							}
+							for(; kt.isValid(); kt++) {
+								if(*kt != -2) { // don't add epsilon
+									change = first.insert(it[0], *kt) ? true :
+										change;
+								}
+							}
+							continue level2;
+						} else {
+							continue level2;
+						}
+					}
+					change = first.insert(it[0], -2) ? true : change;
+				}
+			}
+		}
+		this.firstExtended = first.getMap();
+
+		/*
 		Map!(ExtendedItem,Set!(int)) first = new Map!(ExtendedItem,Set!(int));
 		Deque!(Deque!(ExtendedItem)) allProd = 
 			new Deque!(Deque!(ExtendedItem))(this.extGrammerComplex);
@@ -1100,6 +1157,7 @@ class ProductionManager {
 			}
 		}
 		this.firstExtended = first;
+		*/
 	}
 
 
@@ -1109,12 +1167,62 @@ class ProductionManager {
 	 */
 
 	public void makeNormalFirstSet() {
-		Map!(int,Set!(int)) first = new Map!(int,Set!(int));
-		Deque!(Deque!(int)) allProd = new Deque!(Deque!(int))(this.prod);
+		MapSet!(int,int) first = new MapSet!(int,int)();
+		bool change = true;
+		while(change) { // as long as anything changes, continue
+			change = false;
+			// cycle all productions
+			level2: foreach(size_t idx, Deque!(int) it; prod) {
+				if(it.getSize() == 1) { // epsilon prod
+					change = first.insert(it[0], -2) ? true : change;
+				} else if(!this.symbolManager.getKind(it[1])) { // terminal
+					change = first.insert(it[0], it[1]) ? true : change;
+				} else { // rule 3
+					Iterator!(int) jt = it.iterator(1);
+					for(; jt.isValid(); jt++) {
+						// if the nonterm only contains epsilon move to the
+						// next term or nonterm
+						if(*jt == it[0]) { 
+							// well first(A) to first(A) makes no sense
+							continue level2;
+						} else if(first.containsOnly(*jt, -2)) {
+							continue;
+						} else if(!this.symbolManager.getKind(*jt)) {
+							// found a term in the production
+							change = first.insert(it[0], *jt) ? true : change;
+							continue level2;
+						} else if(this.symbolManager.getKind(*jt)) {
+							// found a nonterm that doesn't contain only
+							// epsilon, so wie copy the first set
+							ISRIterator!(int) kt = first.iterator(*jt);
+							if(kt is null) {
+								continue level2;
+							}
+							for(; kt.isValid(); kt++) {
+								if(*kt != -2) { // don't add epsilon
+									change = first.insert(it[0], *kt) ? true :
+										change;
+								}
+							}
+							continue level2;
+						} else {
+							continue level2;
+						}
+					}
+					change = first.insert(it[0], -2) ? true : change;
+				}
+			}
+		}
+		this.firstNormal = first.getMap();
 
+
+		/*
+		Deque!(Deque!(int)) allProd = new Deque!(Deque!(int))(this.prod);
+		Map!(int,Set!(int)) first = new Map!(int,Set!(int));
 		// rule 2
 		outer: while(!allProd.isEmpty()) {
 			Deque!(int) it = allProd.popFront();
+			log("%s", this.productionToString(it));
 			if(it.getSize() == 1) { // epsilon prod
 				// -2 is epsilon
 				ProductionManager.insertIntoFirstNormal(first, it[0], -2);
@@ -1148,6 +1256,7 @@ class ProductionManager {
 			}
 		}
 		this.firstNormal = first;
+		*/
 	}
 
 
@@ -1177,7 +1286,9 @@ class ProductionManager {
 				tmp.pushBack(this.symbolManager.getSymbolName(*jt));	
 				tmp.pushBack(' ');
 			}
-			tmp.popBack();
+			if(tmp.getSize() > 1) {
+				tmp.popBack();
+			}
 			tmp.pushBack("}");
 			ruleFollow.pushBack(tmp.getString());
 
@@ -1497,6 +1608,17 @@ class ProductionManager {
 		return sb.getString();
 	}
 
+	public string normalProductionToString() {
+		StringBuffer!(char) sb = new StringBuffer!(char)(
+			this.prod.getSize() * 10);
+		foreach(size_t idx, Deque!(int) pro; this.prod) {
+			sb.pushBack(conv!(size_t,string)(idx));
+			sb.pushBack(": ");
+			sb.pushBack(this.productionToString(pro));
+		}
+		return sb.getString();
+	}
+
 	public string productionToString(Deque!(int) pro) {
 		assert(pro.getSize() > 0);
 		StringBuffer!(char) sb = new StringBuffer!(char)(pro.getSize() * 4);
@@ -1716,4 +1838,22 @@ unittest {
 	mi = map.find(sm.getSymbolId("C"));
 	assert(mi !is null);
 	assert(mi.getData().contains(sm.getSymbolId("a")));
+	sm = new SymbolManager();
+	gp = new GrammerParser(sm);
+	pm = new ProductionManager(sm);
+	pm.insertProduction(gp.processProduction("S := A B C"));
+	pm.insertProduction(gp.processProduction("A :="));
+	pm.insertProduction(gp.processProduction("B :="));
+	pm.insertProduction(gp.processProduction("C :="));
+	pm.makeLRZeroItemSets();
+	pm.makeExtendedGrammer();
+	//print(pm.extendedGrammerToString());
+	pm.makeNormalFirstSet();
+	map = null;
+	map = pm.getFirstNormal();
+	mi = null;
+	mi = map.find(sm.getSymbolId("S"));
+	assert(mi !is null);
+	//assert(mi.getData().contains(sm.getSymbolId("a")));
+	assert(mi.getData().contains(-2));
 }
