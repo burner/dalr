@@ -1275,7 +1275,8 @@ class ProductionManager {
 				this.extGrammerFollow) {
 
 			// the extended rule to string
-			ruleString.pushBack(this.extendedGrammerItemRuleToString(it.first));
+			ruleString.pushBack(this.extendedGrammerItemRuleToString(
+				it.first));
 
 			// for each follow symbol create string
 			tmp.clear();
