@@ -14,17 +14,17 @@ void main() {
 	SymbolManager sm = new SymbolManager();
 	GrammerParser gp = new GrammerParser(sm);
 	ProductionManager pm = new ProductionManager(sm);
-	pm.insertProduction(gp.processProduction("S := N"));
-	pm.insertProduction(gp.processProduction("N := V = E"));
-	pm.insertProduction(gp.processProduction("N := E"));
-	pm.insertProduction(gp.processProduction("E := V"));
-	pm.insertProduction(gp.processProduction("V := x"));
-	pm.insertProduction(gp.processProduction("V := * E"));
-	//pm.insertProduction(gp.processProduction("S := A"));
-	//pm.insertProduction(gp.processProduction("A := if B then A"));
-	//pm.insertProduction(gp.processProduction("A := if B then A else A"));
-	//pm.insertProduction(gp.processProduction("A := a"));
-	//pm.insertProduction(gp.processProduction("B := bool"));
+	//pm.insertProduction(gp.processProduction("S := N"));
+	//pm.insertProduction(gp.processProduction("N := V = E"));
+	//pm.insertProduction(gp.processProduction("N := E"));
+	//pm.insertProduction(gp.processProduction("E := V"));
+	//pm.insertProduction(gp.processProduction("V := x"));
+	//pm.insertProduction(gp.processProduction("V := * E"));
+	pm.insertProduction(gp.processProduction("S := A"));
+	pm.insertProduction(gp.processProduction("A := if B then A"));
+	pm.insertProduction(gp.processProduction("A := if B then A else A"));
+	pm.insertProduction(gp.processProduction("A := a"));
+	pm.insertProduction(gp.processProduction("B := bool"));
 
 	pm.makeLRZeroItemSets();
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
