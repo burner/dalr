@@ -21,7 +21,7 @@ fine: $(OBJS)
 	dmd $(OBJS) $(CFLAGS) buildinfo.d ../libhurt/libhurt.a -gc -ofDalr
 
 dalr.main.o: dalr/main.d dalr/productionmanager.d dalr/dotfilewriter.d \
-dalr/symbolmanager.d dalr/grammerparser.d Makefile
+dalr/symbolmanager.d dalr/grammerparser.d dalr/tostring.d Makefile
 	dmd $(CFLAGS) -c dalr/main.d -ofdalr.main.o
 
 dalr.productionmanager.o: dalr/productionmanager.d dalr/item.d dalr/itemset.d \
