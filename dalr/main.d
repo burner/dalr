@@ -5,6 +5,7 @@ import dalr.grammerparser;
 import dalr.productionmanager;
 import dalr.symbolmanager;
 import dalr.finalitem;
+import dalr.tostring;
 
 import hurt.container.deque;
 import hurt.io.stdio;

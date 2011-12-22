@@ -82,7 +82,7 @@ class ProductionManager {
 			[new dalr.item.Item(0, 1)]));
 	}
 
-	private Deque!(int) getProduction(const size_t idx) {
+	public Deque!(int) getProduction(const size_t idx) {
 		if(idx >= this.prod.getSize()) {
 			throw new Exception(format("index %d out of this.prod bound(%d)",
 				idx, this.prod.getSize()));
@@ -1159,6 +1159,48 @@ class ProductionManager {
 		this.firstExtended = first;
 		*/
 	}
+
+	/************************************************************************* 
+	 *  Getter for to string
+	 *
+	 */
+
+	Deque!(Deque!(int))	getExtGrammer() {
+		return this.extGrammer;
+	}
+
+	Deque!(Pair!(Deque!(ExtendedItem),Set!(int))) getExtGrammerFollow() {
+		return this.extGrammerFollow;
+	}
+
+	Deque!(Deque!(int)) getProd() {
+		return this.prod;
+	}
+
+	Map!(size_t, MergedReduction) getMergedExtended() {
+		return this.mergedExtended;
+	}
+
+	Map!(ExtendedItem,Set!(int)) getFirstExtended() {
+		return this.firstExtended;
+	}
+
+	Map!(ExtendedItem,Set!(int)) getFollowExtended() {
+		return this.followExtended;
+	}
+
+	Map!(int,Set!(int)) getFollowNormal() {
+		return this.followNormal;
+	}
+
+	Set!(ItemSet) getItemSet() {
+		return this.itemSets;
+	}
+
+	Deque!(Deque!(ExtendedItem)) getExtGrammerComplex() {
+		return this.extGrammerComplex;
+	}
+
 
 
 	/************************************************************************* 

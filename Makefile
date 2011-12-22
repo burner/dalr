@@ -7,7 +7,7 @@ CFLAGS=-m64 -unittest -debug -gc -I../libhurt/ -wi
 
 OBJS=dalr.main.o dalr.productionmanager.o dalr.item.o dalr.itemset.o \
 dalr.symbolmanager.o dalr.grammerparser.o dalr.dotfilewriter.o \
-dalr.extendeditem.o dalr.finalitem.o dalr.mergedreduction.o
+dalr.extendeditem.o dalr.finalitem.o dalr.mergedreduction.o dalr.tostring.o
 
 count:
 	wc -l `find dalr -name \*.d`
@@ -31,6 +31,9 @@ dalr/mergedreduction.d Makefile
 
 dalr.item.o: dalr/item.d Makefile
 	dmd $(CFLAGS) -c dalr/item.d -ofdalr.item.o
+
+dalr.tostring.o: dalr/tostring.d dalr/productionmanager.d Makefile
+	dmd $(CFLAGS) -c dalr/tostring.d -ofdalr.tostring.o
 
 dalr.finalitem.o: dalr/finalitem.d Makefile
 	dmd $(CFLAGS) -c dalr/finalitem.d -ofdalr.finalitem.o
