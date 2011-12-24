@@ -40,7 +40,7 @@ dalr.finalitem.o: dalr/finalitem.d Makefile
 	dmd $(CFLAGS) -c dalr/finalitem.d -ofdalr.finalitem.o
 
 dalr.filereader.o: dalr/filereader.d dalr/grammerparser.d \
-dalr/productionmanager.d Makefile
+dalr/productionmanager.d dalr/symbolmanager.d Makefile
 	dmd $(CFLAGS) -c dalr/filereader.d -ofdalr.filereader.o
 
 dalr.extendeditem.o: dalr/extendeditem.d Makefile
