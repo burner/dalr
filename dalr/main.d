@@ -6,6 +6,7 @@ import dalr.productionmanager;
 import dalr.symbolmanager;
 import dalr.finalitem;
 import dalr.tostring;
+import dalr.filereader;
 
 import hurt.container.deque;
 import hurt.io.stdio;
@@ -15,13 +16,18 @@ void main() {
 	SymbolManager sm = new SymbolManager();
 	GrammerParser gp = new GrammerParser(sm);
 	ProductionManager pm = new ProductionManager(sm);
+	FileReader fr = new FileReader("examplegrammer.dlr");
+	fr.parse();
+	println(fr.userCodeToString());
+	println(fr.productionToString());
+	
 	//pm.insertProduction(gp.processProduction("S := N"));
 	//pm.insertProduction(gp.processProduction("N := V = E"));
 	//pm.insertProduction(gp.processProduction("N := E"));
 	//pm.insertProduction(gp.processProduction("E := V"));
 	//pm.insertProduction(gp.processProduction("V := x"));
 	//pm.insertProduction(gp.processProduction("V := * E"));
-	pm.insertProduction(gp.processProduction("S := A"));
+	/*pm.insertProduction(gp.processProduction("S := A"));
 	pm.insertProduction(gp.processProduction("A := if B then A"));
 	pm.insertProduction(gp.processProduction("A := if B then A else A"));
 	pm.insertProduction(gp.processProduction("A := a"));
@@ -59,4 +65,5 @@ void main() {
 	println(extFollowRulesToString(pm, sm));
 	println(normalProductionToString(pm, sm));
 	println(finalTransitionTableToString(pm, sm));
+	*/
 }
