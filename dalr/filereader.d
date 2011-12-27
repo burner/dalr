@@ -108,6 +108,7 @@ class FileReader {
 
 	public void parse() {
 		while(!this.isEof()) {
+			log();
 			string cur = this.getNextLine();
 			// is the line a comment
 			size_t comment = findArr!(char)(cur, "//");
@@ -117,6 +118,7 @@ class FileReader {
 				this.parseUserCode(cur);
 			}
 			size_t prodStart = findArr!(char)(cur, ":=");
+			log("%d %d %d", prodStart, comment, cur.length);
 			if(prodStart < cur.length && prodStart < comment) {
 				this.parseProduction(cur);
 			}
@@ -124,7 +126,6 @@ class FileReader {
 	}
 
 	private void parseProduction(string cur) {
-		StringBuffer!(char) tmp = new StringBuffer!(char)();
 		size_t colom = findArr!(char)(cur, ":=");
 		assert(colom < cur.length, 
 			format("should have found a colom %d %d %s", colom, cur.length,
@@ -133,9 +134,98 @@ class FileReader {
 		size_t prodCodeStart = findArr!(char)(cur, "{:", colom+2);
 		size_t prodCodeEnd = findArr!(char)(cur, ":}", colom+2);
 		if(prodCodeStart < cur.length && prodCodeEnd < cur.length) {
+			log();
 			this.productions.pushBack(new Production(start, 
 				cur[colom+2 .. prodCodeStart], 
 				cur[prodCodeStart+2 .. prodCodeEnd]));
+			return;
+		} else if(prodCodeStart < cur.length && prodCodeEnd == cur.length) {
+			log();
+			// production is done and the prod code starts
+			this.productions.pushBack(new Production(start, 
+				cur[colom+2 .. prodCodeStart]));
+			// need to save everything till we find a :}
+			this.parseProductionAction(cur);
+			return;
+		} else {
+			log();
+			this.productions.pushBack(new Production(start, 
+				cur[0 .. colom]));
+			StringBuffer!(char) tmp = new StringBuffer!(char)();
+			tmp.pushBack(cur[colom+2 .. $]);
+			tmp.pushBack('\n');
+			cur = this.getNextLine();
+			size_t pipe = find!(char)(cur, '|');
+			prodCodeStart = findArr!(char)(cur, "{:", colom+2);
+			colom = findArr!(char)(cur, ":=", colom+2);
+			log("%s %d %d %d %d", cur, pipe, prodCodeStart, colom, cur.length);
+			while(pipe == cur.length && prodCodeStart == cur.length
+					&& colom == cur.length) {
+				log("%s", cur);
+				tmp.pushBack(cur);
+				tmp.pushBack('\n');
+				if(!this.isEof()) {
+					cur = this.getNextLine();
+				} else {
+					break;
+				}
+				pipe = find!(char)(cur, '|');
+				prodCodeStart = findArr!(char)(cur, "{:", colom+2);
+				colom = findArr!(char)(cur, ":=", colom+2);
+			}
+			
+			
+			// a pipe ends the current production
+			if(pipe < cur.length) {
+				tmp.pushBack(cur[0 .. pipe]);	
+				tmp.pushBack('\n');
+				this.productions.back().setProdString(tmp.getString());
+				this.stashString(cur[pipe .. $]);
+				return;
+			} else if(prodCodeStart < cur.length) {
+				tmp.pushBack(cur[0 .. prodCodeStart]);	
+				tmp.pushBack('\n');
+				this.productions.back().setProdString(tmp.getString());
+				this.parseProductionAction(cur);
+				return;
+			} else if(colom < cur.length) {
+				this.productions.back().setProdString(tmp.getString());
+				this.stashString(cur);
+				return;
+			}
+		}
+	}
+
+	private void parseProductionAction(string cur) {
+		size_t actionStart = findArr!(char)(cur, "{:");	
+		size_t actionEnd = findArr!(char)(cur, ":}");	
+		// the action spans only one line
+		if(actionStart < cur.length && actionEnd < cur.length) {
+			this.productions.back().setAction(cur[actionStart+2 .. actionEnd]);
+			return;
+		// the action spans for more than one line
+		} else if(actionStart < cur.length && actionEnd == cur.length) {
+			StringBuffer!(char) tmp = new StringBuffer!(char)(128);
+			// save the line
+			tmp.pushBack(cur[actionStart+2 .. $]);
+			tmp.pushBack('\n');
+			// check if there is a end of action in the new line
+			cur = this.getNextLine();
+			actionEnd = findArr!(char)(cur, ":}");
+			// if not, loop till we find a end of action
+			while(actionEnd == cur.length) {
+				tmp.pushBack(cur);
+				tmp.pushBack('\n');
+				cur = this.getNextLine();
+				actionEnd = findArr!(char)(cur, ":}");
+			}
+			// save the rest
+			tmp.pushBack(cur[0 .. actionEnd]);	
+			tmp.pushBack('\n');
+			this.stashString(cur[actionEnd+2 .. $]);
+			log("%s", tmp.getString());
+			this.productions.back().setAction(tmp.getString());
+			return;
 		}
 	}
 
