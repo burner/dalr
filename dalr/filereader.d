@@ -8,17 +8,11 @@ import hurt.conv.conv;
 import hurt.io.stream;
 import hurt.io.file;
 import hurt.string.stringbuffer;
+import hurt.string.formatter;
 import hurt.string.stringutil;
 import hurt.util.pair;
 import hurt.util.array;
 import hurt.util.slog;
-
-private enum ParseState {
-	None,
-	UserCode,
-	Production,
-	ProductionCode
-}
 
 class Production {
 	string startSymbol;
@@ -32,6 +26,11 @@ class Production {
 	this(string startSymbol, string prodString) {
 		this(startSymbol);
 		this.prodString = prodString;
+	}
+
+	this(string startSymbol, string prodString, string action) {
+		this(startSymbol, prodString);
+		this.action = action;
 	}
 
 	void setProdString(string inProdString) {
@@ -48,6 +47,7 @@ class FileReader {
 	private string filename;
 	private Deque!(string) userCode;
 	private Deque!(Production) productions;
+	private Deque!(string) stash;
 	
 	// input file
 	private InputStream inFile;
@@ -84,177 +84,94 @@ class FileReader {
 		this.inFile = new File(filename);
 		this.userCode = new Deque!(string)();
 		this.productions = new Deque!(Production)();
+		this.stash = new Deque!(string)();
+	}
+
+	public string getNextLine() {
+		if(this.inFile.eof()) {
+			throw new Exception("No more lines present");
+		} else if(!this.stash.isEmpty()) {
+			return this.stash.popBack();	
+		} else {
+			return this.inFile.readLine().idup;
+		}
+	}
+
+	public bool isEof() {
+		return this.inFile.eof();
+	}
+
+	public void stashString(string str) {
+		assert(this.stash.getSize() < 1);
+		this.stash.pushBack(str);
 	}
 
 	public void parse() {
-		StringBuffer!(char) tmp = new StringBuffer!(char)(128);
-		ParseState ps = ParseState.None;			
-		foreach(size_t idx, char[] it; this.inFile) {
-			final switch(ps) {
-				case ParseState.None:
-					int userCodeIdxLeft = userCodeParanthesis(it);
-					log("%d", userCodeIdxLeft);
-					// found a userCode start
-					if(userCodeIdxLeft != -1) {
-						int userCodeIdxRight = userCodeParanthesis(it, 
-							userCodeIdxLeft+2);
-						// does the userCode end in this line
-						log("%d", userCodeIdxRight);
-						if(userCodeIdxRight != -1) {
-							this.userCode.pushBack(it[userCodeIdxLeft+2 ..
-								userCodeIdxRight].idup);
-						} else {
-							tmp.pushBack(it[userCodeIdxLeft+2..$]);
-							tmp.pushBack('\n');
-							ps = ParseState.UserCode;
-						}
-						break;
-					}
-					// find the start of an production
-					size_t colom = findArr!(char)(it, ":=");
-					// check if the colom appears after the start of a comment
-					size_t comment = findArr!(char)(it, "//");
-					log("colom %d comment %d %d", colom, comment, it.length);
-					if(colom < it.length && colom < comment) {
-						string[] startSym = split!(char)(it[0..colom].idup,
-							' ');
-						assert(startSym.length == 1, 
-							"Start of a production must be unique");
-
-						// check if the code for the production starts on the
-						// same line
-						size_t productionCodeIdx = findArr!(char)(it, "{:", 
-							colom+2);
-
-						if(productionCodeIdx < it.length) {
-							this.productions.pushBack(
-								new Production(startSym[0], 
-								it[colom+2 .. productionCodeIdx].idup));
-
-							// does the production code end on the same line
-							size_t productionCodeIdxEnd = findArr!(char)(it,
-								":}", productionCodeIdx+2);
-
-							if(productionCodeIdxEnd < it.length) {
-								this.productions.back().setAction(it[
-									productionCodeIdx+2 .. 
-									productionCodeIdxEnd].idup);
-								ps = ParseState.None;
-							} else {
-								ps = ParseState.ProductionCode;
-							}
-						} else {
-							// well, we didn't find the start of the user code
-							// so the production might be longer than one line
-							tmp.pushBack(it[colom+2 .. productionCodeIdx]);
-							this.productions.pushBack(new Production(
-								startSym[0]));
-							ps = ParseState.Production;
-						}
-					}
-					break;
-				case ParseState.UserCode: {
-					// check if the userCode block ends
-					int userCodeIdx = userCodeParanthesis(it);
-					log("%d", userCodeIdx);
-					if(userCodeIdx < it.length) {
-						// push the rest to the strinbuffer
-						tmp.pushBack(it[0 .. userCodeIdx]);
-						tmp.pushBack("\n");
-						// save the string as usercode
-						userCode.pushBack(tmp.getString());
-
-						//clean up
-						tmp.clear();
-						ps = ParseState.None;
-					} else {
-						tmp.pushBack(it);
-						tmp.pushBack('\n');
-					}
-					break;
-				}
-				case ParseState.Production:
-					size_t nextProd = find!(char)(it, '|');
-					size_t productionCodeIdxEnd = findArr!(char)(it, "{:");
-					size_t newProd = findArr!(char)(it, ":=");
-					log("nextProd %d productionCodeIdxEnd %d it.length %d",
-						nextProd, productionCodeIdxEnd, it.length);
-					if(newProd < it.length) {
-						this.productions.back().setProdString(tmp.getString());
-						tmp.clear();
-						goto case ParseState.None;
-					} else if(nextProd < it.length || 
-							productionCodeIdxEnd < it.length) {
-						// found a | so a new production starts
-						if(nextProd < it.length) { 
-							this.productions.back().setProdString(
-								tmp.getString());
-							tmp.clear();
-							this.productions.pushBack(new Production(
-								this.productions.back().startSymbol));
-							// the new productions ends on the same line
-							if(productionCodeIdxEnd < it.length) {
-								this.productions.back().setProdString(
-									it[nextProd+1 .. productionCodeIdxEnd].
-									idup);
-								size_t prodCodeEnd = findArr!(char)(it, ":}");
-								// the prod code ends on the same line
-								if(prodCodeEnd < it.length) {
-									this.productions.back().setAction(
-										it[prodCodeEnd+2 .. prodCodeEnd].idup);
-								}
-							} else { // or the productions goes for more lines
-								tmp.pushBack(it[nextProd+1 .. $]);
-								ps = ParseState.Production;
-							}
-						// a production is done and a prod code starts
-						} else if(productionCodeIdxEnd < it.length) {
-							tmp.pushBack(it[0 .. productionCodeIdxEnd]);
-							log("%s", tmp.getString);
-							this.productions.back().setProdString(
-								tmp.getString());
-							assert(this.productions.back().prodString !is null);
-							// clear the stringbuffer and save the rest of the
-							// production
-							tmp.clear();
-							size_t proCodeEnd = findArr!(char)(it, ":}");
-							if(proCodeEnd < it.length) {
-								this.productions.back().setProdString(
-									tmp.getString());
-								this.productions.back().setAction(	
-									it[productionCodeIdxEnd+2 .. proCodeEnd].
-									idup);
-								tmp.clear();
-							} else {
-								tmp.pushBack(it[productionCodeIdxEnd+2 .. $]);
-							}
-							
-
-						}
-					} else { // the production is not done
-						tmp.pushBack(it);
-					}
-					break;
-				case ParseState.ProductionCode:
-					size_t productionCodeIdxEnd = findArr!(char)(it,
-						":}");
-					if(productionCodeIdxEnd < it.length) {
-						tmp.pushBack(it[0 .. productionCodeIdxEnd]);
-						this.productions.back().setAction(tmp.getString());
-						ps = ParseState.None;
-					} else {
-						tmp.pushBack(it);
-					}
-					break;
+		while(!this.isEof()) {
+			string cur = this.getNextLine();
+			// is the line a comment
+			size_t comment = findArr!(char)(cur, "//");
+			// check for usercode
+			int userCodeIdx = userCodeParanthesis(cur);
+			if(userCodeIdx != -1 && userCodeIdx < comment) {
+				this.parseUserCode(cur);
 			}
-		}
-		if(ps == ParseState.Production) {
-			this.productions.back().setProdString(tmp.getString);	
+			size_t prodStart = findArr!(char)(cur, ":=");
+			if(prodStart < cur.length && prodStart < comment) {
+				this.parseProduction(cur);
+			}
 		}
 	}
 
+	private void parseProduction(string cur) {
+		StringBuffer!(char) tmp = new StringBuffer!(char)();
+		size_t colom = findArr!(char)(cur, ":=");
+		assert(colom < cur.length, 
+			format("should have found a colom %d %d %s", colom, cur.length,
+			cur));
+		string start = cur[0 .. colom];
+		size_t prodCodeStart = findArr!(char)(cur, "{:", colom+2);
+		size_t prodCodeEnd = findArr!(char)(cur, ":}", colom+2);
+		if(prodCodeStart < cur.length && prodCodeEnd < cur.length) {
+			this.productions.pushBack(new Production(start, 
+				cur[colom+2 .. prodCodeStart], 
+				cur[prodCodeStart+2 .. prodCodeEnd]));
+		}
+	}
+
+	private void parseUserCode(string cur) {
+		StringBuffer!(char) tmp = new StringBuffer!(char)();
+		// this should allways work
+		int userCodeIdxStart = userCodeParanthesis(cur);
+		int userCodeIdxEnd = userCodeParanthesis(cur, userCodeIdxStart+2);
+		// if we found the end in the same line
+		if(userCodeIdxStart != -1 && userCodeIdxEnd != -1) {
+			this.userCode.pushBack(cur[userCodeIdxStart+2 .. userCodeIdxEnd]);	
+			this.stashString(cur[userCodeIdxEnd+2 .. $]);
+			return;
+		// while we didn't found anything save it
+		} else if(userCodeIdxStart != -1 && userCodeIdxEnd == -1) {
+			tmp.pushBack(cur[userCodeIdxStart+2 .. $]);	
+			tmp.pushBack('\n');
+			cur = this.getNextLine();
+			userCodeIdxEnd = userCodeParanthesis(cur);
+			while(userCodeIdxEnd == -1) {
+				tmp.pushBack(cur);
+				tmp.pushBack('\n');
+				cur = this.getNextLine();
+				userCodeIdxEnd = userCodeParanthesis(cur);
+			}
+			tmp.pushBack(cur[0 .. userCodeIdxEnd]);	
+			tmp.pushBack('\n');
+			this.stashString(cur[userCodeIdxEnd+2 .. $]);
+			this.userCode.pushBack(tmp.getString());
+			return;
+		} 
+		assert(false, "this should not be reached");
+	}
+
 	// a %% in a string
-	private static int userCodeParanthesis(in char[] str, int start = 0) {
+	private static int userCodeParanthesis(in string str, int start = 0) {
 		int ret = -1;
 		if(start < 0) {
 			return ret;

@@ -44,6 +44,7 @@ void main() {
 	pm.makeNormalFollowSet();
 	println(normalFollowSetToString(pm, sm));
 	println(extendedGrammerItemsToString(pm, sm));
+	log();
 	pm.makeExtendedFollowSet();
 	println(extendedFollowSetToString(pm, sm));
 
