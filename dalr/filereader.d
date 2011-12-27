@@ -354,10 +354,11 @@ class FileReader {
 		StringBuffer!(char) ret = new StringBuffer!(char)(128);
 		foreach(Production it; this.productions) {
 			ret.pushBack('"');
-			ret.pushBack(it.startSymbol);
+			ret.pushBack(trim(it.startSymbol));
 			ret.pushBack('"');
 			ret.pushBack(" := ");
-			ret.pushBack(it.prodString);
+			ret.pushBack(trim(it.prodString));
+			ret.pushBack('\n');
 			ret.pushBack(" {: ");
 			ret.pushBack(it.action is null ? "" : it.action);
 			ret.pushBack(" :}");
