@@ -108,7 +108,6 @@ class FileReader {
 
 	public void parse() {
 		while(!this.isEof()) {
-			log();
 			string cur = this.getNextLine();
 			// is the line a comment
 			size_t comment = findArr!(char)(cur, "//");
@@ -116,52 +115,82 @@ class FileReader {
 			int userCodeIdx = userCodeParanthesis(cur);
 			if(userCodeIdx != -1 && userCodeIdx < comment) {
 				this.parseUserCode(cur);
+				continue;
 			}
 			size_t prodStart = findArr!(char)(cur, ":=");
-			log("%d %d %d", prodStart, comment, cur.length);
 			if(prodStart < cur.length && prodStart < comment) {
 				this.parseProduction(cur);
+				continue;
+			}
+			size_t pipe = find!(char)(cur, '|');
+			if(pipe < cur.length) {
+				this.parseProduction(cur, true);
 			}
 		}
 	}
 
-	private void parseProduction(string cur) {
-		size_t colom = findArr!(char)(cur, ":=");
-		assert(colom < cur.length, 
-			format("should have found a colom %d %d %s", colom, cur.length,
-			cur));
-		string start = cur[0 .. colom];
+	private void parseProduction(string cur, bool startOld = false) {
+		string start;
+		size_t colom;
+		if(startOld) {
+			colom = find!(char)(cur, '|');
+			start = cur[0 .. colom];
+		} else {
+			colom = findArr!(char)(cur, ":=");
+			start = cur[0 .. colom];
+			assert(colom < cur.length, 
+				format("should have found a colom %d %d %s", colom, cur.length,
+				cur));
+		}
+		
 		size_t prodCodeStart = findArr!(char)(cur, "{:", colom+2);
 		size_t prodCodeEnd = findArr!(char)(cur, ":}", colom+2);
 		if(prodCodeStart < cur.length && prodCodeEnd < cur.length) {
-			log();
-			this.productions.pushBack(new Production(start, 
-				cur[colom+2 .. prodCodeStart], 
-				cur[prodCodeStart+2 .. prodCodeEnd]));
+			if(startOld) {
+				this.productions.pushBack(new Production(
+					this.productions.back().startSymbol, 
+					cur[colom+2 .. prodCodeStart], 
+					cur[prodCodeStart+2 .. prodCodeEnd]));
+			} else {
+				this.productions.pushBack(new Production(start, 
+					cur[colom+2 .. prodCodeStart], 
+					cur[prodCodeStart+2 .. prodCodeEnd]));
+			}
 			return;
 		} else if(prodCodeStart < cur.length && prodCodeEnd == cur.length) {
-			log();
 			// production is done and the prod code starts
-			this.productions.pushBack(new Production(start, 
-				cur[colom+2 .. prodCodeStart]));
-			// need to save everything till we find a :}
+			if(startOld) {
+				this.productions.pushBack(new Production(
+					this.productions.back().startSymbol, 
+					cur[colom+2 .. prodCodeStart]));
+			} else {
+				this.productions.pushBack(new Production(start, 
+					cur[colom+2 .. prodCodeStart]));
+				// need to save everything till we find a :}
+			}
 			this.parseProductionAction(cur);
 			return;
 		} else {
-			log();
-			this.productions.pushBack(new Production(start, 
-				cur[0 .. colom]));
+			if(startOld) {
+				this.productions.pushBack(new Production(
+					this.productions.back().startSymbol));
+			} else {
+				this.productions.pushBack(new Production(start, 
+					start));
+			}
 			StringBuffer!(char) tmp = new StringBuffer!(char)();
 			tmp.pushBack(cur[colom+2 .. $]);
 			tmp.pushBack('\n');
+			//log("%s", cur);
 			cur = this.getNextLine();
+			//log("%s", cur);
 			size_t pipe = find!(char)(cur, '|');
-			prodCodeStart = findArr!(char)(cur, "{:", colom+2);
-			colom = findArr!(char)(cur, ":=", colom+2);
-			log("%s %d %d %d %d", cur, pipe, prodCodeStart, colom, cur.length);
+			prodCodeStart = findArr!(char)(cur, "{:");
+			colom = findArr!(char)(cur, ":=");
+			//log("%s %d %d %d %d", cur, cur.length, pipe, prodCodeStart, 
+			//	colom);
 			while(pipe == cur.length && prodCodeStart == cur.length
 					&& colom == cur.length) {
-				log("%s", cur);
 				tmp.pushBack(cur);
 				tmp.pushBack('\n');
 				if(!this.isEof()) {
@@ -170,8 +199,10 @@ class FileReader {
 					break;
 				}
 				pipe = find!(char)(cur, '|');
-				prodCodeStart = findArr!(char)(cur, "{:", colom+2);
-				colom = findArr!(char)(cur, ":=", colom+2);
+				prodCodeStart = findArr!(char)(cur, "{:");
+				colom = findArr!(char)(cur, ":=");
+				//log("%s %d %d %d %d", cur, cur.length, pipe, prodCodeStart, 
+				//	colom);
 			}
 			
 			
@@ -182,15 +213,16 @@ class FileReader {
 				this.productions.back().setProdString(tmp.getString());
 				this.stashString(cur[pipe .. $]);
 				return;
+			} else if(colom < cur.length) {
+				this.productions.back().setProdString(tmp.getString());
+				//log("%s", tmp.getString());
+				this.stashString(cur);
+				return;
 			} else if(prodCodeStart < cur.length) {
 				tmp.pushBack(cur[0 .. prodCodeStart]);	
 				tmp.pushBack('\n');
 				this.productions.back().setProdString(tmp.getString());
-				this.parseProductionAction(cur);
-				return;
-			} else if(colom < cur.length) {
-				this.productions.back().setProdString(tmp.getString());
-				this.stashString(cur);
+				this.parseProductionAction(cur[prodCodeStart .. $]);
 				return;
 			}
 		}
@@ -223,7 +255,6 @@ class FileReader {
 			tmp.pushBack(cur[0 .. actionEnd]);	
 			tmp.pushBack('\n');
 			this.stashString(cur[actionEnd+2 .. $]);
-			log("%s", tmp.getString());
 			this.productions.back().setAction(tmp.getString());
 			return;
 		}
@@ -324,11 +355,13 @@ class FileReader {
 		foreach(Production it; this.productions) {
 			ret.pushBack('"');
 			ret.pushBack(it.startSymbol);
+			ret.pushBack('"');
 			ret.pushBack(" := ");
 			ret.pushBack(it.prodString);
 			ret.pushBack(" {: ");
 			ret.pushBack(it.action is null ? "" : it.action);
 			ret.pushBack(" :}");
+			ret.pushBack('\n');
 			ret.pushBack('\n');
 		}
 		return ret.getString();
