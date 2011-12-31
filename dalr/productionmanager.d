@@ -935,7 +935,7 @@ class ProductionManager {
 		return ret;
 	}
 
-	public void insertProduction(Deque!(int) toInsert) {
+	public size_t insertProduction(Deque!(int) toInsert) {
 		assert(toInsert.getSize() > 0, "empty production not allowed");
 		if(this.doesProductionExists(toInsert)) {
 			throw new Exception(
@@ -946,6 +946,7 @@ class ProductionManager {
 			assert(this.prod !is null);
 			size_t oldSize = this.prod.getSize();
 			this.prod.pushBack(toInsert);
+			return this.prod.getSize() - 1;
 		}
 	}
 	

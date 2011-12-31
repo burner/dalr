@@ -9,6 +9,8 @@ import dalr.tostring;
 import dalr.filereader;
 
 import hurt.container.deque;
+import hurt.container.map;
+import hurt.container.isr;
 import hurt.io.stdio;
 import hurt.util.slog;
 
@@ -18,8 +20,15 @@ void main() {
 	ProductionManager pm = new ProductionManager(sm);
 	FileReader fr = new FileReader("examplegrammer.dlr");
 	fr.parse();
-	println(fr.userCodeToString());
-	println(fr.productionToString());
+	Map!(size_t, Production) actions = new Map!(size_t, Production)(
+		ISRType.HashTable);
+	for(Iterator!(Production) it = fr.getProductionIterator(); it.isValid(); 
+			it++) {
+		actions.insert(pm.insertProduction(
+			gp.processProduction((*it).getProduction())), *it);
+	}
+	
+
 	
 	//pm.insertProduction(gp.processProduction("S := N"));
 	//pm.insertProduction(gp.processProduction("N := V = E"));

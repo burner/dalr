@@ -40,6 +40,10 @@ class Production {
 	void setAction(string inAction) {
 		this.action = inAction;
 	}
+
+	public string getProduction() {
+		return this.startSymbol ~ this.prodString;
+	}
 }
 
 class FileReader {
@@ -375,5 +379,9 @@ class FileReader {
 			ret.pushBack('\n');
 		}
 		return ret.getString();
+	}
+
+	public Iterator!(Production) getProductionIterator() {
+		return this.productions.begin();
 	}
 }
