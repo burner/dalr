@@ -42,7 +42,7 @@ class Production {
 	}
 
 	public string getProduction() {
-		return this.startSymbol ~ this.prodString;
+		return trim(this.startSymbol) ~ " := " ~ trim(this.prodString);
 	}
 }
 

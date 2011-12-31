@@ -26,21 +26,23 @@ void main() {
 			it++) {
 		actions.insert(pm.insertProduction(
 			gp.processProduction((*it).getProduction())), *it);
+		log("%s", (*it).getProduction());
 	}
 	
 
-	
-	//pm.insertProduction(gp.processProduction("S := N"));
-	//pm.insertProduction(gp.processProduction("N := V = E"));
-	//pm.insertProduction(gp.processProduction("N := E"));
-	//pm.insertProduction(gp.processProduction("E := V"));
-	//pm.insertProduction(gp.processProduction("V := x"));
-	//pm.insertProduction(gp.processProduction("V := * E"));
-	/*pm.insertProduction(gp.processProduction("S := A"));
+/*	
+	pm.insertProduction(gp.processProduction("S := N"));
+	pm.insertProduction(gp.processProduction("N := V = E"));
+	pm.insertProduction(gp.processProduction("N := E"));
+	pm.insertProduction(gp.processProduction("E := V"));
+	pm.insertProduction(gp.processProduction("V := x"));
+	pm.insertProduction(gp.processProduction("V := * E"));
+	pm.insertProduction(gp.processProduction("S := A"));
 	pm.insertProduction(gp.processProduction("A := if B then A"));
 	pm.insertProduction(gp.processProduction("A := if B then A else A"));
 	pm.insertProduction(gp.processProduction("A := a"));
 	pm.insertProduction(gp.processProduction("B := bool"));
+*/
 
 	pm.makeLRZeroItemSets();
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
@@ -75,5 +77,4 @@ void main() {
 	println(extFollowRulesToString(pm, sm));
 	println(normalProductionToString(pm, sm));
 	println(finalTransitionTableToString(pm, sm));
-	*/
 }
