@@ -585,10 +585,12 @@ class ProductionManager {
 	}
 
 	private void completeItemSet(ItemSet iSet) {
+		assert(iSet !is null);
 		Deque!(Item) de = iSet.getItems();
 		Deque!(Item) stack = new Deque!(Item)(de);
 		while(!stack.isEmpty()) {
 			Item item = stack.popFront();
+			assert(item !is null);
 			if(this.isDotAtEndOfProduction(item))
 				continue;
 				
@@ -599,6 +601,7 @@ class ProductionManager {
 			// simular to next
 			if(this.symbolManager.getKind(next)) {
 				Deque!(size_t) follow = this.getProdByStartSymbol(next);
+				assert(follow !is null);
 
 				// for all matching productions, check if they exists and if
 				// not insert it into the itemset and the stack
@@ -657,10 +660,27 @@ class ProductionManager {
 			Deque!(ItemSet) stack, Map!(int, ItemSet) toProcess) {
 		ISRIterator!(MapItem!(int,ItemSet)) it = toProcess.begin();
 		for(; it.isValid(); it++) {
+			assert((*it).getData() !is null);
 			if(processed.contains((*it).getData())) {
 				continue;
 			} else {
+				assert((*it).getData() !is null);
+				//log("%d", stack.getCapacity());
+				debug {
+					foreach(size_t idx, ItemSet it; stack) {
+						assert(it !is null, format("idx %u stack size %u %s", 
+							idx, stack.getSize(), stack.toString()));
+					}
+				}
 				stack.pushBack((*it).getData());
+				//log("%d", stack.getCapacity());
+				assert(stack.back() !is null);
+				debug {
+					foreach(size_t idx, ItemSet it; stack) {
+						assert(it !is null, format("idx %u stack size %u %s", 
+							idx, stack.getSize(), stack.toString()));
+					}
+				}
 			}
 		}
 	}
@@ -674,13 +694,25 @@ class ProductionManager {
 		Set!(ItemSet) processed = new Set!(ItemSet)();
 		Deque!(ItemSet) stack = new Deque!(ItemSet)();
 		this.insertItemsToProcess(processed, stack, iSet.getFollowSet());
+		debug {
+			foreach(ItemSet it; stack) {
+				assert(it !is null);
+			}
+		}
 		while(!stack.isEmpty()) {
 			iSet = stack.popFront();
 			//printf("%s", this.itemsetToString(iSet));
+			assert(iSet !is null, format("%u", stack.getSize()));
 			this.completeItemSet(iSet);
 			this.fillFollowSet(iSet);
 			processed.insert(iSet);
 			this.insertItemsToProcess(processed, stack, iSet.getFollowSet());
+			debug {
+				foreach(size_t idx, ItemSet it; stack) {
+					assert(it !is null, format("idx %u stack size %u", idx, 
+						stack.getSize()));
+				}
+			}
 		}
 		this.finalizeItemSet();
 	}

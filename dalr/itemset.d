@@ -2,6 +2,7 @@ module dalr.itemset;
 
 import dalr.item;
 
+import hurt.math.bigintbase10;
 import hurt.container.deque;
 import hurt.container.isr;
 import hurt.container.map;
@@ -123,19 +124,19 @@ class ItemSet {
 			return -1;
 		else
 			assert(false, "invalid case");*/
-		ulong tCnt = 0;
-		ulong cCnt = 0;
+		BigIntBase10 tCnt = new BigIntBase10(0);
+		BigIntBase10 cCnt = new BigIntBase10(0);
 		for(size_t idx; idx < this.items.getSize(); idx++) {
 			tCnt += this.items.opIndexConst(idx).toHash();
 		}
 		for(size_t idx; idx < c.items.getSize(); idx++) {
 			cCnt += c.items.opIndexConst(idx).toHash();
 		}
-		if(tCnt > cCnt)
+		if(BigIntBase10.Greater(tCnt, cCnt)) {
 			return 1;
-		else if(tCnt < cCnt)
+		} else if(BigIntBase10.Smaller(tCnt, cCnt)) {
 			return -1;
-		else {
+		} else {
 			assert(this == c);
 			return 0;
 		}

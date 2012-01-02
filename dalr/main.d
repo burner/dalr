@@ -35,9 +35,7 @@ void main() {
 		log("%s", (*it).getProduction());
 	}
 	
-	log();
 	pm.makeLRZeroItemSets();
-	log();
 	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 	/*pm.makeExtendedGrammer();
 	print(extendedGrammerToString(pm, sm));

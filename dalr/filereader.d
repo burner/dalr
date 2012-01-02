@@ -92,7 +92,7 @@ class FileReader {
 	}
 
 	public string getNextLine() {
-		if(this.inFile.eof()) {
+		if(this.inFile.eof() && this.stash.isEmpty()) {
 			throw new Exception("No more lines present");
 		} else if(!this.stash.isEmpty()) {
 			return this.stash.popBack();	
@@ -102,7 +102,7 @@ class FileReader {
 	}
 
 	public bool isEof() {
-		return this.inFile.eof();
+		return this.inFile.eof() && this.stash.isEmpty();
 	}
 
 	public void stashString(string str) {
@@ -113,6 +113,7 @@ class FileReader {
 	public void parse() {
 		while(!this.isEof()) {
 			string cur = this.getNextLine();
+			log("%s",cur);
 			// is the line a comment
 			size_t comment = findArr!(char)(cur, "//");
 			// check for usercode
@@ -186,29 +187,31 @@ class FileReader {
 			tmp.pushBack(cur[colom+2 .. $]);
 			tmp.pushBack('\n');
 			//log("%s", cur);
-			cur = this.getNextLine();
-			//log("%s", cur);
-			size_t pipe = find!(char)(cur, '|');
-			prodCodeStart = findArr!(char)(cur, "{:");
-			colom = findArr!(char)(cur, ":=");
-			//log("%s %d %d %d %d", cur, cur.length, pipe, prodCodeStart, 
-			//	colom);
-			while(pipe == cur.length && prodCodeStart == cur.length
-					&& colom == cur.length) {
-				tmp.pushBack(cur);
-				tmp.pushBack('\n');
-				if(!this.isEof()) {
-					cur = this.getNextLine();
-				} else {
-					break;
-				}
+			size_t pipe = size_t.max;
+			if(!this.isEof()) {
+				cur = this.getNextLine();
+				//log("%s", cur);
 				pipe = find!(char)(cur, '|');
 				prodCodeStart = findArr!(char)(cur, "{:");
 				colom = findArr!(char)(cur, ":=");
 				//log("%s %d %d %d %d", cur, cur.length, pipe, prodCodeStart, 
 				//	colom);
+				while(pipe == cur.length && prodCodeStart == cur.length
+						&& colom == cur.length) {
+					tmp.pushBack(cur);
+					tmp.pushBack('\n');
+					if(!this.isEof()) {
+						cur = this.getNextLine();
+					} else {
+						break;
+					}
+					pipe = find!(char)(cur, '|');
+					prodCodeStart = findArr!(char)(cur, "{:");
+					colom = findArr!(char)(cur, ":=");
+					//log("%s %d %d %d %d", cur, cur.length, pipe, 
+					//	prodCodeStart, colom);
+				}
 			}
-			
 			
 			// a pipe ends the current production
 			if(pipe < cur.length) {
@@ -228,6 +231,11 @@ class FileReader {
 				this.productions.back().setProdString(tmp.getString());
 				this.parseProductionAction(cur[prodCodeStart .. $]);
 				return;
+			} else if(tmp.getSize() > 0) {
+				this.productions.back().setProdString(tmp.getString());
+				return;
+			} else {
+				assert(false, "should be unreachable");
 			}
 		}
 	}
