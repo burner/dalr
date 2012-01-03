@@ -438,7 +438,7 @@ public string itemsetsToString(ProductionManager pm, SymbolManager sm) {
 	StringBuffer!(char) sb = 
 		new StringBuffer!(char)(pm.getItemSet().getSize() * 10);
 
-	ISRIterator!(ItemSet) it = pm.getItemSet().begin();
+	Iterator!(ItemSet) it = pm.getItemSet().begin();
 	for(size_t idx = 0; it.isValid(); idx++, it++) {
 		sb.pushBack(conv!(ulong,string)(idx));
 		sb.pushBack('\n');

@@ -124,17 +124,17 @@ class ItemSet {
 			return -1;
 		else
 			assert(false, "invalid case");*/
-		BigIntBase10 tCnt = new BigIntBase10(0);
-		BigIntBase10 cCnt = new BigIntBase10(0);
+		ulong tCnt = 0;
+		ulong cCnt = 0;
 		for(size_t idx; idx < this.items.getSize(); idx++) {
 			tCnt += this.items.opIndexConst(idx).toHash();
 		}
 		for(size_t idx; idx < c.items.getSize(); idx++) {
 			cCnt += c.items.opIndexConst(idx).toHash();
 		}
-		if(BigIntBase10.Greater(tCnt, cCnt)) {
+		if(tCnt > cCnt) {
 			return 1;
-		} else if(BigIntBase10.Smaller(tCnt, cCnt)) {
+		} else if(tCnt < cCnt) {
 			return -1;
 		} else {
 			assert(this == c);

@@ -54,13 +54,13 @@ class ProductionManager {
 	private Map!(size_t, MergedReduction) mergedExtended;
 
 	// The lr0 graph
-	private Set!(ItemSet) itemSets;
+	private Deque!(ItemSet) itemSets;
 
 	private SymbolManager symbolManager;
 
 	this() {
 		this.prod = new Deque!(Deque!(int));
-		this.itemSets = new Set!(ItemSet)();
+		this.itemSets = new Deque!(ItemSet)();
 	}
 
 	this(SymbolManager symbolManager) {
@@ -102,7 +102,7 @@ class ProductionManager {
 	}
 
 	public void finalizeItemSet() {
-		ISRIterator!(ItemSet) it = this.itemSets.begin();
+		Iterator!(ItemSet) it = this.itemSets.begin();
 		for(size_t idx = 0; it.isValid(); it++, idx++) {
 			if((*it).getId() == -1) {
 				(*it).setId(conv!(size_t,long)(idx));
@@ -113,7 +113,7 @@ class ProductionManager {
 
 	public Deque!(ItemSet) getItemSets() {
 		Deque!(ItemSet) ret = new Deque!(ItemSet)(this.itemSets.getSize());
-		ISRIterator!(ItemSet) it = this.itemSets.begin();
+		Iterator!(ItemSet) it = this.itemSets.begin();
 		for(size_t idx = 0; it.isValid(); it++, idx++) {
 			ret.pushBack(*it);
 		}
@@ -646,17 +646,17 @@ class ProductionManager {
 		// been allready created
 		it = follow.begin();
 		for(; it.isValid(); it++) {
-			ISRIterator!(ItemSet) found = this.itemSets.find((*it).getData());
+			Iterator!(ItemSet) found = this.itemSets.findIt((*it).getData());
 			if(found.isValid()) {
 				(*it).setData(*found);	
 			} else {
-				this.itemSets.insert((*it).getData());
+				this.itemSets.pushBack((*it).getData());
 			}
 		}
 		iSet.setFollow(follow);
 	}
 
-	private void insertItemsToProcess(Set!(ItemSet) processed, 
+	private void insertItemsToProcess(Deque!(ItemSet) processed, 
 			Deque!(ItemSet) stack, Map!(int, ItemSet) toProcess) {
 		ISRIterator!(MapItem!(int,ItemSet)) it = toProcess.begin();
 		for(; it.isValid(); it++) {
@@ -666,21 +666,21 @@ class ProductionManager {
 			} else {
 				assert((*it).getData() !is null);
 				//log("%d", stack.getCapacity());
-				debug {
+				/*debug {
 					foreach(size_t idx, ItemSet it; stack) {
 						assert(it !is null, format("idx %u stack size %u %s", 
 							idx, stack.getSize(), stack.toString()));
 					}
-				}
+				}*/
 				stack.pushBack((*it).getData());
 				//log("%d", stack.getCapacity());
 				assert(stack.back() !is null);
-				debug {
+				/*debug {
 					foreach(size_t idx, ItemSet it; stack) {
 						assert(it !is null, format("idx %u stack size %u %s", 
 							idx, stack.getSize(), stack.toString()));
 					}
-				}
+				}*/
 			}
 		}
 	}
@@ -690,8 +690,8 @@ class ProductionManager {
 		ItemSet iSet = this.getFirstItemSet();
 		this.completeItemSet(iSet);
 		this.fillFollowSet(iSet);
-		this.itemSets.insert(iSet);
-		Set!(ItemSet) processed = new Set!(ItemSet)();
+		this.itemSets.pushBack(iSet);
+		Deque!(ItemSet) processed = new Deque!(ItemSet)();
 		Deque!(ItemSet) stack = new Deque!(ItemSet)();
 		this.insertItemsToProcess(processed, stack, iSet.getFollowSet());
 		debug {
@@ -699,20 +699,25 @@ class ProductionManager {
 				assert(it !is null);
 			}
 		}
+		int cnt = 0;
 		while(!stack.isEmpty()) {
+			if(cnt % 100 == 0) {
+				log("%d %u %u", cnt, stack.getSize(), processed.getSize());
+			}
+			cnt++;
 			iSet = stack.popFront();
 			//printf("%s", this.itemsetToString(iSet));
 			assert(iSet !is null, format("%u", stack.getSize()));
 			this.completeItemSet(iSet);
 			this.fillFollowSet(iSet);
-			processed.insert(iSet);
+			processed.pushBack(iSet);
 			this.insertItemsToProcess(processed, stack, iSet.getFollowSet());
-			debug {
+			/*debug {
 				foreach(size_t idx, ItemSet it; stack) {
 					assert(it !is null, format("idx %u stack size %u", idx, 
 						stack.getSize()));
 				}
-			}
+			}*/
 		}
 		this.finalizeItemSet();
 	}
@@ -927,7 +932,7 @@ class ProductionManager {
 		Deque!(Deque!(int)) extendedGrammer = new Deque!(Deque!(int))(
 			this.itemSets.getSize()*2);
 
-		ISRIterator!(ItemSet) iSetIt = this.itemSets.begin();
+		Iterator!(ItemSet) iSetIt = this.itemSets.begin();
 		outer: for(; iSetIt.isValid(); iSetIt++) {
 			foreach(size_t idx, Item it; (*iSetIt).getItems()) {
 				if(it.getDotPosition() != 1) {
@@ -1181,7 +1186,7 @@ class ProductionManager {
 		return this.followNormal;
 	}
 
-	Set!(ItemSet) getItemSet() {
+	Deque!(ItemSet) getItemSet() {
 		return this.itemSets;
 	}
 
@@ -1272,6 +1277,10 @@ unittest {
 	Map!(int,Set!(int)) map = pm.getFirstNormal();
 	assert(map !is null);
 	MapItem!(int,Set!(int)) mi = map.find(sm.getSymbolId("S"));
+	ISRIterator!(MapItem!(int,Set!(int))) it = map.begin();
+	for(; it.isValid(); it++) {
+		printfln("%d", (*it).getKey());
+	}
 	assert(mi !is null);
 	assert(mi.getData().contains(-2));
 

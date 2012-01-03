@@ -20,6 +20,7 @@ void main() {
 	GrammerParser gp = new GrammerParser(sm);
 	ProductionManager pm = new ProductionManager(sm);
 	FileReader fr = new FileReader("d2grm.dlr");
+	//FileReader fr = new FileReader("examplegrammer.dlr");
 	fr.parse();
 
 	// map the actions to the productions
@@ -36,31 +37,32 @@ void main() {
 	}
 	
 	pm.makeLRZeroItemSets();
-	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
-	/*pm.makeExtendedGrammer();
-	print(extendedGrammerToString(pm, sm));
+	//writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
+	
+	pm.makeExtendedGrammer();
+	//print(extendedGrammerToString(pm, sm));
 	pm.makeNormalFirstSet();
-	print(normalFirstSetToString(pm, sm));
+	//print(normalFirstSetToString(pm, sm));
 	pm.makeExtendedFirstSet();
-	print(extendedFirstSetToString(pm, sm));
+	//print(extendedFirstSetToString(pm, sm));
 	pm.makeNormalFollowSet();
-	println(normalFollowSetToString(pm, sm));
-	println(extendedGrammerItemsToString(pm, sm));
+	//println(normalFollowSetToString(pm, sm));
+	//println(extendedGrammerItemsToString(pm, sm));
 	log();
 	pm.makeExtendedFollowSet();
-	println(extendedFollowSetToString(pm, sm));
+	//println(extendedFollowSetToString(pm, sm));
 
 	pm.makeExtendedGrammer();
-	print(extendedGrammerToString(pm, sm));
+	//print(extendedGrammerToString(pm, sm));
 	pm.makeNormalFirstSet();
-	print(normalFirstSetToString(pm, sm));
+	//print(normalFirstSetToString(pm, sm));
 	pm.makeExtendedFirstSet();
 	log();
-	print(extendedFirstSetToString(pm, sm));
+	//print(extendedFirstSetToString(pm, sm));
 	pm.makeNormalFollowSet();
 	log();
-	println(normalFollowSetToString(pm, sm));
-	println(extendedGrammerItemsToString(pm, sm));
+	//println(normalFollowSetToString(pm, sm));
+	//println(extendedGrammerItemsToString(pm, sm));
 	log();
 	pm.makeExtendedFollowSet();
 	log();
@@ -68,11 +70,10 @@ void main() {
 	log();
 	pm.getFinalTable();
 	log();
-	println(transitionTableToString(pm, sm));
-	println(mergedExtendedToString(pm, sm));
+	//println(transitionTableToString(pm, sm));
+	//println(mergedExtendedToString(pm, sm));
 	pm.reduceExtGrammerFollow();
-	println(extFollowRulesToString(pm, sm));
-	println(normalProductionToString(pm, sm));
-	println(finalTransitionTableToString(pm, sm));
-	*/
+	//println(extFollowRulesToString(pm, sm));
+	//println(normalProductionToString(pm, sm));
+	//println(finalTransitionTableToString(pm, sm));
 }
