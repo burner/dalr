@@ -33,7 +33,7 @@ void main() {
 			it++) {
 		actions.insert(pm.insertProduction(
 			gp.processProduction((*it).getProduction())), *it);
-		log("%s", (*it).getProduction());
+		//log("%s", (*it).getProduction());
 	}
 	
 	pm.makeLRZeroItemSets();

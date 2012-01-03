@@ -113,7 +113,7 @@ class FileReader {
 	public void parse() {
 		while(!this.isEof()) {
 			string cur = this.getNextLine();
-			log("%s",cur);
+			//log("%s",cur);
 			// is the line a comment
 			size_t comment = findArr!(char)(cur, "//");
 			// check for usercode
