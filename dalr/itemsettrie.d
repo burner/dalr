@@ -67,8 +67,9 @@ class Trie(T,S) {
 	}
 
 	bool contains(const(Deque!(S)) path) {
+		// trie path must be at least one element long
 		assert(path.getSize() > 0);
-		if(this.follow.contains(path.opIndexConst(0))) {
+		if(this.follow.contains(path.opIndexConst(0))) { 
 			return this.follow.find(path.opIndexConst(0)).getData().
 				contains(path, 1);
 		} else {
@@ -80,6 +81,8 @@ class Trie(T,S) {
 unittest {
 	Trie!(int,int) t = new Trie!(int,int)();
 	t.insert(new Deque!(int)([1,2,3,4,5,6,7,8]), 99);
+	t.insert(new Deque!(int)([1,2,3,4,5,6,7,8,9]), 999);
 	assert(t.contains(new Deque!(int)([1,2,3,4,5,6,7,8])));
+	assert(t.contains(new Deque!(int)([1,2,3,4,5,6,7,8,9])));
 	printfln("itemsettrie passed");	
 }
