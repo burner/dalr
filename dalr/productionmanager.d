@@ -15,6 +15,7 @@ import hurt.container.isr;
 import hurt.container.map;
 import hurt.container.mapset;
 import hurt.container.set;
+import hurt.container.trie;
 import hurt.conv.conv;
 import hurt.io.stdio;
 import hurt.math.mathutil;
@@ -614,6 +615,8 @@ class ProductionManager {
 				}
 			} 
 		}
+		sortDeque!(Item)(de, function(in Item a, in Item b) {
+			return a.toHash() < b.toHash(); });
 	}
 
 	private void fillFollowSet(ItemSet iSet) {
@@ -657,30 +660,19 @@ class ProductionManager {
 	}
 
 	private void insertItemsToProcess(Deque!(ItemSet) processed, 
+			Trie!(ItemSet,Item) processedTrie,
 			Deque!(ItemSet) stack, Map!(int, ItemSet) toProcess) {
 		ISRIterator!(MapItem!(int,ItemSet)) it = toProcess.begin();
 		for(; it.isValid(); it++) {
-			assert((*it).getData() !is null);
 			if(processed.contains((*it).getData())) {
+			//if(processedTrie.contains((*it).getData().getItems())) {
+				assert(processedTrie.contains((*it).getData().getItems()));
 				continue;
 			} else {
+				assert(!processedTrie.contains((*it).getData().getItems()));
 				assert((*it).getData() !is null);
-				//log("%d", stack.getCapacity());
-				/*debug {
-					foreach(size_t idx, ItemSet it; stack) {
-						assert(it !is null, format("idx %u stack size %u %s", 
-							idx, stack.getSize(), stack.toString()));
-					}
-				}*/
 				stack.pushBack((*it).getData());
-				//log("%d", stack.getCapacity());
 				assert(stack.back() !is null);
-				/*debug {
-					foreach(size_t idx, ItemSet it; stack) {
-						assert(it !is null, format("idx %u stack size %u %s", 
-							idx, stack.getSize(), stack.toString()));
-					}
-				}*/
 			}
 		}
 	}
@@ -692,13 +684,9 @@ class ProductionManager {
 		this.fillFollowSet(iSet);
 		this.itemSets.pushBack(iSet);
 		Deque!(ItemSet) processed = new Deque!(ItemSet)();
+		Trie!(ItemSet,Item) processedTrie = new Trie!(ItemSet,Item)();
 		Deque!(ItemSet) stack = new Deque!(ItemSet)();
-		this.insertItemsToProcess(processed, stack, iSet.getFollowSet());
-		debug {
-			foreach(ItemSet it; stack) {
-				assert(it !is null);
-			}
-		}
+		this.insertItemsToProcess(processed, processedTrie, stack, iSet.getFollowSet());
 		int cnt = 0;
 		while(!stack.isEmpty()) {
 			if(cnt % 100 == 0) {
@@ -711,13 +699,8 @@ class ProductionManager {
 			this.completeItemSet(iSet);
 			this.fillFollowSet(iSet);
 			processed.pushBack(iSet);
-			this.insertItemsToProcess(processed, stack, iSet.getFollowSet());
-			/*debug {
-				foreach(size_t idx, ItemSet it; stack) {
-					assert(it !is null, format("idx %u stack size %u", idx, 
-						stack.getSize()));
-				}
-			}*/
+			processedTrie.insert(iSet.getItems(), iSet);
+			this.insertItemsToProcess(processed, processedTrie, stack, iSet.getFollowSet());
 		}
 		this.finalizeItemSet();
 	}
