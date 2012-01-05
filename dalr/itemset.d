@@ -9,6 +9,7 @@ import hurt.container.map;
 import hurt.conv.conv;
 import hurt.io.stdio;
 import hurt.string.formatter;
+import hurt.string.stringbuffer;
 
 // a set of items aka lr(0) set
 class ItemSet {
@@ -140,6 +141,15 @@ class ItemSet {
 			assert(this == c);
 			return 0;
 		}
+	}
+
+	public override string toString() {
+		StringBuffer!(char) ret = new StringBuffer!(char)();
+		foreach(Item it; this.items) {
+			ret.pushBack(it.toString());	
+			ret.pushBack('\n');
+		}
+		return ret.getString();
 	}
 
 	public override bool opEquals(Object o) const {

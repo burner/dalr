@@ -1,5 +1,7 @@
 module dalr.item;
 
+import hurt.string.formatter;
+
 // a production with a dot placed
 class Item {
 	private long prod;
@@ -41,6 +43,10 @@ class Item {
 
 	public override hash_t toHash() const {
 		return cast(hash_t)(this.prod<<16) + this.dotPos;
+	}
+
+	public override string toString() const {
+		return format("%d %d", this.prod, this.dotPos);
 	}
 }
 

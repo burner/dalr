@@ -23,6 +23,7 @@ import hurt.string.formatter;
 import hurt.string.stringbuffer;
 import hurt.util.pair;
 import hurt.util.slog;
+import hurt.util.stacktrace;
 
 // -1 is $
 // -2 is epsilon
@@ -586,6 +587,7 @@ class ProductionManager {
 	}
 
 	private void completeItemSet(ItemSet iSet) {
+		scope Trace st = new Trace("compleItemSet");
 		assert(iSet !is null);
 		Deque!(Item) de = iSet.getItems();
 		Deque!(Item) stack = new Deque!(Item)(de);
@@ -620,6 +622,7 @@ class ProductionManager {
 	}
 
 	private void fillFollowSet(ItemSet iSet) {
+		scope Trace st = new Trace("fillFollowSet");
 		Map!(int, ItemSet) follow = new Map!(int, ItemSet)();
 		assert(iSet !is null);
 		Deque!(Item) iSetItems = iSet.getItems();
@@ -662,14 +665,18 @@ class ProductionManager {
 	private void insertItemsToProcess(Deque!(ItemSet) processed, 
 			Trie!(ItemSet,Item) processedTrie,
 			Deque!(ItemSet) stack, Map!(int, ItemSet) toProcess) {
+		scope Trace st = new Trace("insertItemsToProcess");
+
 		ISRIterator!(MapItem!(int,ItemSet)) it = toProcess.begin();
 		for(; it.isValid(); it++) {
-			if(processed.contains((*it).getData())) {
-			//if(processedTrie.contains((*it).getData().getItems())) {
-				assert(processedTrie.contains((*it).getData().getItems()));
+			//if(processed.contains((*it).getData())) {
+			if(processedTrie.contains((*it).getData().getItems())) {
+				//assert(processedTrie.contains((*it).getData().getItems()),
+				//	printBoth(processed, processedTrie));
 				continue;
 			} else {
-				assert(!processedTrie.contains((*it).getData().getItems()));
+				//assert(!processedTrie.contains((*it).getData().getItems()),
+				//	printBoth(processed, processedTrie));
 				assert((*it).getData() !is null);
 				stack.pushBack((*it).getData());
 				assert(stack.back() !is null);
@@ -677,7 +684,18 @@ class ProductionManager {
 		}
 	}
 
+	private string printBoth(Deque!(ItemSet) de, Trie!(ItemSet, Item) trie) {
+		StringBuffer!(char) ret = new StringBuffer!(char)();
+		foreach(ItemSet it; de) {
+			if(!trie.contains(it.getItems())) {
+				ret.pushBack(it.toString());	
+			}
+		}
+		return ret.getString();
+	}
+
 	public void makeLRZeroItemSets() {
+		scope Trace st = new Trace("makeLRZeroItemSets");
 		//this.createExplicitStartProduction();
 		ItemSet iSet = this.getFirstItemSet();
 		this.completeItemSet(iSet);
@@ -686,11 +704,15 @@ class ProductionManager {
 		Deque!(ItemSet) processed = new Deque!(ItemSet)();
 		Trie!(ItemSet,Item) processedTrie = new Trie!(ItemSet,Item)();
 		Deque!(ItemSet) stack = new Deque!(ItemSet)();
-		this.insertItemsToProcess(processed, processedTrie, stack, iSet.getFollowSet());
+		this.insertItemsToProcess(processed, processedTrie, stack, 
+			iSet.getFollowSet());
+
 		int cnt = 0;
 		while(!stack.isEmpty()) {
 			if(cnt % 100 == 0) {
-				log("%d %u %u", cnt, stack.getSize(), processed.getSize());
+				log("%d %u %u %u", cnt, stack.getSize(), processed.getSize(),
+					processedTrie.getSize());
+				Trace.printStats();
 			}
 			cnt++;
 			iSet = stack.popFront();
@@ -698,9 +720,10 @@ class ProductionManager {
 			assert(iSet !is null, format("%u", stack.getSize()));
 			this.completeItemSet(iSet);
 			this.fillFollowSet(iSet);
-			processed.pushBack(iSet);
+			//processed.pushBack(iSet);
 			processedTrie.insert(iSet.getItems(), iSet);
-			this.insertItemsToProcess(processed, processedTrie, stack, iSet.getFollowSet());
+			this.insertItemsToProcess(processed, processedTrie, stack, 
+				iSet.getFollowSet());
 		}
 		this.finalizeItemSet();
 	}
