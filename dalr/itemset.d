@@ -72,6 +72,10 @@ class ItemSet {
 		return this.items;
 	}
 
+	public void setItems(Deque!(Item) ne) {
+		this.items = new Deque!(Item)(ne);
+	}
+
 	public Map!(int, ItemSet) getFollowSet() {
 		return this.followSets;
 	}

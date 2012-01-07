@@ -54,12 +54,13 @@ class ExtendedItem {
 		ExtendedItem e = cast(ExtendedItem)o;
 		hash_t t = this.toHash();
 		hash_t c = e.toHash();
-		if(t > c)
+		if(t > c) {
 			return 1;
-		else if(t < c)
+		} else if(t < c) {
 			return -1;
-		else
+		} else {
 			return 0;
+		}
 	}
 
 	public override bool opEquals(Object o) const {

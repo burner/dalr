@@ -60,9 +60,17 @@ class ProductionManager {
 
 	private SymbolManager symbolManager;
 
+	// followset cache
+	Trie!(Map!(int, ItemSet),Item) followSetCache; 
+
+	// complete ItemSet cache
+	Trie!(Deque!(Item), Item) completeItemSetCache;
+
 	this() {
 		this.prod = new Deque!(Deque!(int));
 		this.itemSets = new Deque!(ItemSet)();
+		this.followSetCache = new Trie!(Map!(int, ItemSet),Item)();
+		this.completeItemSetCache = new Trie!(Deque!(Item), Item)();
 	}
 
 	this(SymbolManager symbolManager) {
@@ -355,7 +363,7 @@ class ProductionManager {
 		this.mergedExtended = mr;
 	}
 
-	private Deque!(Deque!(Deque!(FinalItem))) computeFinalTable() {
+	public Deque!(Deque!(Deque!(FinalItem))) computeFinalTable() {
 		Deque!(Deque!(Deque!(FinalItem))) ret = 
 			new Deque!(Deque!(Deque!(FinalItem)))(this.itemSets.getSize()+1);
 
@@ -590,6 +598,21 @@ class ProductionManager {
 		scope Trace st = new Trace("compleItemSet");
 		assert(iSet !is null);
 		Deque!(Item) de = iSet.getItems();
+		// sort them so the completed itemset can be found
+		sortDeque!(Item)(de, function(in Item a, in Item b) {
+			return a.toHash() < b.toHash(); });
+
+		Deque!(Item) tmpOld;
+		// lets check if we hace make the itemset allready
+		if(this.completeItemSetCache.contains(de)) {
+			Deque!(Item) found = this.completeItemSetCache.find(de);
+			iSet.setItems(found);
+			return;
+		} else {
+			// if we haven't found it we need to save the deque we
+			// create
+			tmpOld = new Deque!(Item)(de);
+		}
 		Deque!(Item) stack = new Deque!(Item)(de);
 		while(!stack.isEmpty()) {
 			Item item = stack.popFront();
@@ -617,15 +640,22 @@ class ProductionManager {
 				}
 			} 
 		}
+		// it needs to be sorted so the items of the itemset can
+		// be used in a trie
 		sortDeque!(Item)(de, function(in Item a, in Item b) {
 			return a.toHash() < b.toHash(); });
+
+		// well we have created a new complete itemset that we need to cache
+		assert(tmpOld !is null);
+		this.completeItemSetCache.insert(tmpOld, de);
+
 	}
 
 	private void fillFollowSet(ItemSet iSet) {
 		scope Trace st = new Trace("fillFollowSet");
-		Map!(int, ItemSet) follow = new Map!(int, ItemSet)();
 		assert(iSet !is null);
 		Deque!(Item) iSetItems = iSet.getItems();
+		Map!(int, ItemSet) follow = new Map!(int, ItemSet)();
 		assert(iSetItems !is null);
 		foreach(size_t idx, Item it; iSetItems) {
 			if(this.isDotAtEndOfProduction(it))
@@ -939,7 +969,7 @@ class ProductionManager {
 			this.itemSets.getSize()*2);
 
 		Iterator!(ItemSet) iSetIt = this.itemSets.begin();
-		outer: for(; iSetIt.isValid(); iSetIt++) {
+		for(size_t jdx = 0; iSetIt.isValid(); iSetIt++, jdx++) {
 			foreach(size_t idx, Item it; (*iSetIt).getItems()) {
 				if(it.getDotPosition() != 1) {
 					continue;
@@ -1078,10 +1108,13 @@ class ProductionManager {
 
 	private bool testExtendedItemKind(const ExtendedItem toTest) {
 		foreach(Deque!(ExtendedItem) it; this.extGrammerComplex) {
-			foreach(size_t idx, ExtendedItem jt; it) {
+			/*foreach(size_t idx, ExtendedItem jt; it) {
 				if(jt == toTest && idx == 0) {
 					return true;
 				}
+			} old */
+			if(it[0] == toTest) {
+				return true;
 			}
 		}
 		return false;
@@ -1091,7 +1124,13 @@ class ProductionManager {
 		this.extGrammerKind = new Map!(ExtendedItem,bool)();
 		foreach(Deque!(ExtendedItem) it; this.extGrammerComplex) {
 			foreach(size_t idx, ExtendedItem jt; it) {
+				if(jt.getLeft() == 364 && jt.getRight() == 327 &&
+						jt.getItem() == 
+						this.symbolManager.getSymbolId("Identifier")) {
+					log();
+				}
 				if(this.extGrammerKind.contains(jt)) {
+					assert(this.extGrammerKind.find(jt).getKey() == jt);
 					continue;	
 				} else {
 					this.extGrammerKind.insert(jt, 
@@ -1099,28 +1138,48 @@ class ProductionManager {
 				}
 			}
 		}
+		debug {
+			foreach(Deque!(ExtendedItem) it; this.extGrammerComplex) {
+				foreach(size_t idx, ExtendedItem jt; it) {
+					assert(this.extGrammerKind.contains(jt),
+						extendedGrammerItemToString(this, this.symbolManager,
+						jt));
+				}
+			}
+		}
 	}
 
 	public void makeExtendedFirstSet() {
 		this.constructExtendedKind();
+		log();
 		//new Deque!(Deque!(ExtendedItem))(this.extGrammerComplex);
+		assert(this.extGrammerComplex !is null);
+		assert(this.extGrammerKind !is null);
 
-		MapSet!(ExtendedItem,int) first = new MapSet!(ExtendedItem,int)();
+		MapSet!(ExtendedItem,int) first = new MapSet!(ExtendedItem,int)(
+			ISRType.HashTable, ISRType.HashTable);
 		bool change = true;
+		size_t changeCnt = 0;
 		while(change) { // as long as anything changes, continue
+			log("%d", changeCnt++);
 			change = false;
 			// cycle all productions
 			level2: foreach(size_t idx, Deque!(ExtendedItem) it; 
 					this.extGrammerComplex) {
+				//log("%d %d", changeCnt, idx);
+				assert(it !is null);
+				assert(it.getSize() > 0);
 				if(it.getSize() == 1) { // epsilon prod
 					change = first.insert(it[0], -2) ? true : change;
 					// terminal
-				} else if(!this.extGrammerKind.find(it[1]).getData()) { 
+				} else if(this.extGrammerKind.contains(it[1]) &&
+						!this.extGrammerKind.find(it[1]).getData()) { 
 					change = first.insert(it[0], it[1].getItem()) ? true : 
 						change;
 				} else { // rule 3
 					Iterator!(ExtendedItem) jt = it.iterator(1);
 					for(; jt.isValid(); jt++) {
+						assert(*jt !is null);
 						// if the nonterm only contains epsilon move to the
 						// next term or nonterm
 						if(*jt == it[0]) { 
@@ -1128,13 +1187,16 @@ class ProductionManager {
 							continue level2;
 						} else if(first.containsOnly(*jt, -2)) {
 							continue;
-						} else if(!this.extGrammerKind.find(*jt).getData()) {
+						} else if(this.extGrammerKind.contains(*jt) &&
+								!this.extGrammerKind.find(*jt).getData()) {
 							// found a term in the production
 							change = first.insert(it[0], (*jt).getItem()) ? 
 								true : change;
 							continue level2;
-						} else if(!this.extGrammerKind.find(*jt).getData()) {
+						//} else if(!this.extGrammerKind.find(*jt).getData()) {
 						//} else if(this.symbolManager.getKind(*jt)) {
+						} else if(this.extGrammerKind.contains(*jt) &&
+								this.extGrammerKind.find(*jt).getData()) {
 							// found a nonterm that doesn't contain only
 							// epsilon, so wie copy the first set
 							ISRIterator!(int) kt = first.iterator(*jt);
@@ -1149,6 +1211,7 @@ class ProductionManager {
 							}
 							continue level2;
 						} else {
+							log();
 							continue level2;
 						}
 					}

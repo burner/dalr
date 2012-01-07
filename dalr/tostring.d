@@ -478,11 +478,17 @@ public string extendedGrammerItemRuleToString(Deque!(ExtendedItem) pro,
 
 public string extendedGrammerToString(ProductionManager pm, SymbolManager sm) {
 	StringBuffer!(char) ret = new StringBuffer!(char)(128);
-	foreach(it; pm.getExtGrammer()) {
+	foreach(Deque!(int) it; pm.getExtGrammer()) {
 		ret.pushBack(extendedGrammerRuleToString(it, pm, sm));
 		ret.pushBack("\n");
 	}
 	return ret.getString();
+}
+
+public string extendedGrammerItemToString(ProductionManager pm,
+		SymbolManager sm, ExtendedItem ei) {
+	return format("%d%s%d", ei.getLeft(), sm.getSymbolName(ei.getItem),
+		ei.getRight());
 }
 
 public string extendedGrammerRuleToString(Deque!(int) pro, ProductionManager pm,

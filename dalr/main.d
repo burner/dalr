@@ -35,36 +35,26 @@ void main() {
 			gp.processProduction((*it).getProduction())), *it);
 		//log("%s", (*it).getProduction());
 	}
-	
+
 	pm.makeLRZeroItemSets();
+	log();
 	//writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
-	
 	pm.makeExtendedGrammer();
+	log();
 	//print(extendedGrammerToString(pm, sm));
+	log();
 	pm.makeNormalFirstSet();
 	//print(normalFirstSetToString(pm, sm));
+	log();
 	pm.makeExtendedFirstSet();
 	//print(extendedFirstSetToString(pm, sm));
+	log();
 	pm.makeNormalFollowSet();
 	//println(normalFollowSetToString(pm, sm));
 	//println(extendedGrammerItemsToString(pm, sm));
 	log();
 	pm.makeExtendedFollowSet();
 	//println(extendedFollowSetToString(pm, sm));
-
-	pm.makeExtendedGrammer();
-	//print(extendedGrammerToString(pm, sm));
-	pm.makeNormalFirstSet();
-	//print(normalFirstSetToString(pm, sm));
-	pm.makeExtendedFirstSet();
-	log();
-	//print(extendedFirstSetToString(pm, sm));
-	pm.makeNormalFollowSet();
-	log();
-	//println(normalFollowSetToString(pm, sm));
-	//println(extendedGrammerItemsToString(pm, sm));
-	log();
-	pm.makeExtendedFollowSet();
 	log();
 	pm.getTranslationTable();
 	log();
@@ -73,6 +63,9 @@ void main() {
 	//println(transitionTableToString(pm, sm));
 	//println(mergedExtendedToString(pm, sm));
 	pm.reduceExtGrammerFollow();
+	log();
+	pm.computeFinalTable();
+	log();
 	//println(extFollowRulesToString(pm, sm));
 	//println(normalProductionToString(pm, sm));
 	//println(finalTransitionTableToString(pm, sm));
