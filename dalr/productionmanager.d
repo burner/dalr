@@ -603,10 +603,11 @@ class ProductionManager {
 			return a.toHash() < b.toHash(); });
 
 		Deque!(Item) tmpOld;
+		Deque!(Item) foundOld;
 		// lets check if we hace make the itemset allready
 		if(this.completeItemSetCache.contains(de)) {
-			Deque!(Item) found = this.completeItemSetCache.find(de);
-			iSet.setItems(found);
+			foundOld = this.completeItemSetCache.find(de);
+			iSet.setItems(foundOld);
 			return;
 		} else {
 			// if we haven't found it we need to save the deque we
@@ -646,8 +647,14 @@ class ProductionManager {
 			return a.toHash() < b.toHash(); });
 
 		// well we have created a new complete itemset that we need to cache
-		assert(tmpOld !is null);
-		this.completeItemSetCache.insert(tmpOld, de);
+		if(foundOld !is null) {
+			assert(de == foundOld, format("%u %U", de.getSize(), 
+				foundOld.getSize()));
+		}
+		if(tmpOld !is null && !this.completeItemSetCache.contains(tmpOld)) {
+			assert(tmpOld !is null);
+			this.completeItemSetCache.insert(tmpOld, de);
+		}
 
 	}
 
@@ -867,18 +874,26 @@ class ProductionManager {
 						assert(kindItem !is null);
 						bool kind = kindItem.getData();
 						if(kind) {
-							hasChanged = ProductionManager.insertFollowItems
+							hasChanged = hasChanged || 
+								ProductionManager.insertFollowItems
 								!(ExtendedItem)(followSets, jt, 
 								this.firstExtended, it[jdx+1]);
-							if(hasChanged) {
-								continue outer;
-							}
 						}
 					}
 				}
 			}
-			inner:
-			foreach(size_t idx, Deque!(ExtendedItem) it; grammer) { // rule 3
+			if(hasChanged) {
+				continue outer;
+			}
+			log();
+			hasChanged = false;
+			int innerCnt = 0;
+			// rule 3
+			inner: foreach(size_t idx, Deque!(ExtendedItem) it; grammer) { 
+				if(innerCnt % 100 == 0) {
+					log("inner cnt %d", innerCnt);
+				}
+				innerCnt++;
 				foreach(size_t jdx, ExtendedItem jt; it) {
 					MapItem!(ExtendedItem,bool) kindItem = 
 						this.extGrammerKind.find(it.back());
@@ -887,12 +902,9 @@ class ProductionManager {
 					if(kind && ( (jdx+1 == it.getSize()) || 
 							ProductionManager.areExtendedItemEpsilon(idx,
 							jdx, grammer))) {
-						hasChanged = ProductionManager.insertFollowItems
-							!(ExtendedItem)(followSets, it.back, followSets, 
-							it[0],true);
-						if(hasChanged) {
-							goto inner;
-						}
+						hasChanged = hasChanged || 
+							ProductionManager.insertFollowItems!(ExtendedItem)
+							(followSets, it.back, followSets, it[0],true);
 					}
 				}
 			}
@@ -1122,13 +1134,10 @@ class ProductionManager {
 
 	private void constructExtendedKind() {
 		this.extGrammerKind = new Map!(ExtendedItem,bool)();
-		foreach(Deque!(ExtendedItem) it; this.extGrammerComplex) {
+		/*foreach(Deque!(ExtendedItem) it; this.extGrammerComplex) {
 			foreach(size_t idx, ExtendedItem jt; it) {
-				if(jt.getLeft() == 364 && jt.getRight() == 327 &&
-						jt.getItem() == 
-						this.symbolManager.getSymbolId("Identifier")) {
-					log();
-				}
+				log("%s", extendedGrammerItemToString(this, this.symbolManager,
+						jt));
 				if(this.extGrammerKind.contains(jt)) {
 					assert(this.extGrammerKind.find(jt).getKey() == jt);
 					continue;	
@@ -1137,7 +1146,25 @@ class ProductionManager {
 						this.testExtendedItemKind(jt));
 				}
 			}
+		}*/
+		int maxLeft = 0;
+		int maxRight = 0;
+		int maxItem = 0;
+		foreach(Deque!(ExtendedItem) it; this.extGrammerComplex) {
+			foreach(size_t idx, ExtendedItem jt; it) {
+				MapItem!(ExtendedItem,bool) item = 
+					this.extGrammerKind.find(jt);
+				maxLeft = jt.getLeft() > maxLeft ? jt.getLeft() : maxLeft;
+				maxRight = jt.getRight() > maxRight ? jt.getRight() : maxRight;
+				maxItem = jt.getItem() > maxItem ? jt.getItem() : maxItem;
+				if(item is null) {
+					this.extGrammerKind.insert(jt, idx == 0);
+				} else {
+					item.setData(item.getData() ? item.getData() : idx == 0);
+				}
+			}
 		}
+		log("%d %d %d", maxLeft, maxRight, maxItem);
 		debug {
 			foreach(Deque!(ExtendedItem) it; this.extGrammerComplex) {
 				foreach(size_t idx, ExtendedItem jt; it) {

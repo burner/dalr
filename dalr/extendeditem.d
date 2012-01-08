@@ -47,7 +47,8 @@ class ExtendedItem {
 
 	// TODO this will only work correctly on 64 bit machines 
 	public override hash_t toHash() const {
-		return (this.left << 32) + (this.item<<16) + this.right;
+		//return (this.left << 20) + (this.item<<10) + this.right;
+		return (this.left << 21) + (this.right<<10) + this.item;
 	}
 
 	public override int opCmp(Object o) const {
