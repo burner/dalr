@@ -844,6 +844,38 @@ class ProductionManager {
 		return true;
 	}
 
+	public void makeExtendedFollowSetLinear() {
+		assert(this.firstExtended !is null);
+
+		// the resulting followSet
+		MapSet!(ExtendedItem,int) followSets = 
+			new MapSet!(ExtendedItem,int)();
+
+		// the copy rules. at the end every thing from the key must be
+		// mapped to the set
+		MapSet!(ExtendedItem,ExtendedItem) mapping = new
+			MapSet!(ExtendedItem,ExtendedItem)(
+			ISRType.HashTable,ISRType.HashTable);
+
+		/* the first non terminal of the first prod should contain the 
+		 * $ Symbol aka -1 */
+		followSets.insert(
+			this.findFirstItemOfExtendedItem(this.extGrammerComplex), -1);
+
+		foreach(size_t idx, Deque!(ExtendedItem) it; this.extGrammerComplex) {
+			foreach(size_t jdx, ExtendedItem jt) {
+				// nothing for the first two
+				if(jdx == 0 || jdx == 1) {
+					continue;
+				}
+
+				// rule 2
+				if(this.extGrammerKind.find(
+			}
+		}
+
+	}
+
 	public void makeExtendedFollowSet() {
 		assert(this.firstExtended !is null);
 		Deque!(Deque!(ExtendedItem)) grammer = 
