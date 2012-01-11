@@ -844,6 +844,37 @@ class ProductionManager {
 		return true;
 	}
 
+	private static void insertAllButEpsilon(MapSet!(ExtendedItem,int) follow, 
+			Map!(ExtendedItem,Set!(int)) first, ExtendedItem from,
+			ExtendedItem to) {
+
+		// over all first element except epsilon from "from"
+		MapItem!(ExtendedItem,Set!(int)) mi = first.find(from);
+		if(mi is null) { // nothing in the first set
+			log("check if this is valid");
+			return;
+		}
+		ISRIterator!(int) it = mi.getData().begin();
+		for(; it.isValid(); it++) {
+			if(*it != -2) {
+				follow.insert(to, *it);
+			}
+		}
+	}
+
+	// check if the first set of item contains only epsilon aka
+	// first(item) == {-2}
+	private bool containsOnlyEpsilon(Map!(ExtendedItem,Set!(int)) first,
+			ExtendedItem item) {
+		MapItem!(ExtendedItem,Set!(int)) mi = first.find(item);
+		if(mi is null) {
+			return false;
+		} else {
+			Set!(int) miSet = mi.getData();
+			return miSet.contains(-2) && miSet.getSize() == 1;
+		}
+	}
+
 	public void makeExtendedFollowSetLinear() {
 		assert(this.firstExtended !is null);
 
@@ -858,22 +889,40 @@ class ProductionManager {
 			ISRType.HashTable,ISRType.HashTable);
 
 		/* the first non terminal of the first prod should contain the 
-		 * $ Symbol aka -1 */
-		followSets.insert(
-			this.findFirstItemOfExtendedItem(this.extGrammerComplex), -1);
+		 * $ Symbol aka -1 . this is rule 1 */
+		followSets.insert(this.findFirstItemOfExtendedItem(
+			this.extGrammerComplex), -1);
 
 		foreach(size_t idx, Deque!(ExtendedItem) it; this.extGrammerComplex) {
-			foreach(size_t jdx, ExtendedItem jt) {
+			foreach(size_t jdx, ExtendedItem jt; it) {
 				// nothing for the first two
 				if(jdx == 0 || jdx == 1) {
 					continue;
 				}
 
 				// rule 2
-				if(this.extGrammerKind.find(
+				if(!this.extGrammerKind.find(jt).getData() &&
+						this.extGrammerKind.find(it[jdx-1]).getData()) {
+					// check if follow(jt) contains epsilon and jt is the last
+					// item of the production
+					if(jdx == it.getSize()-1 && 
+							containsOnlyEpsilon(this.firstExtended, jt)) {
+						mapping.insert(it[0], jt);
+					} else { // at all from first jt to follow it[jdx-1]
+						insertAllButEpsilon(followSets, this.firstExtended,
+							jt, it[jdx-1]);
+					}
+				// rule 3
+				} else if(jdx == it.getSize()-1 &&  // the last item is a non-
+						this.extGrammerKind.find(jt).getData()) { // term
+					mapping.insert(it[0], jt);
+				}
 			}
 		}
 
+		// map all mappings, that means to copy all the follow items of the
+		// first element to the the follow items of the second
+		Map!(ExtendedItem,Set!(ExtendedItem)) mi = mapping.getMap();
 	}
 
 	public void makeExtendedFollowSet() {
