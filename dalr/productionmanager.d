@@ -15,6 +15,7 @@ import hurt.container.isr;
 import hurt.container.map;
 import hurt.container.mapset;
 import hurt.container.set;
+import hurt.container.stack;
 import hurt.container.trie;
 import hurt.conv.conv;
 import hurt.io.stdio;
@@ -61,16 +62,16 @@ class ProductionManager {
 	private SymbolManager symbolManager;
 
 	// followset cache
-	Trie!(Map!(int, ItemSet),Item) followSetCache; 
+	Trie!(Item,Map!(int, ItemSet)) followSetCache; 
 
 	// complete ItemSet cache
-	Trie!(Deque!(Item), Item) completeItemSetCache;
+	Trie!(Item,Deque!(Item)) completeItemSetCache;
 
 	this() {
 		this.prod = new Deque!(Deque!(int));
 		this.itemSets = new Deque!(ItemSet)();
-		this.followSetCache = new Trie!(Map!(int, ItemSet),Item)();
-		this.completeItemSetCache = new Trie!(Deque!(Item), Item)();
+		this.followSetCache = new Trie!(Item,Map!(int, ItemSet))();
+		this.completeItemSetCache = new Trie!(Item,Deque!(Item))();
 	}
 
 	this(SymbolManager symbolManager) {
@@ -662,11 +663,26 @@ class ProductionManager {
 		scope Trace st = new Trace("fillFollowSet");
 		assert(iSet !is null);
 		Deque!(Item) iSetItems = iSet.getItems();
+		sortDeque!(Item)(iSetItems, function(in Item a, in Item b) {
+			return a.toHash() < b.toHash(); });
+		Deque!(Item) iSetItemsCopy = new Deque!(Item)(iSetItems);
+
+		// check if there is something allready created for the iSetItems
+		Map!(int,ItemSet) followFoundCache = null;
+		if(this.followSetCache.contains(iSetItems)) {
+			followFoundCache = this.followSetCache.find(iSetItems);
+			// set the follow map of the item
+			iSet.setFollow(followFoundCache);
+			return;
+		}
+
+		// well the cache missed so lets make the map
 		Map!(int, ItemSet) follow = new Map!(int, ItemSet)();
 		assert(iSetItems !is null);
 		foreach(size_t idx, Item it; iSetItems) {
-			if(this.isDotAtEndOfProduction(it))
+			if(this.isDotAtEndOfProduction(it)) {
 				continue;
+			}
 				
 			int followSym = this.getSymbolFromProduction(it);	
 			MapItem!(int, ItemSet) followItem = follow.find(followSym);
@@ -696,11 +712,18 @@ class ProductionManager {
 				this.itemSets.pushBack((*it).getData());
 			}
 		}
+
+		// set the follow map of the item
 		iSet.setFollow(follow);
+
+		// save the created follow map into the cache
+		if(!this.followSetCache.contains(iSetItemsCopy)) {
+			this.followSetCache.insert(	iSetItemsCopy, follow);
+		} 
 	}
 
 	private void insertItemsToProcess(Deque!(ItemSet) processed, 
-			Trie!(ItemSet,Item) processedTrie,
+			Trie!(Item,ItemSet) processedTrie,
 			Deque!(ItemSet) stack, Map!(int, ItemSet) toProcess) {
 		scope Trace st = new Trace("insertItemsToProcess");
 
@@ -721,7 +744,7 @@ class ProductionManager {
 		}
 	}
 
-	private string printBoth(Deque!(ItemSet) de, Trie!(ItemSet, Item) trie) {
+	private string printBoth(Deque!(ItemSet) de, Trie!(Item,ItemSet) trie) {
 		StringBuffer!(char) ret = new StringBuffer!(char)();
 		foreach(ItemSet it; de) {
 			if(!trie.contains(it.getItems())) {
@@ -739,7 +762,7 @@ class ProductionManager {
 		this.fillFollowSet(iSet);
 		this.itemSets.pushBack(iSet);
 		Deque!(ItemSet) processed = new Deque!(ItemSet)();
-		Trie!(ItemSet,Item) processedTrie = new Trie!(ItemSet,Item)();
+		Trie!(Item,ItemSet) processedTrie = new Trie!(Item,ItemSet)();
 		Deque!(ItemSet) stack = new Deque!(ItemSet)();
 		this.insertItemsToProcess(processed, processedTrie, stack, 
 			iSet.getFollowSet());
@@ -844,16 +867,28 @@ class ProductionManager {
 		return true;
 	}
 
-	private static void insertAllButEpsilon(MapSet!(ExtendedItem,int) follow, 
-			Map!(ExtendedItem,Set!(int)) first, ExtendedItem from,
-			ExtendedItem to) {
+	private void insertAllButEpsilon(MapSet!(ExtendedItem,int) follow, 
+			ExtendedItem from, ExtendedItem to) {
 
 		// over all first element except epsilon from "from"
-		MapItem!(ExtendedItem,Set!(int)) mi = first.find(from);
-		if(mi is null) { // nothing in the first set
-			log("check if this is valid");
+		if(!this.firstExtended.contains(from)) { // nothing in the first set
+			/*log("%u from = %s to = %s", this.firstExtended.getSize(),
+				extendedGrammerItemToString(this, this.symbolManager,from),
+				extendedGrammerItemToString(this, this.symbolManager,to));*/
+			ISRIterator!(MapItem!(ExtendedItem,Set!(int))) it = 
+				this.firstExtended.begin();
+			for(; it.isValid(); it++) {
+				if((*it).getKey() == from) {
+					log("found it in the firstExtended\n\n");
+					break;
+				}
+			}
+			//log("check if this is valid");
+			follow.insert(to,from.getItem());
 			return;
 		}
+		MapItem!(ExtendedItem,Set!(int)) mi = this.firstExtended.find(from);
+		log("%u", mi.getData().getSize());
 		ISRIterator!(int) it = mi.getData().begin();
 		for(; it.isValid(); it++) {
 			if(*it != -2) {
@@ -877,6 +912,7 @@ class ProductionManager {
 
 	public void makeExtendedFollowSetLinear() {
 		assert(this.firstExtended !is null);
+		assert(this.firstExtended.getSize() > 0);
 
 		// the resulting followSet
 		MapSet!(ExtendedItem,int) followSets = 
@@ -903,14 +939,17 @@ class ProductionManager {
 				// rule 2
 				if(!this.extGrammerKind.find(jt).getData() &&
 						this.extGrammerKind.find(it[jdx-1]).getData()) {
+					//log("%s", extendedGrammerItemRuleToString(it, this,
+						//this.symbolManager));
 					// check if follow(jt) contains epsilon and jt is the last
 					// item of the production
 					if(jdx == it.getSize()-1 && 
 							containsOnlyEpsilon(this.firstExtended, jt)) {
-						mapping.insert(it[0], jt);
+						log();
+						mapping.insert(it[0], it[jdx-1]);
 					} else { // at all from first jt to follow it[jdx-1]
-						insertAllButEpsilon(followSets, this.firstExtended,
-							jt, it[jdx-1]);
+						//log();
+						insertAllButEpsilon(followSets, jt, it[jdx-1]);
 					}
 				// rule 3
 				} else if(jdx == it.getSize()-1 &&  // the last item is a non-
@@ -922,7 +961,96 @@ class ProductionManager {
 
 		// map all mappings, that means to copy all the follow items of the
 		// first element to the the follow items of the second
+		// but before we can that all transitiv relations need to be processed
 		Map!(ExtendedItem,Set!(ExtendedItem)) mi = mapping.getMap();
+		ISRIterator!(MapItem!(ExtendedItem,Set!(ExtendedItem))) it = 
+			mi.begin();
+
+		debug {
+			Map!(ExtendedItem,size_t) sizeMapping = 
+				new Map!(ExtendedItem,size_t)(ISRType.HashTable);
+		}
+
+		for(size_t idx = 0; it.isValid(); it++, idx++) {
+			debug {
+				sizeMapping.insert((*it).getKey(), (*it).getData().getSize());
+			}
+			Set!(ExtendedItem) processed = 
+				new Set!(ExtendedItem)(ISRType.HashTable);
+			Stack!(ExtendedItem) toProcess = new Stack!(ExtendedItem)();
+			
+			// to need to process the key
+			processed.insert((*it).getKey());
+
+			// the mapping are keys on there own so until the stack is not
+			// empty process them
+			ISRIterator!(ExtendedItem) jt = (*it).getData().begin();
+			for(; jt.isValid(); jt++) {
+				toProcess.push(*jt);
+			}
+
+			while(!toProcess.isEmpty()) {
+				ExtendedItem item = toProcess.pop();
+				// insert the item into the mapping
+				mapping.insert((*it).getKey(), item);
+				processed.insert(item);
+				// the mappings are transitiv
+				ISRIterator!(ExtendedItem) kt = mapping.iterator(item);
+				if(kt is null) { // no mappings for the item
+					continue;
+				} else { // got a mapping
+					// if not allready process process them
+					for(; kt.isValid(); kt++) {
+						if(!processed.contains(*kt)) {
+							toProcess.push(*kt);
+						}
+					}
+				}
+			}
+		}
+
+		debug { // check if mapset got bigger
+			it = mi.begin();
+
+			Map!(ExtendedItem,size_t) sizeMappingNew = 
+				new Map!(ExtendedItem,size_t)(ISRType.HashTable);
+
+			for(size_t idx = 0; it.isValid(); it++, idx++) {
+				sizeMappingNew.insert((*it).getKey(), 
+				(*it).getData().getSize());
+			}
+
+			ISRIterator!(MapItem!(ExtendedItem,size_t)) ht = 
+				sizeMapping.begin();
+			for(; ht.isValid(); ht++) {
+				/*log("%u old %u new %u", (*ht).getKey().toHash(), 
+					(*ht).getData(), 
+					sizeMappingNew.find((*ht).getKey()).getData());
+				*/
+				assert((*ht).getData() <= 
+					sizeMappingNew.find((*ht).getKey()).getData());
+			}
+		}
+
+		// insert all item of the key to its mappings
+		it = mi.begin();
+		for(; it.isValid(); it++) {
+			// get the follow items
+			ISRIterator!(int) jt = followSets.iterator((*it).getKey());
+			if(jt is null) { // no follow items present
+				//log("no follow set found for %u", (*it).getKey().toHash());
+			} else { // follow items present. copy them into all the mappings
+				for(; jt.isValid(); jt++) {
+					ISRIterator!(ExtendedItem) ut = (*it).getData().begin();
+					for(; ut.isValid(); ut++) {
+						followSets.insert(*ut, *jt);
+					}
+				}
+			}
+		}
+
+		// save the followSet
+		this.followExtended = followSets.getMap();
 	}
 
 	public void makeExtendedFollowSet() {

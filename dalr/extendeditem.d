@@ -66,7 +66,8 @@ class ExtendedItem {
 
 	public override bool opEquals(Object o) const {
 		ExtendedItem item = cast(ExtendedItem)o;
-		return this.left == item.left && this.item == item.item &&
+		return this.left == item.left && 
+			this.item == item.item &&
 			this.right == item.right;
 	}
 }
