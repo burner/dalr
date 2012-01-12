@@ -1373,7 +1373,7 @@ class ProductionManager {
 				}
 			}
 		}
-		log("%d %d %d", maxLeft, maxRight, maxItem);
+		//log("%d %d %d", maxLeft, maxRight, maxItem);
 		debug {
 			foreach(Deque!(ExtendedItem) it; this.extGrammerComplex) {
 				foreach(size_t idx, ExtendedItem jt; it) {
@@ -1397,7 +1397,7 @@ class ProductionManager {
 		bool change = true;
 		size_t changeCnt = 0;
 		while(change) { // as long as anything changes, continue
-			log("%d", changeCnt++);
+			//log("%d", changeCnt++);
 			change = false;
 			// cycle all productions
 			level2: foreach(size_t idx, Deque!(ExtendedItem) it; 

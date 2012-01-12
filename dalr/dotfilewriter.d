@@ -15,8 +15,10 @@ import hurt.string.stringbuffer;
 
 import std.process;
 
+private immutable size_t longItem = 6;
+
 private string itemsetToHTML(ItemSet iSet, Deque!(Deque!(int)) prod, 
-		SymbolManager sm) {
+		SymbolManager sm, bool length = true) {
 	StringBuffer!(char) ret = new StringBuffer!(char)(100);	
 	ret.pushBack("<table border=\"0\" cellborder=\"0\" cellpadding=\"3\" ");
 	ret.pushBack("bgcolor=\"white\">\n");
@@ -31,7 +33,10 @@ private string itemsetToHTML(ItemSet iSet, Deque!(Deque!(int)) prod,
 			return l.getProd() < r.getProd(); 
 		});
 
-	foreach(Item it; iSet.getItems()) {
+	foreach(size_t idx, Item it; iSet.getItems()) {
+		if(length && idx > longItem) {
+			break;
+		}
 		ret.pushBack("<tr>\n");
 		ret.pushBack("\t<td align=\"left\" port=\"r");
 		ret.pushBack(conv!(ulong,string)(it.getProd()));
@@ -94,6 +99,8 @@ public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm,
 	hurt.io.stream.File file = new hurt.io.stream.File(filename ~ ".dot", 
 		FileMode.OutNew);
 
+	Deque!(ItemSet) toLong = new Deque!(ItemSet)();
+
 	StringBuffer!(char) sb = new StringBuffer!(char)(1000);
 	file.writeString("digraph g {\n");
 	file.writeString("graph [fontsize=30 labelloc=\"t\" label=\"\" ");
@@ -109,11 +116,31 @@ public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm,
 		file.writeString("label =<");
 		file.writeString(itemsetToHTML(iSet, prod, sm));
 		file.writeString("> ];\n");
+		// everything long than longItem will be printed completly later
+		if(iSet.getItems().getSize() > longItem) {
+			toLong.pushBack(iSet);
+		}
+	}
+
+	foreach(size_t idx, ItemSet iSet; toLong) {
+		file.writeString("\"longState");
+		file.writeString(conv!(long,string)(iSet.getId()));
+		file.writeString("\" ");
+		file.writeString("[ style = \"filled\" penwidth = 1 fillcolor = ");
+		file.writeString("\"white\"");
+		file.writeString(" fontname = \"Courier New\" shape = \"Mrecord\" ");
+		file.writeString("label =<");
+		file.writeString(itemsetToHTML(iSet, prod, sm, false));
+		file.writeString("> ];\n");
+		// everything long than longItem will be printed completly later
+		if(iSet.getItems().getSize() > longItem) {
+			toLong.pushBack(iSet);
+		}
 	}
 	foreach(size_t idx, ItemSet iSet; de) {
 		file.writeString(makeTransitions(iSet, sm));
 	}
 	file.writeString("}\n");
 	file.close();
-	system("dot -T png " ~ filename ~ ".dot > " ~ filename ~ ".png");
+	system("dot -T png " ~ filename ~ ".dot > " ~ filename ~ ".png &disown");
 }
