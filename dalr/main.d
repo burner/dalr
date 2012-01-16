@@ -20,6 +20,7 @@ void main() {
 	GrammerParser gp = new GrammerParser(sm);
 	ProductionManager pm = new ProductionManager(sm);
 	FileReader fr = new FileReader("d2grm.dlr");
+	//FileReader fr = new FileReader("websitegrammer.dlr");
 	//FileReader fr = new FileReader("examplegrammer.dlr");
 	fr.parse();
 
@@ -46,23 +47,23 @@ void main() {
 	log();
 	pm.makeNormalFirstSet();
 	//print(normalFirstSetToString(pm, sm));
-	log();
+	//log();
 	pm.makeExtendedFirstSet();
 	//print(extendedFirstSetToString(pm, sm));
-	log();
+	//log();
 	pm.makeNormalFollowSet();
 	//println(normalFollowSetToString(pm, sm));
 	//println(extendedGrammerItemsToString(pm, sm));
 	log();
 	pm.makeExtendedFollowSetLinear();
 	log();
-	//println(extendedFollowSetToString(pm, sm));
+	println(extendedFollowSetToString(pm, sm));
 	log();
 	pm.getTranslationTable();
-	log();
+	//log();
 	//println(transitionTableToString(pm, sm));
 	//println(mergedExtendedToString(pm, sm));
-	//pm.computeFinalTable();
+	pm.computeFinalTable();
 	//log();
 	//println(extFollowRulesToString(pm, sm));
 	//println(normalProductionToString(pm, sm));

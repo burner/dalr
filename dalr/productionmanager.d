@@ -25,6 +25,7 @@ import hurt.string.stringbuffer;
 import hurt.util.pair;
 import hurt.util.slog;
 import hurt.util.stacktrace;
+import hurt.time.stopwatch;
 
 // -1 is $
 // -2 is epsilon
@@ -930,9 +931,10 @@ class ProductionManager {
 			this.extGrammerComplex), -1);
 
 		foreach(size_t idx, Deque!(ExtendedItem) it; this.extGrammerComplex) {
+			log("%u from %u", idx, this.extGrammerComplex.getSize());
 			foreach(size_t jdx, ExtendedItem jt; it) {
 				// nothing for the first two
-				if(jdx == 0 || jdx == 1) {
+				if(jdx == 0) {
 					continue;
 				}
 
@@ -947,7 +949,8 @@ class ProductionManager {
 							containsOnlyEpsilon(this.firstExtended, jt)) {
 						log();
 						mapping.insert(it[0], it[jdx-1]);
-					} else { // at all from first jt to follow it[jdx-1]
+					} else if(jdx > 1) { 
+						// at all from first jt to follow it[jdx-1]
 						//log();
 						insertAllButEpsilon(followSets, jt, it[jdx-1]);
 					}
@@ -959,95 +962,42 @@ class ProductionManager {
 			}
 		}
 
-		// map all mappings, that means to copy all the follow items of the
-		// first element to the the follow items of the second
-		// but before we can that all transitiv relations need to be processed
-		Map!(ExtendedItem,Set!(ExtendedItem)) mi = mapping.getMap();
-		ISRIterator!(MapItem!(ExtendedItem,Set!(ExtendedItem))) it = 
-			mi.begin();
-
-		debug {
-			Map!(ExtendedItem,size_t) sizeMapping = 
-				new Map!(ExtendedItem,size_t)(ISRType.HashTable);
-		}
-
-		for(size_t idx = 0; it.isValid(); it++, idx++) {
-			debug {
-				sizeMapping.insert((*it).getKey(), (*it).getData().getSize());
+		int cnt = 0;
+		bool changed = true;
+		StopWatch sw;
+		sw.start();
+		while(changed) { // run as long as the follow set change
+			if(cnt % 100 == 0) {
+				log("mapping iterator cnt %d mapping size %d", cnt, followSets.getSize());
 			}
-			Set!(ExtendedItem) processed = 
-				new Set!(ExtendedItem)(ISRType.HashTable);
-			Stack!(ExtendedItem) toProcess = new Stack!(ExtendedItem)();
+			cnt++;
+			changed = false;
+			size_t oldSize = followSets.getSize();
 			
-			// to need to process the key
-			processed.insert((*it).getKey());
-
-			// the mapping are keys on there own so until the stack is not
-			// empty process them
-			ISRIterator!(ExtendedItem) jt = (*it).getData().begin();
-			for(; jt.isValid(); jt++) {
-				toProcess.push(*jt);
-			}
-
-			while(!toProcess.isEmpty()) {
-				ExtendedItem item = toProcess.pop();
-				// insert the item into the mapping
-				mapping.insert((*it).getKey(), item);
-				processed.insert(item);
-				// the mappings are transitiv
-				ISRIterator!(ExtendedItem) kt = mapping.iterator(item);
-				if(kt is null) { // no mappings for the item
+			ISRIterator!(MapItem!(ExtendedItem,Set!(ExtendedItem))) mapIt = 
+				mapping.getMap().begin();
+			
+			for(; mapIt.isValid(); mapIt++) { // for all keys
+				ISRIterator!(int) followIt = followSets.iterator((*mapIt).getKey());
+				if(followIt is null) { // no followset present
 					continue;
-				} else { // got a mapping
-					// if not allready process process them
-					for(; kt.isValid(); kt++) {
-						if(!processed.contains(*kt)) {
-							toProcess.push(*kt);
-						}
+				}
+
+				for(; followIt.isValid(); followIt++) { // run over all follow items
+					ISRIterator!(ExtendedItem) setIt = (*mapIt).getData().begin();
+					for(; setIt.isValid(); setIt++) { 
+						// insert all items into the follow mapping
+						//changed = changed || followSets.insert(*setIt, *followIt);
+						followSets.insert(*setIt, *followIt);
 					}
 				}
 			}
-		}
-
-		debug { // check if mapset got bigger
-			it = mi.begin();
-
-			Map!(ExtendedItem,size_t) sizeMappingNew = 
-				new Map!(ExtendedItem,size_t)(ISRType.HashTable);
-
-			for(size_t idx = 0; it.isValid(); it++, idx++) {
-				sizeMappingNew.insert((*it).getKey(), 
-				(*it).getData().getSize());
-			}
-
-			ISRIterator!(MapItem!(ExtendedItem,size_t)) ht = 
-				sizeMapping.begin();
-			for(; ht.isValid(); ht++) {
-				/*log("%u old %u new %u", (*ht).getKey().toHash(), 
-					(*ht).getData(), 
-					sizeMappingNew.find((*ht).getKey()).getData());
-				*/
-				assert((*ht).getData() <= 
-					sizeMappingNew.find((*ht).getKey()).getData());
+			if(followSets.getSize() > oldSize) {
+				changed = true;
 			}
 		}
+		log("runtime %f", sw.stop());
 
-		// insert all item of the key to its mappings
-		it = mi.begin();
-		for(; it.isValid(); it++) {
-			// get the follow items
-			ISRIterator!(int) jt = followSets.iterator((*it).getKey());
-			if(jt is null) { // no follow items present
-				//log("no follow set found for %u", (*it).getKey().toHash());
-			} else { // follow items present. copy them into all the mappings
-				for(; jt.isValid(); jt++) {
-					ISRIterator!(ExtendedItem) ut = (*it).getData().begin();
-					for(; ut.isValid(); ut++) {
-						followSets.insert(*ut, *jt);
-					}
-				}
-			}
-		}
 
 		// save the followSet
 		this.followExtended = followSets.getMap();
@@ -1387,7 +1337,7 @@ class ProductionManager {
 
 	public void makeExtendedFirstSet() {
 		this.constructExtendedKind();
-		log();
+		//log();
 		//new Deque!(Deque!(ExtendedItem))(this.extGrammerComplex);
 		assert(this.extGrammerComplex !is null);
 		assert(this.extGrammerKind !is null);

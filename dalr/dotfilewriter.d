@@ -59,7 +59,7 @@ private string itemsetToHTML(ItemSet iSet, Deque!(Deque!(int)) prod,
 		}
 		ret.popBack();
 		if(prod[it.getProd()].getSize() == it.getDotPosition()) {
-			ret.pushBack(".");
+			ret.pushBack("&bull;");
 		}
 
 		ret.pushBack("</td>\n</tr>\n");
