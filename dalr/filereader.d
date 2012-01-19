@@ -137,106 +137,42 @@ class FileReader {
 	private void parseProduction(string cur, bool startOld = false) {
 		string start;
 		size_t colom;
+		size_t semi = find!(char)(cur, ';');
+		StringBuffer!(char) tmp = new StringBuffer!(char)(128);
+		bool startRound = true;
+
 		if(startOld) {
 			colom = find!(char)(cur, '|');
-			start = cur[0 .. colom];
+			assert(colom < cur.length,
+				format("should have found a colom %d %d %s", colom, cur.length,
+				cur));
+			tmp.pushBack(cur[colom+1 .. semi]);
 		} else {
 			colom = findArr!(char)(cur, ":=");
 			start = cur[0 .. colom];
 			assert(colom < cur.length, 
 				format("should have found a colom %d %d %s", colom, cur.length,
 				cur));
+			tmp.pushBack(cur[colom+2 .. semi]);
 		}
-		
-		size_t prodCodeStart = findArr!(char)(cur, "{:", colom+2);
-		size_t prodCodeEnd = findArr!(char)(cur, ":}", colom+2);
-		if(prodCodeStart < cur.length && prodCodeEnd < cur.length) {
-			if(startOld) {
-				this.productions.pushBack(new Production(
-					this.productions.back().startSymbol, 
-					cur[colom+2 .. prodCodeStart], 
-					cur[prodCodeStart+2 .. prodCodeEnd]));
+		// as long as we find no semicolom
+		while(semi == cur.length) {
+			startRound = false;
+			if(this.isEof()) {
+				assert(false, "haven't found a semicolom befor eof");
 			} else {
-				this.productions.pushBack(new Production(start, 
-					cur[colom+2 .. prodCodeStart], 
-					cur[prodCodeStart+2 .. prodCodeEnd]));
+				cur = this.getNextLine();	
+				semi = find!(char)(cur, ';');
 			}
-			return;
-		} else if(prodCodeStart < cur.length && prodCodeEnd == cur.length) {
-			// production is done and the prod code starts
-			if(startOld) {
-				this.productions.pushBack(new Production(
-					this.productions.back().startSymbol, 
-					cur[colom+2 .. prodCodeStart]));
-			} else {
-				this.productions.pushBack(new Production(start, 
-					cur[colom+2 .. prodCodeStart]));
-				// need to save everything till we find a :}
-			}
-			this.parseProductionAction(cur);
-			return;
-		} else {
-			if(startOld) {
-				this.productions.pushBack(new Production(
-					this.productions.back().startSymbol));
-			} else {
-				this.productions.pushBack(new Production(start, 
-					start));
-			}
-			StringBuffer!(char) tmp = new StringBuffer!(char)();
-			tmp.pushBack(cur[colom+2 .. $]);
-			tmp.pushBack('\n');
-			//log("%s", cur);
-			size_t pipe = size_t.max;
-			if(!this.isEof()) {
-				cur = this.getNextLine();
-				//log("%s", cur);
-				pipe = find!(char)(cur, '|');
-				prodCodeStart = findArr!(char)(cur, "{:");
-				colom = findArr!(char)(cur, ":=");
-				//log("%s %d %d %d %d", cur, cur.length, pipe, prodCodeStart, 
-				//	colom);
-				while(pipe == cur.length && prodCodeStart == cur.length
-						&& colom == cur.length) {
-					tmp.pushBack(cur);
-					tmp.pushBack('\n');
-					if(!this.isEof()) {
-						cur = this.getNextLine();
-					} else {
-						break;
-					}
-					pipe = find!(char)(cur, '|');
-					prodCodeStart = findArr!(char)(cur, "{:");
-					colom = findArr!(char)(cur, ":=");
-					//log("%s %d %d %d %d", cur, cur.length, pipe, 
-					//	prodCodeStart, colom);
-				}
-			}
-			
-			// a pipe ends the current production
-			if(pipe < cur.length) {
-				tmp.pushBack(cur[0 .. pipe]);	
-				tmp.pushBack('\n');
-				this.productions.back().setProdString(tmp.getString());
-				this.stashString(cur[pipe .. $]);
-				return;
-			} else if(colom < cur.length) {
-				this.productions.back().setProdString(tmp.getString());
-				//log("%s", tmp.getString());
-				this.stashString(cur);
-				return;
-			} else if(prodCodeStart < cur.length) {
-				tmp.pushBack(cur[0 .. prodCodeStart]);	
-				tmp.pushBack('\n');
-				this.productions.back().setProdString(tmp.getString());
-				this.parseProductionAction(cur[prodCodeStart .. $]);
-				return;
-			} else if(tmp.getSize() > 0) {
-				this.productions.back().setProdString(tmp.getString());
-				return;
-			} else {
-				assert(false, "should be unreachable");
-			}
+			tmp.pushBack(cur[0 .. semi]);
+		}
+		if(startOld) { // semicolom was in first line
+			Production last = this.productions.back();
+			this.productions.pushBack(
+				new Production(last.startSymbol, tmp.getString()));
+		} else if(!startOld) { // semicolom wasn't in first line
+			this.productions.pushBack(
+				new Production(start, tmp.getString()));
 		}
 	}
 
