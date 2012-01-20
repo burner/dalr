@@ -114,8 +114,13 @@ class FileReader {
 		while(!this.isEof()) {
 			string cur = this.getNextLine();
 			//log("%s",cur);
+
 			// is the line a comment
 			size_t comment = findArr!(char)(cur, "//");
+			if(comment == cur.length) {
+				continue;
+			}
+
 			// check for usercode
 			int userCodeIdx = userCodeParanthesis(cur);
 			if(userCodeIdx != -1 && userCodeIdx < comment) {
@@ -123,18 +128,22 @@ class FileReader {
 				continue;
 			}
 			size_t prodStart = findArr!(char)(cur, ":=");
-			if(prodStart < cur.length && prodStart < comment) {
-				this.parseProduction(cur);
-				continue;
-			}
 			size_t pipe = find!(char)(cur, '|');
-			if(pipe < cur.length) {
-				this.parseProduction(cur, true);
+			if(prodStart < cur.length) {
+				cur = this.parseProduction(cur);
+			} else if(pipe < cur.length) {
+				cur = this.parseProduction(cur, true);
 			}
+
+			// production code 
+			/*size_t prodCodeStart = findArr!(char)(cur, "{:");
+			if(prodCodeStart < cur.length) {
+				cur = this.parseProductionAction(cur);
+			}*/
 		}
 	}
 
-	private void parseProduction(string cur, bool startOld = false) {
+	private string parseProduction(string cur, bool startOld = false) {
 		string start;
 		size_t colom;
 		size_t semi = find!(char)(cur, ';');
@@ -174,15 +183,16 @@ class FileReader {
 			this.productions.pushBack(
 				new Production(start, tmp.getString()));
 		}
+		return cur;
 	}
 
-	private void parseProductionAction(string cur) {
+	private string parseProductionAction(string cur) {
 		size_t actionStart = findArr!(char)(cur, "{:");	
 		size_t actionEnd = findArr!(char)(cur, ":}");	
 		// the action spans only one line
 		if(actionStart < cur.length && actionEnd < cur.length) {
 			this.productions.back().setAction(cur[actionStart+2 .. actionEnd]);
-			return;
+			return cur;
 		// the action spans for more than one line
 		} else if(actionStart < cur.length && actionEnd == cur.length) {
 			StringBuffer!(char) tmp = new StringBuffer!(char)(128);
@@ -204,11 +214,13 @@ class FileReader {
 			tmp.pushBack('\n');
 			this.stashString(cur[actionEnd+2 .. $]);
 			this.productions.back().setAction(tmp.getString());
-			return;
+			return cur;
+		} else {
+			assert(false, "current line has no {: symbol");
 		}
 	}
 
-	private void parseUserCode(string cur) {
+	private string parseUserCode(string cur) {
 		StringBuffer!(char) tmp = new StringBuffer!(char)();
 		// this should allways work
 		int userCodeIdxStart = userCodeParanthesis(cur);
@@ -217,7 +229,7 @@ class FileReader {
 		if(userCodeIdxStart != -1 && userCodeIdxEnd != -1) {
 			this.userCode.pushBack(cur[userCodeIdxStart+2 .. userCodeIdxEnd]);	
 			this.stashString(cur[userCodeIdxEnd+2 .. $]);
-			return;
+			return cur;
 		// while we didn't found anything save it
 		} else if(userCodeIdxStart != -1 && userCodeIdxEnd == -1) {
 			tmp.pushBack(cur[userCodeIdxStart+2 .. $]);	
@@ -234,7 +246,7 @@ class FileReader {
 			tmp.pushBack('\n');
 			this.stashString(cur[userCodeIdxEnd+2 .. $]);
 			this.userCode.pushBack(tmp.getString());
-			return;
+			return cur;
 		} 
 		assert(false, "this should not be reached");
 	}
