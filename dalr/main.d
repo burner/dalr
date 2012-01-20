@@ -19,9 +19,9 @@ void main() {
 	SymbolManager sm = new SymbolManager();
 	GrammerParser gp = new GrammerParser(sm);
 	ProductionManager pm = new ProductionManager(sm);
-	//FileReader fr = new FileReader("d2grm.dlr");
+	FileReader fr = new FileReader("d2grm.dlr");
 	//FileReader fr = new FileReader("websitegrammer.dlr");
-	FileReader fr = new FileReader("examplegrammer.dlr");
+	//FileReader fr = new FileReader("examplegrammer.dlr");
 	fr.parse();
 
 	// map the actions to the productions
@@ -34,10 +34,10 @@ void main() {
 			it++) {
 		actions.insert(pm.insertProduction(
 			gp.processProduction((*it).getProduction())), *it);
-		log("%s", (*it).getProduction());
 	}
+	log("number of productions %u", fr.getProductions().getSize());
 
-	/*pm.makeLRZeroItemSets();
+	pm.makeLRZeroItemSets();
 	log();
 	//writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0");
 	log();
@@ -68,5 +68,4 @@ void main() {
 	//println(extFollowRulesToString(pm, sm));
 	//println(normalProductionToString(pm, sm));
 	//println(finalTransitionTableToString(pm, sm));
-	*/
 }

@@ -52,6 +52,7 @@ class FileReader {
 	private Deque!(string) userCode;
 	private Deque!(Production) productions;
 	private Deque!(string) stash;
+	private size_t line;
 	
 	// input file
 	private InputStream inFile;
@@ -89,6 +90,7 @@ class FileReader {
 		this.userCode = new Deque!(string)();
 		this.productions = new Deque!(Production)();
 		this.stash = new Deque!(string)();
+		this.line = 1;
 	}
 
 	public string getNextLine() {
@@ -97,8 +99,17 @@ class FileReader {
 		} else if(!this.stash.isEmpty()) {
 			return this.stash.popBack();	
 		} else {
+			this.line++;
 			return this.inFile.readLine().idup;
 		}
+	}
+
+	private size_t getLineNumber() const {
+		return this.line;
+	}
+
+	public Deque!(Production) getProductions() {
+		return this.productions;
 	}
 
 	public bool isEof() {
@@ -113,11 +124,10 @@ class FileReader {
 	public void parse() {
 		while(!this.isEof()) {
 			string cur = this.getNextLine();
-			//log("%s",cur);
 
 			// is the line a comment
 			size_t comment = findArr!(char)(cur, "//");
-			if(comment == cur.length) {
+			if(comment < cur.length) {
 				continue;
 			}
 
@@ -127,8 +137,11 @@ class FileReader {
 				this.parseUserCode(cur);
 				continue;
 			}
+
+			// grammer rules
 			size_t prodStart = findArr!(char)(cur, ":=");
 			size_t pipe = find!(char)(cur, '|');
+			//log("%u %u", prodStart, pipe);
 			if(prodStart < cur.length) {
 				cur = this.parseProduction(cur);
 			} else if(pipe < cur.length) {
@@ -136,10 +149,10 @@ class FileReader {
 			}
 
 			// production code 
-			/*size_t prodCodeStart = findArr!(char)(cur, "{:");
+			size_t prodCodeStart = findArr!(char)(cur, "{:");
 			if(prodCodeStart < cur.length) {
 				cur = this.parseProductionAction(cur);
-			}*/
+			}
 		}
 	}
 
@@ -172,6 +185,15 @@ class FileReader {
 			} else {
 				cur = this.getNextLine();	
 				semi = find!(char)(cur, ';');
+
+				colom = find!(char)(cur, '|');
+				assert(colom == cur.length, 
+					format("found a pipe will parsing a production at line %u",
+					this.getLineNumber()));
+				colom = findArr!(char)(cur, ":=");
+				assert(colom == cur.length, format("found a productionstart" ~
+					" will parsing a production at line %u %s", 
+					this.getLineNumber(), cur));
 			}
 			tmp.pushBack(cur[0 .. semi]);
 		}
