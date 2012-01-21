@@ -10,14 +10,14 @@ class GrammerRule():
 		self.rules = []
 
 	def addProduction(self, rule):
+		print(rule)
 		self.rules.append(rule)
 
 	def __str__(self):
-		ret = self.name +  " := \n"
+		ret = str(self.start).join(" := \n")
 		for rule in self.rules:
-			for item in rule:
-				ret += item + ' '
-			ret += '\n'
+			ret.join([str(it) for it in range(rule)])
+			ret.join('\n')
 
 		return ret
 
@@ -26,10 +26,11 @@ def parseFile(filename):
 	f = open(filename, 'r')	
 	productions = dict()
 
-	States = util.enum("No", "Production", "Alternativ", "UserCode")
+	States = util.enum("No", "Production", "Alternativ", "Action")
 	state = States.No
 	linenumber = 0
 	last = None
+	tmp = []
 	# run over the complete file
 	for line in f:
 		linenumber += 1
@@ -42,6 +43,7 @@ def parseFile(filename):
 		alternativ = -1
 		userCodeStart = -1
 		userCodeEnd = -1
+		semicolom = -1
 
 		try:
 			newProdStart = items.index(":=")
@@ -54,52 +56,49 @@ def parseFile(filename):
 			pass
 
 		try:
-			userCodeStart = items.index("{:")
+			semicolom = items.index(";")
 		except ValueError:
 			pass
 
 		try:
-			userCodeEnd = items.index(":}")
+			actionStart = items.index("{:")
+		except ValueError:
+			pass
+
+		try:
+			actionEnd = items.index(":}")
 		except ValueError:
 			pass
 
 		if state == States.No:
-			if newProdStart != -1: # a new production
+			if newProdStart != -1:
 				prod = None
 				if items[0] in productions:
 					prod = productions[items[0]]
 				else:
 					prod = GrammerRule(items[0])
 					productions[items[0]] = prod
-
-				if userCodeStart != -1:
-					prod.addProduction(items[2:userCodeStart])
-					state = States.UserCode
+					
+				if semicolom != -1:
+					prod.addProduction(items[2:semicolom])
 				else:
-					prod.addProduction(items[2:])
-				last = prod # prod is the new last
+					last = prod
+					tmp.append(items[2:])
+					state = States.Production
+		elif state == States.Production:
+			if semicolom != -1:
+				tmp.append(items[:semicolom])
+				last.addProduction(tmp)
+				tmp = []
+				if actionStart != -1 and actionEnd != -1:
+					state = States.No
+				elif actionStart != -1 and actionEnd == -1:
+					state = States.Action
 
-				continue
-			elif alternativ != -1: # a new alternativ to the last production
-				if userCodeStart != -1:
-					last.addProduction(items[1:userCodeStart])
-					state = States.UserCode
-				else:
-					last.addProduction(items[1:])
-
-				continue
-		#elif state == States.Production:
-		#elif state == States.Alternativ:
-		elif state == States.UserCode:
-			if userCodeEnd != -1:
-				state = States.No
-
-			continue
-		else:
-			assert False, state	
 
 	return productions
 		
 if __name__ == "__main__":
-	prod = parseFile("../websitegrammer.dlr")
-	print(prod)
+	prod = parseFile("../examplegrammer.dlr")
+	for key in prod:
+		print(key, prod[key])
