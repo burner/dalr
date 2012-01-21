@@ -26,7 +26,7 @@ tester: $(TESTEROBJS) $(OBJS)
 	dmd $(TESTEROBJS) $(OBJS) $(CFLAGS)  buildinfotester.d \
 	../libhurt/libhurt.a -gc -ofTester
 
-fine: $(OBJS)
+fine: $(OBJS) $(DALROBJS)
 	sh IncreBuildId.sh
 	dmd $(OBJS) $(CFLAGS) -version=DALR dalr.main.o buildinfo.d \
 	../libhurt/libhurt.a -gc -ofDalr
