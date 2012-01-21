@@ -1,7 +1,6 @@
 module dalr.filereader;
 
 import dalr.grammerparser;
-import dalr.productionmanager;
 
 import hurt.container.deque;
 import hurt.conv.conv;
@@ -15,9 +14,9 @@ import hurt.util.array;
 import hurt.util.slog;
 
 class Production {
-	string startSymbol;
-	string prodString;
-	string action;
+	private string startSymbol;
+	private string prodString;
+	private string action;
 
 	this(string startSymbol) {
 		this.startSymbol = startSymbol;
@@ -43,6 +42,10 @@ class Production {
 
 	public string getProduction() {
 		return trim(this.startSymbol) ~ " := " ~ trim(this.prodString);
+	}
+
+	public string getStartSymbol() const {
+		return this.startSymbol;
 	}
 }
 

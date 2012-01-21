@@ -5,10 +5,14 @@ all: fine
 CFLAGS=-m64 -unittest -debug -gc -I../libhurt/ -wi
 #CFLAGS=-m64 -offsm -O -wi -I../libhurt
 
-OBJS=dalr.main.o dalr.productionmanager.o dalr.item.o dalr.itemset.o \
+OBJS=dalr.productionmanager.o dalr.item.o dalr.itemset.o \
 dalr.symbolmanager.o dalr.grammerparser.o dalr.dotfilewriter.o \
 dalr.extendeditem.o dalr.finalitem.o dalr.mergedreduction.o dalr.tostring.o \
 dalr.filereader.o
+
+DALROBJS=dalr.main.o
+
+TESTEROBJS=tester.tester.o
 
 count:
 	wc -l `find dalr -name \*.d`
@@ -17,9 +21,15 @@ clean:
 	rm *.o
 	rm Dalr
 
+tester: $(TESTEROBJS) $(OBJS)
+	sh IncreBuildIdTester.sh
+	dmd $(TESTEROBJS) $(OBJS) $(CFLAGS)  buildinfotester.d \
+	../libhurt/libhurt.a -gc -ofTester
+
 fine: $(OBJS)
 	sh IncreBuildId.sh
-	dmd $(OBJS) $(CFLAGS) buildinfo.d ../libhurt/libhurt.a -gc -ofDalr
+	dmd $(OBJS) $(CFLAGS) -version=DALR dalr.main.o buildinfo.d \
+	../libhurt/libhurt.a -gc -ofDalr
 
 dalr.main.o: dalr/main.d dalr/productionmanager.d dalr/dotfilewriter.d \
 dalr/symbolmanager.d dalr/grammerparser.d dalr/tostring.d Makefile
@@ -61,3 +71,7 @@ dalr.symbolmanager.o: dalr/symbolmanager.d Makefile
 dalr.dotfilewriter.o: dalr/dotfilewriter.d dalr/symbolmanager.d dalr/item.d \
 dalr/itemset.d Makefile
 	dmd $(CFLAGS) -c dalr/dotfilewriter.d -ofdalr.dotfilewriter.o
+
+
+tester.tester.o: tester/tester.d Makefile
+	dmd $(CFLAGS) -c tester/tester.d -oftester.tester.o
