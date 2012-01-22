@@ -1,0 +1,463 @@
+<html xmlns:apd="http://apaged.mainia.de">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title></title>
+<style type="text/css">
+pre
+{
+	border: 2px solid #cccccc;
+	background: #e7e7e7;
+	padding: 1ex;
+	margin-left: 3em;
+	color: #000066;
+	/*min-width: 600px;*/
+}
+
+.bnf {	/* grammar */
+	background-color: #fefefe;
+	color: #000066;
+}
+			</style>
+</head>
+<body>
+			Strings in <b>bold</b> are regular expressions (lexemes).<br>
+			Lexeme lists in [ brackets ], are lexeme classes (alternation).<br><a name="seatdModule"></a><pre class="bnf"><i>seatdModule</i>:
+     <a href="#ModuleDeclarationOpt"><i>ModuleDeclarationOpt</i></a> <a href="#DeclDefsOpt"><i>DeclDefsOpt</i></a><br></pre>
+<a name="ModuleDeclarationOpt"></a><pre class="bnf"><i>ModuleDeclarationOpt</i>:
+     <a href="#ModuleKeyword"><i>ModuleKeyword</i></a> <a href="#ModuleName"><i>ModuleName</i></a> <b>;</b><br>     <i>epsilon</i><br></pre>
+<a name="ModuleKeyword"></a><pre class="bnf"><i>ModuleKeyword</i>:
+     <b>module</b><br></pre>
+<a name="ModuleName"></a><pre class="bnf"><i>ModuleName</i>:
+     <a href="#ModuleName"><i>ModuleName</i></a> <b>\.</b> <a href="#Identifier"><i>Identifier</i></a><br>     <a href="#Identifier"><i>Identifier</i></a><br></pre>
+<a name="DeclDefsOpt"></a><pre class="bnf"><i>DeclDefsOpt</i>:
+     <a href="#DeclDefsOpt"><i>DeclDefsOpt</i></a> <a href="#DeclDef"><i>DeclDef</i></a><br>     <i>epsilon</i><br></pre>
+<a name="DeclDef"></a><pre class="bnf"><i>DeclDef</i>:
+     <a href="#ConditionalDeclaration"><i>ConditionalDeclaration</i></a><br>     <a href="#DeclDefNoConditional"><i>DeclDefNoConditional</i></a><br></pre>
+<a name="DeclDefNoConditional"></a><pre class="bnf"><i>DeclDefNoConditional</i>:
+     <a href="#AttributeSpecifier"><i>AttributeSpecifier</i></a><br>     <a href="#StaticAssert"><i>StaticAssert</i></a><br>     <a href="#Declaration"><i>Declaration</i></a><br>     <a href="#ImportDeclaration"><i>ImportDeclaration</i></a><br>     <a href="#EnumDeclaration"><i>EnumDeclaration</i></a><br>     <a href="#TemplateMixin"><i>TemplateMixin</i></a><br>     <a href="#TemplateDeclaration"><i>TemplateDeclaration</i></a><br>     <a href="#FunctionTemplateDeclaration"><i>FunctionTemplateDeclaration</i></a><br>     <a href="#ClassTemplateDeclaration"><i>ClassTemplateDeclaration</i></a><br>     <a href="#InterfaceTemplateDeclaration"><i>InterfaceTemplateDeclaration</i></a><br>     <a href="#StructTemplateDeclaration"><i>StructTemplateDeclaration</i></a><br>     <a href="#ClassDeclaration"><i>ClassDeclaration</i></a><br>     <a href="#InterfaceDeclaration"><i>InterfaceDeclaration</i></a><br>     <a href="#AggregateDeclaration"><i>AggregateDeclaration</i></a><br>     <a href="#Constructor"><i>Constructor</i></a><br>     <a href="#Destructor"><i>Destructor</i></a><br>     <a href="#Invariant"><i>Invariant</i></a><br>     <a href="#UnitTest"><i>UnitTest</i></a><br>     <a href="#StaticConstructor"><i>StaticConstructor</i></a><br>     <a href="#StaticDestructor"><i>StaticDestructor</i></a><br>     <a href="#MixinDeclaration"><i>MixinDeclaration</i></a><br>     <b>;</b><br>     <a href="#DebugSpecification"><i>DebugSpecification</i></a><br>     <a href="#VersionSpecification"><i>VersionSpecification</i></a><br></pre>
+<a name="ConditionalDeclaration"></a><pre class="bnf"><i>ConditionalDeclaration</i>:
+     <a href="#Condition"><i>Condition</i></a> <b>:</b><br>     <a href="#Condition"><i>Condition</i></a> <a href="#DeclarationBlock"><i>DeclarationBlock</i></a><br>     <a href="#Condition"><i>Condition</i></a> <a href="#DeclarationBlock"><i>DeclarationBlock</i></a> <b>else</b> <a href="#DeclarationBlock"><i>DeclarationBlock</i></a><br></pre>
+<a name="Condition"></a><pre class="bnf"><i>Condition</i>:
+     <a href="#VersionCondition"><i>VersionCondition</i></a><br>     <a href="#DebugCondition"><i>DebugCondition</i></a><br>     <a href="#StaticIfCondition"><i>StaticIfCondition</i></a><br></pre>
+<a name="VersionCondition"></a><pre class="bnf"><i>VersionCondition</i>:
+     <b>version</b> <b>\(</b> <a href="#Integer"><i>Integer</i></a> <b>\)</b><br>     <b>version</b> <b>\(</b> <a href="#Identifier"><i>Identifier</i></a> <b>\)</b><br></pre>
+<a name="VersionSpecification"></a><pre class="bnf"><i>VersionSpecification</i>:
+     <b>version</b> <b>=</b> <a href="#Integer"><i>Integer</i></a> <b>;</b><br>     <b>version</b> <b>=</b> <a href="#Identifier"><i>Identifier</i></a> <b>;</b><br></pre>
+<a name="DebugCondition"></a><pre class="bnf"><i>DebugCondition</i>:
+     <b>debug</b> <b>\(</b> <a href="#Integer"><i>Integer</i></a> <b>\)</b><br>     <b>debug</b> <b>\(</b> <a href="#Identifier"><i>Identifier</i></a> <b>\)</b><br>     <b>debug</b><br></pre>
+<a name="DebugSpecification"></a><pre class="bnf"><i>DebugSpecification</i>:
+     <b>debug</b> <b>=</b> <a href="#Identifier"><i>Identifier</i></a> <b>;</b><br>     <b>debug</b> <b>=</b> <a href="#Integer"><i>Integer</i></a> <b>;</b><br></pre>
+<a name="StaticIfCondition"></a><pre class="bnf"><i>StaticIfCondition</i>:
+     <b>static</b> <b>if</b> <b>\(</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\)</b><br></pre>
+<a name="StaticAssert"></a><pre class="bnf"><i>StaticAssert</i>:
+     <b>static</b> <b>assert</b> <b>\(</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>,</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\)</b> <b>;</b><br>     <b>static</b> <b>assert</b> <b>\(</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\)</b> <b>;</b><br></pre>
+<a name="ImportDeclaration"></a><pre class="bnf"><i>ImportDeclaration</i>:
+     <b>import</b> <a href="#ImportList"><i>ImportList</i></a> <b>;</b><br></pre>
+<a name="ImportList"></a><pre class="bnf"><i>ImportList</i>:
+     <a href="#Import"><i>Import</i></a> <b>,</b> <a href="#ImportList"><i>ImportList</i></a><br>     <a href="#Import"><i>Import</i></a> <a href="#ImportBindListOpt"><i>ImportBindListOpt</i></a><br>     <a href="#Import"><i>Import</i></a><br></pre>
+<a name="Import"></a><pre class="bnf"><i>Import</i>:
+     <a href="#Identifier"><i>Identifier</i></a> <b>=</b> <a href="#ModuleName"><i>ModuleName</i></a><br>     <a href="#ModuleName"><i>ModuleName</i></a><br></pre>
+<a name="ImportBindListOpt"></a><pre class="bnf"><i>ImportBindListOpt</i>:
+     <b>:</b> <a href="#ImportBindList"><i>ImportBindList</i></a><br>     <i>epsilon</i><br></pre>
+<a name="ImportBindList"></a><pre class="bnf"><i>ImportBindList</i>:
+     <a href="#ImportBindList"><i>ImportBindList</i></a> <b>,</b> <a href="#ImportBind"><i>ImportBind</i></a><br>     <a href="#ImportBind"><i>ImportBind</i></a><br></pre>
+<a name="ImportBind"></a><pre class="bnf"><i>ImportBind</i>:
+     <a href="#Identifier"><i>Identifier</i></a> <b>=</b> <a href="#Identifier"><i>Identifier</i></a><br>     <a href="#Identifier"><i>Identifier</i></a><br></pre>
+<a name="AttributeSpecifier"></a><pre class="bnf"><i>AttributeSpecifier</i>:
+     <a href="#Attributes"><i>Attributes</i></a> <b>:</b> <a href="#DeclDefsOpt"><i>DeclDefsOpt</i></a><br>     <a href="#Attributes"><i>Attributes</i></a> <a href="#DeclarationBlock"><i>DeclarationBlock</i></a><br></pre>
+<a name="Attributes"></a><pre class="bnf"><i>Attributes</i>:
+     <a href="#Attributes"><i>Attributes</i></a> <a href="#Attribute"><i>Attribute</i></a><br>     <a href="#Attribute"><i>Attribute</i></a><br></pre>
+<a name="Attribute"></a><pre class="bnf"><i>Attribute</i>:
+     <a href="#StorageClassAttribute"><i>StorageClassAttribute</i></a><br>     <a href="#ProtectionAttribute"><i>ProtectionAttribute</i></a><br>     <a href="#LinkageAttribute"><i>LinkageAttribute</i></a><br>     <a href="#AlignAttribute"><i>AlignAttribute</i></a><br>     <a href="#Pragma"><i>Pragma</i></a><br></pre>
+<a name="StorageClassAttribute"></a><pre class="bnf"><i>StorageClassAttribute</i>:
+     <b>synchronized</b><br>     <b>deprecated</b><br>     <b>static</b><br>     <b>final</b><br>     <b>override</b><br>     <b>abstract</b><br>     <b>const</b><br>     <b>auto</b><br>     <b>scope</b><br></pre>
+<a name="ProtectionAttribute"></a><pre class="bnf"><i>ProtectionAttribute</i>:
+     <b>private</b><br>     <b>package</b><br>     <b>protected</b><br>     <b>public</b><br>     <b>export</b><br></pre>
+<a name="LinkageAttribute"></a><pre class="bnf"><i>LinkageAttribute</i>:
+     <b>extern</b> <b>\(</b> <a href="#Identifier"><i>Identifier</i></a> <b>\)</b><br>     <b>extern</b> <b>\(</b> <a href="#Identifier"><i>Identifier</i></a> <b>\+\+</b> <b>\)</b><br>     <b>extern</b><br></pre>
+<a name="AlignAttribute"></a><pre class="bnf"><i>AlignAttribute</i>:
+     <b>align</b> <b>\(</b> <a href="#Integer"><i>Integer</i></a> <b>\)</b><br>     <b>align</b><br></pre>
+<a name="Pragma"></a><pre class="bnf"><i>Pragma</i>:
+     <b>pragma</b> <b>\(</b> <a href="#Identifier"><i>Identifier</i></a> <b>,</b> <a href="#Expression"><i>Expression</i></a> <b>\)</b><br>     <b>pragma</b> <b>\(</b> <a href="#Identifier"><i>Identifier</i></a> <b>\)</b><br></pre>
+<a name="FunctionBody"></a><pre class="bnf"><i>FunctionBody</i>:
+     <a href="#InStatement"><i>InStatement</i></a> <a href="#OutStatement"><i>OutStatement</i></a> <a href="#BodyStatement"><i>BodyStatement</i></a><br>     <a href="#OutStatement"><i>OutStatement</i></a> <a href="#InStatement"><i>InStatement</i></a> <a href="#BodyStatement"><i>BodyStatement</i></a><br>     <a href="#InStatement"><i>InStatement</i></a> <a href="#BodyStatement"><i>BodyStatement</i></a><br>     <a href="#OutStatement"><i>OutStatement</i></a> <a href="#BodyStatement"><i>BodyStatement</i></a><br>     <a href="#BodyStatement"><i>BodyStatement</i></a><br></pre>
+<a name="FunctionBodyOpt"></a><pre class="bnf"><i>FunctionBodyOpt</i>:
+     <a href="#FunctionBody"><i>FunctionBody</i></a><br>     <b>;</b><br></pre>
+<a name="InStatement"></a><pre class="bnf"><i>InStatement</i>:
+     <b>in</b> <a href="#BlockStatement"><i>BlockStatement</i></a><br></pre>
+<a name="OutStatement"></a><pre class="bnf"><i>OutStatement</i>:
+     <b>out</b> <b>\(</b> <a href="#Identifier"><i>Identifier</i></a> <b>\)</b> <a href="#BlockStatement"><i>BlockStatement</i></a><br>     <b>out</b> <a href="#BlockStatement"><i>BlockStatement</i></a><br></pre>
+<a name="BodyStatement"></a><pre class="bnf"><i>BodyStatement</i>:
+     <b>body</b> <a href="#BlockStatement"><i>BlockStatement</i></a><br>     <a href="#BlockStatement"><i>BlockStatement</i></a><br></pre>
+<a name="ClassDeclaration"></a><pre class="bnf"><i>ClassDeclaration</i>:
+     <b>class</b> <a href="#Identifier"><i>Identifier</i></a> <a href="#BaseClassListOpt"><i>BaseClassListOpt</i></a> <a href="#ClassBody"><i>ClassBody</i></a><br></pre>
+<a name="BaseClassListOpt"></a><pre class="bnf"><i>BaseClassListOpt</i>:
+     <b>:</b> <a href="#BaseClassList"><i>BaseClassList</i></a><br>     <i>epsilon</i><br></pre>
+<a name="BaseClassList"></a><pre class="bnf"><i>BaseClassList</i>:
+     <a href="#BaseClassList"><i>BaseClassList</i></a> <b>,</b> <a href="#SuperClass"><i>SuperClass</i></a><br>     <a href="#SuperClass"><i>SuperClass</i></a><br></pre>
+<a name="SuperClass"></a><pre class="bnf"><i>SuperClass</i>:
+     <a href="#ProtectionNT"><i>ProtectionNT</i></a> <a href="#IdentifierList"><i>IdentifierList</i></a><br>     <a href="#IdentifierList"><i>IdentifierList</i></a><br></pre>
+<a name="ProtectionNT"></a><pre class="bnf"><i>ProtectionNT</i>:
+     <b>private</b><br>     <b>package</b><br>     <b>public</b><br>     <b>export</b><br></pre>
+<a name="ClassBody"></a><pre class="bnf"><i>ClassBody</i>:
+     <b>\{</b> <b>\}</b><br>     <b>\{</b> <a href="#ClassBodyDeclarations"><i>ClassBodyDeclarations</i></a> <b>\}</b><br></pre>
+<a name="ClassBodyDeclarations"></a><pre class="bnf"><i>ClassBodyDeclarations</i>:
+     <a href="#ClassBodyDeclarations"><i>ClassBodyDeclarations</i></a> <a href="#ClassBodyDeclaration"><i>ClassBodyDeclaration</i></a><br>     <a href="#ClassBodyDeclaration"><i>ClassBodyDeclaration</i></a><br></pre>
+<a name="ClassBodyDeclaration"></a><pre class="bnf"><i>ClassBodyDeclaration</i>:
+     <a href="#DeclDef"><i>DeclDef</i></a><br>     <a href="#ClassAllocator"><i>ClassAllocator</i></a><br>     <a href="#ClassDeallocator"><i>ClassDeallocator</i></a><br></pre>
+<a name="Constructor"></a><pre class="bnf"><i>Constructor</i>:
+     <b>this</b> <a href="#Parameters"><i>Parameters</i></a> <a href="#FunctionBodyOpt"><i>FunctionBodyOpt</i></a><br></pre>
+<a name="Destructor"></a><pre class="bnf"><i>Destructor</i>:
+     <b>~</b> <b>this</b> <b>\(</b> <b>\)</b> <a href="#FunctionBodyOpt"><i>FunctionBodyOpt</i></a><br></pre>
+<a name="StaticConstructor"></a><pre class="bnf"><i>StaticConstructor</i>:
+     <b>static</b> <b>this</b> <b>\(</b> <b>\)</b> <a href="#FunctionBody"><i>FunctionBody</i></a><br></pre>
+<a name="StaticDestructor"></a><pre class="bnf"><i>StaticDestructor</i>:
+     <b>static</b> <b>~</b> <b>this</b> <b>\(</b> <b>\)</b> <a href="#FunctionBody"><i>FunctionBody</i></a><br></pre>
+<a name="Invariant"></a><pre class="bnf"><i>Invariant</i>:
+     <b>invariant</b> <a href="#BlockStatement"><i>BlockStatement</i></a><br>     <b>invariant</b> <b>\(</b> <b>\)</b> <a href="#BlockStatement"><i>BlockStatement</i></a><br></pre>
+<a name="UnitTest"></a><pre class="bnf"><i>UnitTest</i>:
+     <b>unittest</b> <a href="#FunctionBody"><i>FunctionBody</i></a><br></pre>
+<a name="ClassAllocator"></a><pre class="bnf"><i>ClassAllocator</i>:
+     <b>new</b> <a href="#Parameters"><i>Parameters</i></a> <a href="#FunctionBody"><i>FunctionBody</i></a><br></pre>
+<a name="ClassDeallocator"></a><pre class="bnf"><i>ClassDeallocator</i>:
+     <b>delete</b> <a href="#Parameters"><i>Parameters</i></a> <a href="#FunctionBody"><i>FunctionBody</i></a><br></pre>
+<a name="InterfaceDeclaration"></a><pre class="bnf"><i>InterfaceDeclaration</i>:
+     <b>interface</b> <a href="#Identifier"><i>Identifier</i></a> <a href="#SuperInterfaceListOpt"><i>SuperInterfaceListOpt</i></a> <a href="#InterfaceBody"><i>InterfaceBody</i></a><br></pre>
+<a name="SuperInterfaceListOpt"></a><pre class="bnf"><i>SuperInterfaceListOpt</i>:
+     <b>:</b> <a href="#SuperInterfaces"><i>SuperInterfaces</i></a><br>     <i>epsilon</i><br></pre>
+<a name="SuperInterfaces"></a><pre class="bnf"><i>SuperInterfaces</i>:
+     <a href="#SuperInterfaces"><i>SuperInterfaces</i></a> <b>,</b> <a href="#SuperInterface"><i>SuperInterface</i></a><br>     <a href="#SuperInterface"><i>SuperInterface</i></a><br></pre>
+<a name="SuperInterface"></a><pre class="bnf"><i>SuperInterface</i>:
+     <a href="#ProtectionNT"><i>ProtectionNT</i></a> <a href="#IdentifierList"><i>IdentifierList</i></a><br>     <a href="#IdentifierList"><i>IdentifierList</i></a><br></pre>
+<a name="InterfaceBody"></a><pre class="bnf"><i>InterfaceBody</i>:
+     <b>\{</b> <a href="#DeclDefsOpt"><i>DeclDefsOpt</i></a> <b>\}</b><br></pre>
+<a name="AggregateDeclaration"></a><pre class="bnf"><i>AggregateDeclaration</i>:
+     <a href="#Tag"><i>Tag</i></a> <a href="#IdentifierOpt"><i>IdentifierOpt</i></a> <a href="#StructBody"><i>StructBody</i></a><br>     <a href="#Tag"><i>Tag</i></a> <a href="#IdentifierOpt"><i>IdentifierOpt</i></a> <b>;</b><br></pre>
+<a name="Tag"></a><pre class="bnf"><i>Tag</i>:
+     <b>struct</b><br>     <b>union</b><br></pre>
+<a name="StructBody"></a><pre class="bnf"><i>StructBody</i>:
+     <b>\{</b> <b>\}</b><br>     <b>\{</b> <b>\}</b> <b>;</b><br>     <b>\{</b> <a href="#StructBodyDeclarations"><i>StructBodyDeclarations</i></a> <b>\}</b><br>     <b>\{</b> <a href="#StructBodyDeclarations"><i>StructBodyDeclarations</i></a> <b>\}</b> <b>;</b><br></pre>
+<a name="StructBodyDeclarations"></a><pre class="bnf"><i>StructBodyDeclarations</i>:
+     <a href="#StructBodyDeclarations"><i>StructBodyDeclarations</i></a> <a href="#StructBodyDeclaration"><i>StructBodyDeclaration</i></a><br>     <a href="#StructBodyDeclaration"><i>StructBodyDeclaration</i></a><br></pre>
+<a name="StructBodyDeclaration"></a><pre class="bnf"><i>StructBodyDeclaration</i>:
+     <a href="#DeclDef"><i>DeclDef</i></a><br>     <a href="#StructAllocator"><i>StructAllocator</i></a><br>     <a href="#StructDeallocator"><i>StructDeallocator</i></a><br></pre>
+<a name="StructAllocator"></a><pre class="bnf"><i>StructAllocator</i>:
+     <a href="#ClassAllocator"><i>ClassAllocator</i></a><br></pre>
+<a name="StructDeallocator"></a><pre class="bnf"><i>StructDeallocator</i>:
+     <a href="#ClassDeallocator"><i>ClassDeallocator</i></a><br></pre>
+<a name="ConditionalStatement"></a><pre class="bnf"><i>ConditionalStatement</i>:
+     <a href="#Condition"><i>Condition</i></a> <a href="#Statement"><i>Statement</i></a> <b>else</b> <a href="#Statement"><i>Statement</i></a><br>     <a href="#Condition"><i>Condition</i></a> <a href="#Statement"><i>Statement</i></a><br></pre>
+<a name="Statement"></a><pre class="bnf"><i>Statement</i>:
+     <a href="#NonEmptyStatement"><i>NonEmptyStatement</i></a><br>     <a href="#BlockStatement"><i>BlockStatement</i></a><br></pre>
+<a name="StatementList"></a><pre class="bnf"><i>StatementList</i>:
+     <a href="#StatementList"><i>StatementList</i></a> <a href="#Statement"><i>Statement</i></a><br>     <a href="#Statement"><i>Statement</i></a><br></pre>
+<a name="NoScopeNonEmptyStatement"></a><pre class="bnf"><i>NoScopeNonEmptyStatement</i>:
+     <a href="#NonEmptyStatement"><i>NonEmptyStatement</i></a><br>     <a href="#BlockStatement"><i>BlockStatement</i></a><br></pre>
+<a name="NoScopeStatement"></a><pre class="bnf"><i>NoScopeStatement</i>:
+     <a href="#NonEmptyStatement"><i>NonEmptyStatement</i></a><br>     <a href="#BlockStatement"><i>BlockStatement</i></a><br></pre>
+<a name="NonEmptyStatement"></a><pre class="bnf"><i>NonEmptyStatement</i>:
+     <a href="#DeclDefNoConditional"><i>DeclDefNoConditional</i></a><br>     <a href="#NonEmptyNoDeclStatement"><i>NonEmptyNoDeclStatement</i></a><br></pre>
+<a name="NonEmptyNoDeclStatement"></a><pre class="bnf"><i>NonEmptyNoDeclStatement</i>:
+     <a href="#LabeledStatement"><i>LabeledStatement</i></a><br>     <a href="#ExpressionStatement"><i>ExpressionStatement</i></a><br>     <a href="#IfStatement"><i>IfStatement</i></a><br>     <a href="#ConditionalStatement"><i>ConditionalStatement</i></a><br>     <a href="#WhileStatement"><i>WhileStatement</i></a><br>     <a href="#DoStatement"><i>DoStatement</i></a><br>     <a href="#ForStatement"><i>ForStatement</i></a><br>     <a href="#ForeachStatement"><i>ForeachStatement</i></a><br>     <a href="#ForeachRangeStatement"><i>ForeachRangeStatement</i></a><br>     <a href="#SwitchStatement"><i>SwitchStatement</i></a><br>     <a href="#CaseStatement"><i>CaseStatement</i></a><br>     <a href="#DefaultStatement"><i>DefaultStatement</i></a><br>     <a href="#ContinueStatement"><i>ContinueStatement</i></a><br>     <a href="#BreakStatement"><i>BreakStatement</i></a><br>     <a href="#ReturnStatement"><i>ReturnStatement</i></a><br>     <a href="#GotoStatement"><i>GotoStatement</i></a><br>     <a href="#WithStatement"><i>WithStatement</i></a><br>     <a href="#SynchronizedStatement"><i>SynchronizedStatement</i></a><br>     <a href="#TryStatement"><i>TryStatement</i></a><br>     <a href="#ScopeGuardStatement"><i>ScopeGuardStatement</i></a><br>     <a href="#ThrowStatement"><i>ThrowStatement</i></a><br>     <a href="#VolatileStatement"><i>VolatileStatement</i></a><br>     <a href="#AsmStatement"><i>AsmStatement</i></a><br>     <a href="#PragmaStatement"><i>PragmaStatement</i></a><br></pre>
+<a name="ScopeStatement"></a><pre class="bnf"><i>ScopeStatement</i>:
+     <a href="#NonEmptyStatement"><i>NonEmptyStatement</i></a><br>     <a href="#BlockStatement"><i>BlockStatement</i></a><br></pre>
+<a name="NoDeclScopeStatement"></a><pre class="bnf"><i>NoDeclScopeStatement</i>:
+     <a href="#NonEmptyNoDeclStatement"><i>NonEmptyNoDeclStatement</i></a><br>     <a href="#BlockStatement"><i>BlockStatement</i></a><br></pre>
+<a name="LabeledStatement"></a><pre class="bnf"><i>LabeledStatement</i>:
+     <a href="#Identifier"><i>Identifier</i></a> <b>:</b> <a href="#NoScopeStatement"><i>NoScopeStatement</i></a><br></pre>
+<a name="BlockStatement"></a><pre class="bnf"><i>BlockStatement</i>:
+     <b>\{</b> <b>\}</b><br>     <b>\{</b> <a href="#StatementList"><i>StatementList</i></a> <b>\}</b><br></pre>
+<a name="ExpressionStatement"></a><pre class="bnf"><i>ExpressionStatement</i>:
+     <a href="#Expression"><i>Expression</i></a> <b>;</b><br></pre>
+<a name="IfStatement"></a><pre class="bnf"><i>IfStatement</i>:
+     <b>if</b> <b>\(</b> <a href="#IfCondition"><i>IfCondition</i></a> <b>\)</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a><br>     <b>if</b> <b>\(</b> <a href="#IfCondition"><i>IfCondition</i></a> <b>\)</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a> <b>else</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a><br></pre>
+<a name="IfCondition"></a><pre class="bnf"><i>IfCondition</i>:
+     <a href="#Expression"><i>Expression</i></a><br>     <b>auto</b> <a href="#Identifier"><i>Identifier</i></a> <b>=</b> <a href="#Expression"><i>Expression</i></a><br>     <a href="#BasicType"><i>BasicType</i></a> <a href="#Declarator"><i>Declarator</i></a> <b>=</b> <a href="#Expression"><i>Expression</i></a><br></pre>
+<a name="WhileStatement"></a><pre class="bnf"><i>WhileStatement</i>:
+     <b>while</b> <b>\(</b> <a href="#Expression"><i>Expression</i></a> <b>\)</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a><br></pre>
+<a name="DoStatement"></a><pre class="bnf"><i>DoStatement</i>:
+     <b>do</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a> <b>while</b> <b>\(</b> <a href="#Expression"><i>Expression</i></a> <b>\)</b><br></pre>
+<a name="ForStatement"></a><pre class="bnf"><i>ForStatement</i>:
+     <b>for</b> <b>\(</b> <a href="#NoScopeNonEmptyStatement"><i>NoScopeNonEmptyStatement</i></a> <a href="#ExpressionOpt"><i>ExpressionOpt</i></a> <b>;</b> <a href="#ExpressionOpt"><i>ExpressionOpt</i></a> <b>\)</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a><br></pre>
+<a name="ForeachStatement"></a><pre class="bnf"><i>ForeachStatement</i>:
+     <a href="#Foreach"><i>Foreach</i></a> <b>\(</b> <a href="#ForeachTypeList"><i>ForeachTypeList</i></a> <b>;</b> <a href="#Expression"><i>Expression</i></a> <b>\)</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a><br></pre>
+<a name="Foreach"></a><pre class="bnf"><i>Foreach</i>:
+     <b>foreach</b><br>     <b>foreach_reverse</b><br></pre>
+<a name="ForeachTypeList"></a><pre class="bnf"><i>ForeachTypeList</i>:
+     <a href="#ForeachTypeList"><i>ForeachTypeList</i></a> <b>,</b> <a href="#ForeachType"><i>ForeachType</i></a><br>     <a href="#ForeachType"><i>ForeachType</i></a><br></pre>
+<a name="ForeachType"></a><pre class="bnf"><i>ForeachType</i>:
+     <b>inout</b> <a href="#TypeNT"><i>TypeNT</i></a> <a href="#Identifier"><i>Identifier</i></a><br>     <b>ref</b> <a href="#TypeNT"><i>TypeNT</i></a> <a href="#Identifier"><i>Identifier</i></a><br>     <a href="#TypeNT"><i>TypeNT</i></a> <a href="#Identifier"><i>Identifier</i></a><br>     <b>inout</b> <a href="#Identifier"><i>Identifier</i></a><br>     <b>ref</b> <a href="#Identifier"><i>Identifier</i></a><br>     <a href="#Identifier"><i>Identifier</i></a><br></pre>
+<a name="ForeachRangeStatement"></a><pre class="bnf"><i>ForeachRangeStatement</i>:
+     <a href="#Foreach"><i>Foreach</i></a> <b>\(</b> <a href="#ForeachType"><i>ForeachType</i></a> <b>;</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\.\.</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\)</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a><br></pre>
+<a name="SwitchStatement"></a><pre class="bnf"><i>SwitchStatement</i>:
+     <b>switch</b> <b>\(</b> <a href="#Expression"><i>Expression</i></a> <b>\)</b> <a href="#BlockStatement"><i>BlockStatement</i></a><br></pre>
+<a name="CaseStatement"></a><pre class="bnf"><i>CaseStatement</i>:
+     <b>case</b> <a href="#Expression"><i>Expression</i></a> <b>:</b><br></pre>
+<a name="DefaultStatement"></a><pre class="bnf"><i>DefaultStatement</i>:
+     <b>default</b> <b>:</b><br></pre>
+<a name="ContinueStatement"></a><pre class="bnf"><i>ContinueStatement</i>:
+     <b>continue</b> <b>;</b><br>     <b>continue</b> <a href="#Identifier"><i>Identifier</i></a> <b>;</b><br></pre>
+<a name="BreakStatement"></a><pre class="bnf"><i>BreakStatement</i>:
+     <b>break</b> <b>;</b><br>     <b>break</b> <a href="#Identifier"><i>Identifier</i></a> <b>;</b><br></pre>
+<a name="ReturnStatement"></a><pre class="bnf"><i>ReturnStatement</i>:
+     <b>return</b> <b>;</b><br>     <b>return</b> <a href="#Expression"><i>Expression</i></a> <b>;</b><br></pre>
+<a name="GotoStatement"></a><pre class="bnf"><i>GotoStatement</i>:
+     <b>goto</b> <a href="#Identifier"><i>Identifier</i></a> <b>;</b><br>     <b>goto</b> <b>default</b> <b>;</b><br>     <b>goto</b> <b>case</b> <b>;</b><br>     <b>goto</b> <b>case</b> <a href="#Expression"><i>Expression</i></a> <b>;</b><br></pre>
+<a name="WithStatement"></a><pre class="bnf"><i>WithStatement</i>:
+     <b>with</b> <b>\(</b> <a href="#Expression"><i>Expression</i></a> <b>\)</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a><br>     <b>with</b> <b>\(</b> <a href="#TemplateInstance"><i>TemplateInstance</i></a> <b>\)</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a><br></pre>
+<a name="SynchronizedStatement"></a><pre class="bnf"><i>SynchronizedStatement</i>:
+     <b>synchronized</b> <a href="#NoDeclScopeStatement"><i>NoDeclScopeStatement</i></a><br>     <b>synchronized</b> <b>\(</b> <a href="#Expression"><i>Expression</i></a> <b>\)</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a><br></pre>
+<a name="TryStatement"></a><pre class="bnf"><i>TryStatement</i>:
+     <b>try</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a> <a href="#Catches"><i>Catches</i></a><br>     <b>try</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a> <a href="#Catches"><i>Catches</i></a> <a href="#FinallyStatement"><i>FinallyStatement</i></a><br>     <b>try</b> <a href="#ScopeStatement"><i>ScopeStatement</i></a> <a href="#FinallyStatement"><i>FinallyStatement</i></a><br></pre>
+<a name="Catches"></a><pre class="bnf"><i>Catches</i>:
+     <a href="#LastCatch"><i>LastCatch</i></a><br>     <a href="#Catch"><i>Catch</i></a> <a href="#Catches"><i>Catches</i></a><br>     <a href="#Catch"><i>Catch</i></a><br></pre>
+<a name="LastCatch"></a><pre class="bnf"><i>LastCatch</i>:
+     <b>catch</b> <a href="#NoScopeNonEmptyStatement"><i>NoScopeNonEmptyStatement</i></a><br></pre>
+<a name="Catch"></a><pre class="bnf"><i>Catch</i>:
+     <b>catch</b> <b>\(</b> <a href="#Parameter"><i>Parameter</i></a> <b>\)</b> <a href="#NoScopeNonEmptyStatement"><i>NoScopeNonEmptyStatement</i></a><br></pre>
+<a name="FinallyStatement"></a><pre class="bnf"><i>FinallyStatement</i>:
+     <b>finally</b> <a href="#NoScopeNonEmptyStatement"><i>NoScopeNonEmptyStatement</i></a><br></pre>
+<a name="ThrowStatement"></a><pre class="bnf"><i>ThrowStatement</i>:
+     <b>throw</b> <a href="#Expression"><i>Expression</i></a> <b>;</b><br></pre>
+<a name="ScopeGuardStatement"></a><pre class="bnf"><i>ScopeGuardStatement</i>:
+     <b>scope</b> <b>\(</b> <a href="#Identifier"><i>Identifier</i></a> <b>\)</b> <a href="#Statement"><i>Statement</i></a><br></pre>
+<a name="VolatileStatement"></a><pre class="bnf"><i>VolatileStatement</i>:
+     <b>volatile</b> <a href="#Statement"><i>Statement</i></a><br>     <b>volatile</b> <b>;</b><br></pre>
+<a name="AsmStatement"></a><pre class="bnf"><i>AsmStatement</i>:
+     <b>asm</b> <b>\{</b> <b>\}</b><br>     <b>asm</b> <b>\{</b> <a href="#AsmInstructionList"><i>AsmInstructionList</i></a> <b>\}</b><br></pre>
+<a name="AsmInstructionList"></a><pre class="bnf"><i>AsmInstructionList</i>:
+     <a href="#AsmInstructionList"><i>AsmInstructionList</i></a> <a href="#AsmInstruction"><i>AsmInstruction</i></a><br>     <a href="#AsmInstruction"><i>AsmInstruction</i></a><br></pre>
+<a name="AsmInstruction"></a><pre class="bnf"><i>AsmInstruction</i>:
+    [ <b>for</b> <b>!\&lt;=</b> <b>private</b> <b>lazy</b> <b>\&lt;\&gt;=</b> <b>r"[^"]*"[cdw]?</b> <b>in</b> <b>class</b> <b>typeof</b> <b>\^=</b> <b>\&lt;</b> <b>override</b> <b>double</b> <b>__VENDOR__</b> <b>[1-9][0-9_]*(L|[uU]|L[uU]|[uU]L)?</b> <b>[0-9][0-9_]*\.?([fFLi]|[fFL]i)</b> <b>\&gt;</b> <b>with</b> <b>uint</b> <b>\?</b> <b>goto</b> <b>is</b> <b>cdouble</b> <b>alias</b> <b>function</b> <b>0([xX][0-9a-fA-F_]*|[bB][01_]*|[0-7_]*)(L|[uU]|L[uU]|[uU]L)?</b> <b>\*=</b> <b>__FILE__</b> <b>q"</b> <b>switch</b> <b>asm</b> <b>dchar</b> <b>foreach</b> <b>idouble</b> <b>\&lt;=</b> <b>static</b> <b>struct</b> <b>!\&lt;</b> <b>import</b> <b>true</b> <b>\.\.\.</b> <b>!\&gt;</b> <b>!\&gt;=</b> <b>auto</b> <b>creal</b> <b>\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8}))</b> <b>foreach_reverse</b> <b>__TIMESTAMP__</b> <b>export</b> <b>\+=</b> <b>!\&lt;\&gt;</b> <b>debug</b> <b>"(([^"\\]*(\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8})))?)*)"[cdw]?</b> <b>float</b> <b>\&lt;\&lt;</b> <b>~</b> <b>break</b> <b>(([0-9_]*\.[0-9][0-9_]*([eE][\+\-]?[0-9][0-9_]*)?)|([0-9][0-9_]*[eE][\+\-]?[0-9][0-9_]*))([fFLi]|[fFL]i)?</b> <b>\&lt;\&gt;</b> <b>!</b> <b>typeid</b> <b>char</b> <b>__TIME__</b> <b>module</b> <b>real</b> <b>\[</b> <b>!=</b> <b>\&gt;\&gt;\&gt;</b> <b>%</b> <b>0[xX][0-9a-fA-F_]*\.?[0-9a-fA-F_]+[pP][\+\-]?[0-9_]+([fFLi]|[fFL]i)?</b> <b>\]</b> <b>&amp;</b> <b>\^</b> <b>unittest</b> <b>\&gt;=</b> <b>\-\-</b> <b>const</b> <b>,</b> <b>\|=</b> <b>`[^`]*`[cdw]?</b> <b>\&gt;\&gt;=</b> <b>do</b> <b>/</b> <b>enum</b> <b>\-=</b> <b>false</b> <b>__LINE__</b> <b>__VERSION__</b> <b>case</b> <b>short</b> <b>scope</b> <b>this</b> <b>package</b> <b>finally</b> <b>==</b> <b>void</b> <b>interface</b> <b>!\&lt;\&gt;=</b> <b>pragma</b> <b>:</b> <b>(0([xX][0-9a-fA-F_]*|[bB][01_]*|[0-7_]*)|([1-9][0-9_]*))[fFL]?i</b> <b>;</b> <b>'(([^'\\]|(\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8})))))'</b> <b>x"[0-9a-fA-F_\n\r\t ]*"[cdw]?</b> <b>extern</b> <b>ubyte</b> <b>=</b> <b>protected</b> <b>int</b> <b>super</b> <b>q\{</b> <b>typedef</b> <b>\.\.</b> <b>cast</b> <b>else</b> <b>null</b> <b>&amp;&amp;</b> <b>ulong</b> <b>ref</b> <b>\|</b> <b>\&gt;\&gt;\&gt;=</b> <b>align</b> <b>version</b> <b>[0-9][0-9_]*\.&gt;[^\.]</b> <b>mixin</b> <b>body</b> <b>synchronized</b> <b>abstract</b> <b>\|\|</b> <b>__DATE__</b> <b>volatile</b> <b>final</b> <b>[a-zA-Z_][_a-zA-Z0-9]*</b> <b>\&lt;\&lt;=</b> <b>\&gt;\&gt;</b> <b>\$</b> <b>inout</b> <b>!is&gt;[^_a-zA-Z0-9]</b> <b>%=</b> <b>delete</b> <b>continue</b> <b>template</b> <b>\(</b> <b>union</b> <b>ifloat</b> <b>\)</b> <b>byte</b> <b>\*</b> <b>delegate</b> <b>try</b> <b>\+</b> <b>catch</b> <b>ireal</b> <b>deprecated</b> <b>bool</b> <b>invariant</b> <b>new</b> <b>\-</b> <b>throw</b> <b>\.</b> <b>\+\+</b> <b>default</b> <b>return</b> <b>ushort</b> <b>~=</b> <b>public</b> <b>out</b> <b>cfloat</b> <b>long</b> <b>&amp;=</b> <b>if</b> <b>/=</b> <b>while</b> <b>__traits</b> <b>assert</b> <b>wchar</b>]<br></pre>
+<a name="PragmaStatement"></a><pre class="bnf"><i>PragmaStatement</i>:
+     <a href="#Pragma"><i>Pragma</i></a> <a href="#NoScopeStatement"><i>NoScopeStatement</i></a><br></pre>
+<a name="DeclarationBlock"></a><pre class="bnf"><i>DeclarationBlock</i>:
+     <b>\{</b> <a href="#DeclDefsOpt"><i>DeclDefsOpt</i></a> <b>\}</b><br>     <a href="#DeclDef"><i>DeclDef</i></a><br></pre>
+<a name="MixinDeclaration"></a><pre class="bnf"><i>MixinDeclaration</i>:
+     <b>mixin</b> <b>\(</b> <a href="#Expression"><i>Expression</i></a> <b>\)</b> <b>;</b><br></pre>
+<a name="Declaration"></a><pre class="bnf"><i>Declaration</i>:
+     <a href="#TypedefAlias"><i>TypedefAlias</i></a> <a href="#Declaration2"><i>Declaration2</i></a><br>     <a href="#TypedefAlias"><i>TypedefAlias</i></a> <a href="#Attributes"><i>Attributes</i></a> <a href="#Declaration2"><i>Declaration2</i></a><br>     <a href="#TypedefAlias"><i>TypedefAlias</i></a> <a href="#Attributes"><i>Attributes</i></a> <a href="#Identifier"><i>Identifier</i></a> <b>=</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>;</b><br>     <a href="#Attributes"><i>Attributes</i></a> <a href="#Declaration2"><i>Declaration2</i></a><br>     <a href="#Attributes"><i>Attributes</i></a> <a href="#IdentifierSimpleInitializerList"><i>IdentifierSimpleInitializerList</i></a> <b>;</b><br>     <a href="#Declaration2"><i>Declaration2</i></a><br></pre>
+<a name="TypedefAlias"></a><pre class="bnf"><i>TypedefAlias</i>:
+     <b>typedef</b><br>     <b>alias</b><br></pre>
+<a name="Declaration2"></a><pre class="bnf"><i>Declaration2</i>:
+     <a href="#BasicType"><i>BasicType</i></a> <a href="#Declarator"><i>Declarator</i></a> <a href="#FunctionBody"><i>FunctionBody</i></a><br>     <a href="#BasicType"><i>BasicType</i></a> <a href="#Declarators"><i>Declarators</i></a> <b>;</b><br></pre>
+<a name="IdentifierSimpleInitializerList"></a><pre class="bnf"><i>IdentifierSimpleInitializerList</i>:
+     <a href="#IdentifierSimpleInitializerList"><i>IdentifierSimpleInitializerList</i></a> <b>,</b> <a href="#Identifier"><i>Identifier</i></a> <b>=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#Identifier"><i>Identifier</i></a> <b>=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br></pre>
+<a name="Declarators"></a><pre class="bnf"><i>Declarators</i>:
+     <a href="#DeclaratorInitializer"><i>DeclaratorInitializer</i></a><br>     <a href="#DeclaratorInitializer"><i>DeclaratorInitializer</i></a> <b>,</b> <a href="#IdentifierInitializerList"><i>IdentifierInitializerList</i></a><br></pre>
+<a name="DeclaratorInitializer"></a><pre class="bnf"><i>DeclaratorInitializer</i>:
+     <a href="#Declarator"><i>Declarator</i></a><br>     <a href="#Declarator"><i>Declarator</i></a> <b>=</b> <a href="#Initializer"><i>Initializer</i></a><br></pre>
+<a name="IdentifierInitializerList"></a><pre class="bnf"><i>IdentifierInitializerList</i>:
+     <a href="#IdentifierInitializerList"><i>IdentifierInitializerList</i></a> <b>,</b> <a href="#IdentifierInitializer"><i>IdentifierInitializer</i></a><br>     <a href="#IdentifierInitializer"><i>IdentifierInitializer</i></a><br></pre>
+<a name="IdentifierInitializer"></a><pre class="bnf"><i>IdentifierInitializer</i>:
+     <a href="#Identifier"><i>Identifier</i></a><br>     <a href="#Identifier"><i>Identifier</i></a> <b>=</b> <a href="#Initializer"><i>Initializer</i></a><br></pre>
+<a name="BasicType"></a><pre class="bnf"><i>BasicType</i>:
+     <a href="#BasicTypeNoIdList"><i>BasicTypeNoIdList</i></a><br>     <b>\.</b> <a href="#IdentifierList"><i>IdentifierList</i></a><br>     <a href="#IdentifierList"><i>IdentifierList</i></a><br></pre>
+<a name="BasicTypeNoIdList"></a><pre class="bnf"><i>BasicTypeNoIdList</i>:
+     <b>bool</b><br>     <b>byte</b><br>     <b>ubyte</b><br>     <b>short</b><br>     <b>ushort</b><br>     <b>int</b><br>     <b>uint</b><br>     <b>long</b><br>     <b>ulong</b><br>     <b>char</b><br>     <b>wchar</b><br>     <b>dchar</b><br>     <b>float</b><br>     <b>double</b><br>     <b>real</b><br>     <b>ifloat</b><br>     <b>idouble</b><br>     <b>ireal</b><br>     <b>cfloat</b><br>     <b>cdouble</b><br>     <b>creal</b><br>     <b>void</b><br>     <a href="#Typeof"><i>Typeof</i></a><br>     <a href="#Typeof"><i>Typeof</i></a> <a href="#IdentifierList"><i>IdentifierList</i></a><br>     <a href="#TypeConstructor"><i>TypeConstructor</i></a> <b>\(</b> <a href="#TypeNT"><i>TypeNT</i></a> <b>\)</b><br></pre>
+<a name="BasicType2"></a><pre class="bnf"><i>BasicType2</i>:
+     <b>\*</b><br>     <b>\[</b> <b>\]</b><br>     <b>\[</b> <a href="#Expression"><i>Expression</i></a> <b>\]</b><br>     <b>\[</b> <a href="#TypeNT"><i>TypeNT</i></a> <b>\]</b><br>     <b>\[</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\.\.</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\]</b><br>     <b>delegate</b> <a href="#Parameters"><i>Parameters</i></a><br>     <b>function</b> <a href="#Parameters"><i>Parameters</i></a><br></pre>
+<a name="TypeConstructor"></a><pre class="bnf"><i>TypeConstructor</i>:
+     <b>const</b><br>     <b>invariant</b><br></pre>
+<a name="Declarator"></a><pre class="bnf"><i>Declarator</i>:
+     <a href="#BasicType2"><i>BasicType2</i></a> <a href="#DeclaratorOpt"><i>DeclaratorOpt</i></a><br>     <a href="#Identifier"><i>Identifier</i></a> <a href="#DeclaratorSuffixesOpt"><i>DeclaratorSuffixesOpt</i></a><br>     <b>\(</b> <a href="#Declarator"><i>Declarator</i></a> <b>\)</b> <a href="#DeclaratorSuffixesOpt"><i>DeclaratorSuffixesOpt</i></a><br></pre>
+<a name="DeclaratorOpt"></a><pre class="bnf"><i>DeclaratorOpt</i>:
+     <a href="#Declarator"><i>Declarator</i></a><br>     <i>epsilon</i><br></pre>
+<a name="DeclaratorSuffixesOpt"></a><pre class="bnf"><i>DeclaratorSuffixesOpt</i>:
+     <a href="#DeclaratorSuffixesOpt"><i>DeclaratorSuffixesOpt</i></a> <a href="#DeclaratorSuffix"><i>DeclaratorSuffix</i></a><br>     <i>epsilon</i><br></pre>
+<a name="DeclaratorSuffix"></a><pre class="bnf"><i>DeclaratorSuffix</i>:
+     <b>\[</b> <b>\]</b><br>     <b>\[</b> <a href="#Expression"><i>Expression</i></a> <b>\]</b><br>     <b>\[</b> <a href="#TypeNT"><i>TypeNT</i></a> <b>\]</b><br>     <a href="#Parameters"><i>Parameters</i></a><br></pre>
+<a name="IdentifierList"></a><pre class="bnf"><i>IdentifierList</i>:
+     <a href="#Identifier"><i>Identifier</i></a><br>     <a href="#IdentifierList"><i>IdentifierList</i></a> <b>\.</b> <a href="#Identifier"><i>Identifier</i></a><br>     <a href="#TemplateInstance"><i>TemplateInstance</i></a><br>     <a href="#IdentifierList"><i>IdentifierList</i></a> <b>\.</b> <a href="#TemplateInstance"><i>TemplateInstance</i></a><br></pre>
+<a name="Typeof"></a><pre class="bnf"><i>Typeof</i>:
+     <b>typeof</b> <b>\(</b> <a href="#Expression"><i>Expression</i></a> <b>\)</b><br></pre>
+<a name="TypeNT"></a><pre class="bnf"><i>TypeNT</i>:
+     <a href="#BasicType"><i>BasicType</i></a><br>     <a href="#BasicType"><i>BasicType</i></a> <a href="#Declarator2"><i>Declarator2</i></a><br></pre>
+<a name="TypeOpt"></a><pre class="bnf"><i>TypeOpt</i>:
+     <a href="#TypeNT"><i>TypeNT</i></a><br>     <i>epsilon</i><br></pre>
+<a name="Declarator2"></a><pre class="bnf"><i>Declarator2</i>:
+     <a href="#BasicType2"><i>BasicType2</i></a><br>     <a href="#BasicType2"><i>BasicType2</i></a> <a href="#Declarator2"><i>Declarator2</i></a><br>     <b>\(</b> <a href="#Declarator2"><i>Declarator2</i></a> <b>\)</b> <a href="#DeclaratorSuffixesOpt"><i>DeclaratorSuffixesOpt</i></a><br></pre>
+<a name="Parameters"></a><pre class="bnf"><i>Parameters</i>:
+     <b>\(</b> <b>\)</b><br>     <b>\(</b> <a href="#ParameterList"><i>ParameterList</i></a> <b>\)</b><br></pre>
+<a name="ParameterListOpt"></a><pre class="bnf"><i>ParameterListOpt</i>:
+     <a href="#ParameterList"><i>ParameterList</i></a><br>     <i>epsilon</i><br></pre>
+<a name="ParameterList"></a><pre class="bnf"><i>ParameterList</i>:
+     <a href="#Parameter"><i>Parameter</i></a><br>     <a href="#Parameter"><i>Parameter</i></a> <b>,</b> <a href="#ParameterList"><i>ParameterList</i></a><br>     <a href="#Parameter"><i>Parameter</i></a> <b>\.\.\.</b><br>     <b>\.\.\.</b><br></pre>
+<a name="Parameter"></a><pre class="bnf"><i>Parameter</i>:
+     <a href="#Parameter2"><i>Parameter2</i></a><br>     <a href="#InOut"><i>InOut</i></a> <a href="#Parameter2"><i>Parameter2</i></a><br>     <a href="#ParameterStorageClasses"><i>ParameterStorageClasses</i></a> <a href="#Parameter2"><i>Parameter2</i></a><br>     <a href="#InOut"><i>InOut</i></a> <a href="#ParameterStorageClasses"><i>ParameterStorageClasses</i></a> <a href="#Parameter2"><i>Parameter2</i></a><br></pre>
+<a name="Parameter2"></a><pre class="bnf"><i>Parameter2</i>:
+     <a href="#BasicType"><i>BasicType</i></a> <a href="#DeclaratorOpt"><i>DeclaratorOpt</i></a><br>     <a href="#BasicType"><i>BasicType</i></a> <a href="#DeclaratorOpt"><i>DeclaratorOpt</i></a> <b>=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br></pre>
+<a name="ParameterStorageClasses"></a><pre class="bnf"><i>ParameterStorageClasses</i>:
+     <a href="#ParameterStorageClasses"><i>ParameterStorageClasses</i></a> <a href="#ParameterStorageClass"><i>ParameterStorageClass</i></a><br>     <a href="#ParameterStorageClass"><i>ParameterStorageClass</i></a><br></pre>
+<a name="ParameterStorageClass"></a><pre class="bnf"><i>ParameterStorageClass</i>:
+     <b>const</b><br>     <b>invariant</b><br>     <b>final</b><br>     <b>scope</b><br>     <b>static</b><br></pre>
+<a name="InOut"></a><pre class="bnf"><i>InOut</i>:
+     <b>inout</b><br>     <b>in</b><br>     <b>out</b><br>     <b>ref</b><br>     <b>lazy</b><br></pre>
+<a name="Initializer"></a><pre class="bnf"><i>Initializer</i>:
+     <b>void</b><br>     <a href="#NonVoidInitializer"><i>NonVoidInitializer</i></a><br></pre>
+<a name="NonVoidInitializer"></a><pre class="bnf"><i>NonVoidInitializer</i>:
+     <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ArrayInitializer"><i>ArrayInitializer</i></a><br>     <a href="#StructInitializer"><i>StructInitializer</i></a><br></pre>
+<a name="ArrayInitializer"></a><pre class="bnf"><i>ArrayInitializer</i>:
+     <b>\[</b> <b>\]</b><br>     <b>\[</b> <a href="#ArrayStructMemberInitializers"><i>ArrayStructMemberInitializers</i></a> <b>\]</b><br></pre>
+<a name="StructInitializer"></a><pre class="bnf"><i>StructInitializer</i>:
+     <b>\{</b> <b>\}</b><br>     <b>\{</b> <a href="#ArrayStructMemberInitializers"><i>ArrayStructMemberInitializers</i></a> <b>\}</b><br></pre>
+<a name="ArrayStructMemberInitializers"></a><pre class="bnf"><i>ArrayStructMemberInitializers</i>:
+     <a href="#ArrayStructMemberInitializers"><i>ArrayStructMemberInitializers</i></a> <b>,</b> <a href="#ArrayStructMemberInitializer"><i>ArrayStructMemberInitializer</i></a><br>     <a href="#ArrayStructMemberInitializers"><i>ArrayStructMemberInitializers</i></a> <b>,</b><br>     <a href="#ArrayStructMemberInitializer"><i>ArrayStructMemberInitializer</i></a><br></pre>
+<a name="ArrayStructMemberInitializer"></a><pre class="bnf"><i>ArrayStructMemberInitializer</i>:
+     <a href="#NonVoidInitializer"><i>NonVoidInitializer</i></a><br>     <a href="#Identifier"><i>Identifier</i></a> <b>:</b> <a href="#NonVoidInitializer"><i>NonVoidInitializer</i></a><br></pre>
+<a name="EnumDeclaration"></a><pre class="bnf"><i>EnumDeclaration</i>:
+     <b>enum</b> <a href="#Identifier"><i>Identifier</i></a> <a href="#EnumBaseTypeOpt"><i>EnumBaseTypeOpt</i></a> <a href="#EnumBody"><i>EnumBody</i></a><br>     <b>enum</b> <a href="#EnumBaseTypeOpt"><i>EnumBaseTypeOpt</i></a> <a href="#EnumBody"><i>EnumBody</i></a><br></pre>
+<a name="EnumBaseTypeOpt"></a><pre class="bnf"><i>EnumBaseTypeOpt</i>:
+     <b>:</b> <a href="#TypeNT"><i>TypeNT</i></a><br>     <i>epsilon</i><br></pre>
+<a name="EnumBody"></a><pre class="bnf"><i>EnumBody</i>:
+     <b>;</b><br>     <b>\{</b> <a href="#EnumMembers"><i>EnumMembers</i></a> <b>\}</b><br></pre>
+<a name="EnumMembers"></a><pre class="bnf"><i>EnumMembers</i>:
+     <a href="#EnumMembers"><i>EnumMembers</i></a> <b>,</b> <a href="#EnumMember"><i>EnumMember</i></a><br>     <a href="#EnumMembers"><i>EnumMembers</i></a> <b>,</b><br>     <a href="#EnumMember"><i>EnumMember</i></a><br></pre>
+<a name="EnumMember"></a><pre class="bnf"><i>EnumMember</i>:
+     <a href="#Identifier"><i>Identifier</i></a> <a href="#EnumInitializerOpt"><i>EnumInitializerOpt</i></a><br></pre>
+<a name="EnumInitializerOpt"></a><pre class="bnf"><i>EnumInitializerOpt</i>:
+     <b>=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <i>epsilon</i><br></pre>
+<a name="TemplateDeclaration"></a><pre class="bnf"><i>TemplateDeclaration</i>:
+     <b>template</b> <a href="#Identifier"><i>Identifier</i></a> <b>\(</b> <a href="#TemplateParameterListOpt"><i>TemplateParameterListOpt</i></a> <b>\)</b> <b>\{</b> <a href="#DeclDefsOpt"><i>DeclDefsOpt</i></a> <b>\}</b><br></pre>
+<a name="TemplateParameterListOpt"></a><pre class="bnf"><i>TemplateParameterListOpt</i>:
+     <a href="#TemplateParameterList"><i>TemplateParameterList</i></a><br>     <i>epsilon</i><br></pre>
+<a name="TemplateParameterList"></a><pre class="bnf"><i>TemplateParameterList</i>:
+     <a href="#TemplateParameterList"><i>TemplateParameterList</i></a> <b>,</b> <a href="#TemplateParameter"><i>TemplateParameter</i></a><br>     <a href="#TemplateParameter"><i>TemplateParameter</i></a><br></pre>
+<a name="TemplateParameter"></a><pre class="bnf"><i>TemplateParameter</i>:
+     <a href="#TemplateAliasParameter"><i>TemplateAliasParameter</i></a><br>     <a href="#TemplateTupleParameter"><i>TemplateTupleParameter</i></a><br>     <a href="#TemplateValueParameter"><i>TemplateValueParameter</i></a><br>     <a href="#TemplateTypeParameter"><i>TemplateTypeParameter</i></a><br></pre>
+<a name="TemplateTypeParameter"></a><pre class="bnf"><i>TemplateTypeParameter</i>:
+     <a href="#Identifier"><i>Identifier</i></a> <a href="#TemplateTypeParameterSpecializationOpt"><i>TemplateTypeParameterSpecializationOpt</i></a> <a href="#TemplateTypeParameterDefaultOpt"><i>TemplateTypeParameterDefaultOpt</i></a><br></pre>
+<a name="TemplateTypeParameterSpecializationOpt"></a><pre class="bnf"><i>TemplateTypeParameterSpecializationOpt</i>:
+     <b>:</b> <a href="#TypeNT"><i>TypeNT</i></a><br>     <i>epsilon</i><br></pre>
+<a name="TemplateTypeParameterDefaultOpt"></a><pre class="bnf"><i>TemplateTypeParameterDefaultOpt</i>:
+     <b>=</b> <a href="#TypeNT"><i>TypeNT</i></a><br>     <i>epsilon</i><br></pre>
+<a name="TemplateValueParameter"></a><pre class="bnf"><i>TemplateValueParameter</i>:
+     <a href="#BasicType"><i>BasicType</i></a> <a href="#Declarator"><i>Declarator</i></a> <a href="#TemplateValueParameterSpecializationOpt"><i>TemplateValueParameterSpecializationOpt</i></a> <a href="#TemplateValueParameterDefaultOpt"><i>TemplateValueParameterDefaultOpt</i></a><br></pre>
+<a name="TemplateValueParameterSpecializationOpt"></a><pre class="bnf"><i>TemplateValueParameterSpecializationOpt</i>:
+     <b>:</b> <a href="#ConditionalExpression"><i>ConditionalExpression</i></a><br>     <i>epsilon</i><br></pre>
+<a name="TemplateValueParameterDefaultOpt"></a><pre class="bnf"><i>TemplateValueParameterDefaultOpt</i>:
+     <b>=</b> <a href="#ConditionalExpression"><i>ConditionalExpression</i></a><br>     <i>epsilon</i><br></pre>
+<a name="TemplateAliasParameter"></a><pre class="bnf"><i>TemplateAliasParameter</i>:
+     <b>alias</b> <a href="#Identifier"><i>Identifier</i></a> <a href="#TemplateAliasParameterSpecializationOpt"><i>TemplateAliasParameterSpecializationOpt</i></a> <a href="#TemplateAliasParameterDefaultOpt"><i>TemplateAliasParameterDefaultOpt</i></a><br></pre>
+<a name="TemplateAliasParameterSpecializationOpt"></a><pre class="bnf"><i>TemplateAliasParameterSpecializationOpt</i>:
+     <b>:</b> <a href="#TypeNT"><i>TypeNT</i></a><br>     <i>epsilon</i><br></pre>
+<a name="TemplateAliasParameterDefaultOpt"></a><pre class="bnf"><i>TemplateAliasParameterDefaultOpt</i>:
+     <b>=</b> <a href="#TypeNT"><i>TypeNT</i></a><br>     <i>epsilon</i><br></pre>
+<a name="TemplateTupleParameter"></a><pre class="bnf"><i>TemplateTupleParameter</i>:
+     <a href="#Identifier"><i>Identifier</i></a> <b>\.\.\.</b><br></pre>
+<a name="ClassTemplateDeclaration"></a><pre class="bnf"><i>ClassTemplateDeclaration</i>:
+     <b>class</b> <a href="#Identifier"><i>Identifier</i></a> <b>\(</b> <a href="#TemplateParameterListOpt"><i>TemplateParameterListOpt</i></a> <b>\)</b> <a href="#BaseClassListOpt"><i>BaseClassListOpt</i></a> <a href="#ClassBody"><i>ClassBody</i></a><br></pre>
+<a name="InterfaceTemplateDeclaration"></a><pre class="bnf"><i>InterfaceTemplateDeclaration</i>:
+     <b>interface</b> <a href="#Identifier"><i>Identifier</i></a> <b>\(</b> <a href="#TemplateParameterListOpt"><i>TemplateParameterListOpt</i></a> <b>\)</b> <a href="#SuperInterfaceListOpt"><i>SuperInterfaceListOpt</i></a> <a href="#InterfaceBody"><i>InterfaceBody</i></a><br></pre>
+<a name="StructTemplateDeclaration"></a><pre class="bnf"><i>StructTemplateDeclaration</i>:
+     <b>struct</b> <a href="#Identifier"><i>Identifier</i></a> <b>\(</b> <a href="#TemplateParameterListOpt"><i>TemplateParameterListOpt</i></a> <b>\)</b> <a href="#StructBody"><i>StructBody</i></a><br></pre>
+<a name="FunctionTemplateDeclaration"></a><pre class="bnf"><i>FunctionTemplateDeclaration</i>:
+     <a href="#TypeIdent"><i>TypeIdent</i></a> <b>\(</b> <a href="#TemplateParameterList"><i>TemplateParameterList</i></a> <b>\)</b> <b>\(</b> <a href="#ParameterListOpt"><i>ParameterListOpt</i></a> <b>\)</b> <a href="#FunctionBody"><i>FunctionBody</i></a><br></pre>
+<a name="TypeIdent"></a><pre class="bnf"><i>TypeIdent</i>:
+     <a href="#BasicType"><i>BasicType</i></a> <a href="#Identifier"><i>Identifier</i></a><br>     <a href="#TypeNT"><i>TypeNT</i></a> <a href="#Identifier"><i>Identifier</i></a><br></pre>
+<a name="TemplateInstance"></a><pre class="bnf"><i>TemplateInstance</i>:
+     <a href="#Identifier"><i>Identifier</i></a> <b>!</b> <b>\(</b> <a href="#TemplateArgumentListOpt"><i>TemplateArgumentListOpt</i></a> <b>\)</b><br></pre>
+<a name="TemplateArgumentListOpt"></a><pre class="bnf"><i>TemplateArgumentListOpt</i>:
+     <a href="#TemplateArgumentList"><i>TemplateArgumentList</i></a><br>     <i>epsilon</i><br></pre>
+<a name="TemplateArgumentList"></a><pre class="bnf"><i>TemplateArgumentList</i>:
+     <a href="#TemplateArgumentList"><i>TemplateArgumentList</i></a> <b>,</b> <a href="#TemplateArgument"><i>TemplateArgument</i></a><br>     <a href="#TemplateArgument"><i>TemplateArgument</i></a><br></pre>
+<a name="TemplateArgument"></a><pre class="bnf"><i>TemplateArgument</i>:
+     <a href="#TypeNT"><i>TypeNT</i></a><br>     <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#Identifier"><i>Identifier</i></a><br></pre>
+<a name="TemplateMixin"></a><pre class="bnf"><i>TemplateMixin</i>:
+     <b>mixin</b> <a href="#Identifier"><i>Identifier</i></a> <a href="#TemplateMixin2"><i>TemplateMixin2</i></a> <a href="#IdentifierOpt"><i>IdentifierOpt</i></a> <b>;</b><br></pre>
+<a name="TemplateMixin2"></a><pre class="bnf"><i>TemplateMixin2</i>:
+     <b>!</b> <b>\(</b> <a href="#TemplateArgumentListOpt"><i>TemplateArgumentListOpt</i></a> <b>\)</b><br>     <i>epsilon</i><br></pre>
+<a name="Expression"></a><pre class="bnf"><i>Expression</i>:
+     <a href="#Expression"><i>Expression</i></a> <b>,</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#AssignExpression"><i>AssignExpression</i></a><br></pre>
+<a name="ExpressionOpt"></a><pre class="bnf"><i>ExpressionOpt</i>:
+     <a href="#Expression"><i>Expression</i></a><br>     <i>epsilon</i><br></pre>
+<a name="AssignExpression"></a><pre class="bnf"><i>AssignExpression</i>:
+     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>\+=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>\-=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>\*=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>/=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>%=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>&amp;=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>\|=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>\^=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>~=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>\&lt;\&lt;=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>\&gt;\&gt;=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>\&gt;\&gt;\&gt;=</b> <a href="#AssignExpression"><i>AssignExpression</i></a><br></pre>
+<a name="ConditionalExpression"></a><pre class="bnf"><i>ConditionalExpression</i>:
+     <a href="#OrOrExpression"><i>OrOrExpression</i></a><br>     <a href="#OrOrExpression"><i>OrOrExpression</i></a> <b>\?</b> <a href="#Expression"><i>Expression</i></a> <b>:</b> <a href="#ConditionalExpression"><i>ConditionalExpression</i></a><br></pre>
+<a name="OrOrExpression"></a><pre class="bnf"><i>OrOrExpression</i>:
+     <a href="#AndAndExpression"><i>AndAndExpression</i></a><br>     <a href="#OrOrExpression"><i>OrOrExpression</i></a> <b>\|\|</b> <a href="#AndAndExpression"><i>AndAndExpression</i></a><br></pre>
+<a name="AndAndExpression"></a><pre class="bnf"><i>AndAndExpression</i>:
+     <a href="#OrExpression"><i>OrExpression</i></a><br>     <a href="#AndAndExpression"><i>AndAndExpression</i></a> <b>&amp;&amp;</b> <a href="#OrExpression"><i>OrExpression</i></a><br></pre>
+<a name="OrExpression"></a><pre class="bnf"><i>OrExpression</i>:
+     <a href="#XorExpression"><i>XorExpression</i></a><br>     <a href="#OrExpression"><i>OrExpression</i></a> <b>\|</b> <a href="#XorExpression"><i>XorExpression</i></a><br></pre>
+<a name="XorExpression"></a><pre class="bnf"><i>XorExpression</i>:
+     <a href="#AndExpression"><i>AndExpression</i></a><br>     <a href="#XorExpression"><i>XorExpression</i></a> <b>\^</b> <a href="#AndExpression"><i>AndExpression</i></a><br></pre>
+<a name="AndExpression"></a><pre class="bnf"><i>AndExpression</i>:
+     <a href="#CmpExpression"><i>CmpExpression</i></a><br>     <a href="#AndExpression"><i>AndExpression</i></a> <b>&amp;</b> <a href="#CmpExpression"><i>CmpExpression</i></a><br></pre>
+<a name="CmpExpression"></a><pre class="bnf"><i>CmpExpression</i>:
+     <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>==</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>!=</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>is</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <a href="#NotIs"><i>NotIs</i></a> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>\&lt;</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>\&lt;=</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>\&gt;</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>\&gt;=</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>!\&lt;\&gt;=</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>!\&lt;\&gt;</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>\&lt;\&gt;</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>\&lt;\&gt;=</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>!\&gt;</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>!\&gt;=</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>!\&lt;</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>!\&lt;=</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>in</b> <a href="#ShiftExpression"><i>ShiftExpression</i></a><br></pre>
+<a name="NotIs"></a><pre class="bnf"><i>NotIs</i>:
+     <b>!is&gt;[^_a-zA-Z0-9]</b><br></pre>
+<a name="IsNotIs"></a><pre class="bnf"><i>IsNotIs</i>:
+     <b>is</b><br>     <b>!is&gt;[^_a-zA-Z0-9]</b><br></pre>
+<a name="ShiftExpression"></a><pre class="bnf"><i>ShiftExpression</i>:
+     <a href="#AddExpression"><i>AddExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>\&lt;\&lt;</b> <a href="#AddExpression"><i>AddExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>\&gt;\&gt;</b> <a href="#AddExpression"><i>AddExpression</i></a><br>     <a href="#ShiftExpression"><i>ShiftExpression</i></a> <b>\&gt;\&gt;\&gt;</b> <a href="#AddExpression"><i>AddExpression</i></a><br></pre>
+<a name="AddExpression"></a><pre class="bnf"><i>AddExpression</i>:
+     <a href="#MulExpression"><i>MulExpression</i></a><br>     <a href="#AddExpression"><i>AddExpression</i></a> <b>\+</b> <a href="#MulExpression"><i>MulExpression</i></a><br>     <a href="#AddExpression"><i>AddExpression</i></a> <b>\-</b> <a href="#MulExpression"><i>MulExpression</i></a><br>     <a href="#CatExpression"><i>CatExpression</i></a><br></pre>
+<a name="CatExpression"></a><pre class="bnf"><i>CatExpression</i>:
+     <a href="#AddExpression"><i>AddExpression</i></a> <b>~</b> <a href="#MulExpression"><i>MulExpression</i></a><br></pre>
+<a name="MulExpression"></a><pre class="bnf"><i>MulExpression</i>:
+     <a href="#UnaryExpression"><i>UnaryExpression</i></a><br>     <a href="#MulExpression"><i>MulExpression</i></a> <b>\*</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br>     <a href="#MulExpression"><i>MulExpression</i></a> <b>/</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br>     <a href="#MulExpression"><i>MulExpression</i></a> <b>%</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br></pre>
+<a name="UnaryExpression"></a><pre class="bnf"><i>UnaryExpression</i>:
+     <a href="#PostfixExpression"><i>PostfixExpression</i></a><br>     <b>&amp;</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br>     <b>\+\+</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br>     <b>\-\-</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br>     <b>\*</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br>     <b>\-</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br>     <b>\+</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br>     <b>!</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br>     <b>~</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br>     <b>\(</b> <a href="#TypeNT"><i>TypeNT</i></a> <b>\)</b> <b>\.</b> <a href="#Identifier"><i>Identifier</i></a><br>     <a href="#NewExpression"><i>NewExpression</i></a><br>     <b>delete</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br>     <b>cast</b> <b>\(</b> <a href="#TypeNT"><i>TypeNT</i></a> <b>\)</b> <a href="#UnaryExpression"><i>UnaryExpression</i></a><br></pre>
+<a name="PostfixExpression"></a><pre class="bnf"><i>PostfixExpression</i>:
+     <a href="#Integer"><i>Integer</i></a><br>     <a href="#Float"><i>Float</i></a><br>     <b>\$</b><br>     <b>null</b><br>     <b>true</b><br>     <b>false</b><br>     <a href="#AssertExpression"><i>AssertExpression</i></a><br>     <a href="#MixinExpression"><i>MixinExpression</i></a><br>     <a href="#IsExpression"><i>IsExpression</i></a><br>     <a href="#PostfixExpression2"><i>PostfixExpression2</i></a><br></pre>
+<a name="PostfixExpression2"></a><pre class="bnf"><i>PostfixExpression2</i>:
+     <a href="#PrimaryExpression"><i>PrimaryExpression</i></a><br>     <a href="#PostfixExpression2"><i>PostfixExpression2</i></a> <b>\.</b> <a href="#Identifier"><i>Identifier</i></a><br>     <a href="#PostfixExpression2"><i>PostfixExpression2</i></a> <b>\.</b> <a href="#TemplateInstance"><i>TemplateInstance</i></a><br>     <a href="#PostfixExpression2"><i>PostfixExpression2</i></a> <b>\+\+</b><br>     <a href="#PostfixExpression2"><i>PostfixExpression2</i></a> <b>\-\-</b><br>     <a href="#PostfixExpression2"><i>PostfixExpression2</i></a> <b>\(</b> <a href="#ArgumentList"><i>ArgumentList</i></a> <b>\)</b><br>     <a href="#PostfixExpression2"><i>PostfixExpression2</i></a> <b>\[</b> <a href="#ArgumentList"><i>ArgumentList</i></a> <b>\]</b><br>     <a href="#PostfixExpression2"><i>PostfixExpression2</i></a> <b>\[</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\.\.</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\]</b><br></pre>
+<a name="PrimaryExpression"></a><pre class="bnf"><i>PrimaryExpression</i>:
+     <a href="#Identifier"><i>Identifier</i></a><br>     <b>\.</b> <a href="#Identifier"><i>Identifier</i></a><br>     <a href="#TemplateInstance"><i>TemplateInstance</i></a><br>     <b>\.</b> <a href="#TemplateInstance"><i>TemplateInstance</i></a><br>     <b>this</b><br>     <b>super</b><br>     <a href="#CharacterLiteral"><i>CharacterLiteral</i></a><br>     <a href="#StringLiterals"><i>StringLiterals</i></a><br>     <a href="#ArrayLiteral"><i>ArrayLiteral</i></a><br>     <a href="#AssocArrayLiteral"><i>AssocArrayLiteral</i></a><br>     <a href="#FunctionLiteral"><i>FunctionLiteral</i></a><br>     <a href="#ImportExpression"><i>ImportExpression</i></a><br>     <a href="#BasicTypeNoIdList"><i>BasicTypeNoIdList</i></a> <b>\.</b> <a href="#Identifier"><i>Identifier</i></a><br>     <b>typeid</b> <b>\(</b> <a href="#TypeNT"><i>TypeNT</i></a> <b>\)</b><br>     <b>\(</b> <a href="#Expression"><i>Expression</i></a> <b>\)</b><br>     <a href="#TraitsExpression"><i>TraitsExpression</i></a><br></pre>
+<a name="AssertExpression"></a><pre class="bnf"><i>AssertExpression</i>:
+     <b>assert</b> <b>\(</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\)</b><br>     <b>assert</b> <b>\(</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>,</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\)</b><br></pre>
+<a name="MixinExpression"></a><pre class="bnf"><i>MixinExpression</i>:
+     <b>mixin</b> <b>\(</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\)</b><br></pre>
+<a name="ImportExpression"></a><pre class="bnf"><i>ImportExpression</i>:
+     <b>import</b> <b>\(</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\)</b><br></pre>
+<a name="IsExpression"></a><pre class="bnf"><i>IsExpression</i>:
+     <a href="#IsNotIs"><i>IsNotIs</i></a> <b>\(</b> <a href="#TypeNT"><i>TypeNT</i></a> <b>\)</b><br>     <a href="#IsNotIs"><i>IsNotIs</i></a> <b>\(</b> <a href="#TypeNT"><i>TypeNT</i></a> <b>:</b> <a href="#TypeSpecialization"><i>TypeSpecialization</i></a> <b>\)</b><br>     <a href="#IsNotIs"><i>IsNotIs</i></a> <b>\(</b> <a href="#TypeNT"><i>TypeNT</i></a> <b>==</b> <a href="#TypeSpecialization"><i>TypeSpecialization</i></a> <b>\)</b><br>     <a href="#IsNotIs"><i>IsNotIs</i></a> <b>\(</b> <a href="#TypeNT"><i>TypeNT</i></a> <a href="#Identifier"><i>Identifier</i></a> <b>\)</b><br>     <a href="#IsNotIs"><i>IsNotIs</i></a> <b>\(</b> <a href="#TypeNT"><i>TypeNT</i></a> <a href="#Identifier"><i>Identifier</i></a> <b>:</b> <a href="#TypeSpecialization"><i>TypeSpecialization</i></a> <b>\)</b><br>     <a href="#IsNotIs"><i>IsNotIs</i></a> <b>\(</b> <a href="#TypeNT"><i>TypeNT</i></a> <a href="#Identifier"><i>Identifier</i></a> <b>==</b> <a href="#TypeSpecialization"><i>TypeSpecialization</i></a> <b>\)</b><br>     <a href="#IsNotIs"><i>IsNotIs</i></a> <b>\(</b> <a href="#TypeNT"><i>TypeNT</i></a> <a href="#Identifier"><i>Identifier</i></a> <b>:</b> <a href="#TypeSpecialization"><i>TypeSpecialization</i></a> <b>,</b> <a href="#TemplateParameterList"><i>TemplateParameterList</i></a> <b>\)</b><br>     <a href="#IsNotIs"><i>IsNotIs</i></a> <b>\(</b> <a href="#TypeNT"><i>TypeNT</i></a> <a href="#Identifier"><i>Identifier</i></a> <b>==</b> <a href="#TypeSpecialization"><i>TypeSpecialization</i></a> <b>,</b> <a href="#TemplateParameterList"><i>TemplateParameterList</i></a> <b>\)</b><br></pre>
+<a name="TypeSpecialization"></a><pre class="bnf"><i>TypeSpecialization</i>:
+     <a href="#TypeNT"><i>TypeNT</i></a><br>     <b>typedef</b><br>     <b>struct</b><br>     <b>union</b><br>     <b>class</b><br>     <b>interface</b><br>     <b>enum</b><br>     <b>function</b><br>     <b>delegate</b><br>     <b>super</b><br>     <b>return</b><br></pre>
+<a name="StringLiterals"></a><pre class="bnf"><i>StringLiterals</i>:
+     <a href="#StringLiteral"><i>StringLiteral</i></a><br>     <a href="#StringLiterals"><i>StringLiterals</i></a> <a href="#StringLiteral"><i>StringLiteral</i></a><br></pre>
+<a name="ArrayLiteral"></a><pre class="bnf"><i>ArrayLiteral</i>:
+     <b>\[</b> <a href="#ArgumentList"><i>ArgumentList</i></a> <b>\]</b><br></pre>
+<a name="AssocArrayLiteral"></a><pre class="bnf"><i>AssocArrayLiteral</i>:
+     <b>\[</b> <a href="#KeyValuePairs"><i>KeyValuePairs</i></a> <b>\]</b><br></pre>
+<a name="KeyValuePairs"></a><pre class="bnf"><i>KeyValuePairs</i>:
+     <a href="#KeyValuePair"><i>KeyValuePair</i></a><br>     <a href="#KeyValuePair"><i>KeyValuePair</i></a> <b>,</b> <a href="#KeyValuePairs"><i>KeyValuePairs</i></a><br></pre>
+<a name="KeyValuePair"></a><pre class="bnf"><i>KeyValuePair</i>:
+     <a href="#ConditionalExpression"><i>ConditionalExpression</i></a> <b>:</b> <a href="#ConditionalExpression"><i>ConditionalExpression</i></a><br></pre>
+<a name="FunctionLiteral"></a><pre class="bnf"><i>FunctionLiteral</i>:
+     <b>function</b> <a href="#TypeOpt"><i>TypeOpt</i></a> <b>\(</b> <a href="#ParameterListOpt"><i>ParameterListOpt</i></a> <b>\)</b> <a href="#FunctionBody"><i>FunctionBody</i></a><br>     <b>delegate</b> <a href="#TypeOpt"><i>TypeOpt</i></a> <b>\(</b> <a href="#ParameterListOpt"><i>ParameterListOpt</i></a> <b>\)</b> <a href="#FunctionBody"><i>FunctionBody</i></a><br>     <b>function</b> <a href="#TypeOpt"><i>TypeOpt</i></a> <a href="#FunctionBody"><i>FunctionBody</i></a><br>     <b>delegate</b> <a href="#TypeOpt"><i>TypeOpt</i></a> <a href="#FunctionBody"><i>FunctionBody</i></a><br>     <b>\(</b> <a href="#ParameterListOpt"><i>ParameterListOpt</i></a> <b>\)</b> <a href="#FunctionBody"><i>FunctionBody</i></a><br>     <a href="#FunctionBody"><i>FunctionBody</i></a><br></pre>
+<a name="NewExpression"></a><pre class="bnf"><i>NewExpression</i>:
+     <a href="#NewArguments"><i>NewArguments</i></a> <a href="#TypeNT"><i>TypeNT</i></a> <b>\[</b> <a href="#AssignExpression"><i>AssignExpression</i></a> <b>\]</b><br>     <a href="#NewArguments"><i>NewArguments</i></a> <a href="#TypeNT"><i>TypeNT</i></a> <b>\(</b> <a href="#ArgumentList"><i>ArgumentList</i></a> <b>\)</b><br>     <a href="#NewArguments"><i>NewArguments</i></a> <a href="#TypeNT"><i>TypeNT</i></a><br>     <a href="#NewArguments"><i>NewArguments</i></a> <a href="#ClassArguments"><i>ClassArguments</i></a> <a href="#BaseClassListOpt"><i>BaseClassListOpt</i></a> <b>\{</b> <a href="#DeclDefsOpt"><i>DeclDefsOpt</i></a> <b>\}</b><br></pre>
+<a name="NewArguments"></a><pre class="bnf"><i>NewArguments</i>:
+     <b>new</b> <b>\(</b> <a href="#ArgumentList"><i>ArgumentList</i></a> <b>\)</b><br>     <b>new</b><br></pre>
+<a name="ClassArguments"></a><pre class="bnf"><i>ClassArguments</i>:
+     <b>class</b> <b>\(</b> <a href="#ArgumentList"><i>ArgumentList</i></a> <b>\)</b><br>     <b>class</b><br></pre>
+<a name="ArgumentList"></a><pre class="bnf"><i>ArgumentList</i>:
+     <a href="#Expression"><i>Expression</i></a><br>     <i>epsilon</i><br></pre>
+<a name="TraitsExpression"></a><pre class="bnf"><i>TraitsExpression</i>:
+     <b>__traits</b> <b>\(</b> <a href="#Identifier"><i>Identifier</i></a> <b>,</b> <a href="#TraitsArguments"><i>TraitsArguments</i></a> <b>\)</b><br></pre>
+<a name="TraitsArguments"></a><pre class="bnf"><i>TraitsArguments</i>:
+     <a href="#TraitsArguments"><i>TraitsArguments</i></a> <b>,</b> <a href="#TraitsArgument"><i>TraitsArgument</i></a><br>     <a href="#TraitsArgument"><i>TraitsArgument</i></a><br></pre>
+<a name="TraitsArgument"></a><pre class="bnf"><i>TraitsArgument</i>:
+     <a href="#AssignExpression"><i>AssignExpression</i></a><br>     <a href="#TypeNT"><i>TypeNT</i></a><br></pre>
+<a name="CharacterLiteral"></a><pre class="bnf"><i>CharacterLiteral</i>:
+     <b>'(([^'\\]|(\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8})))))'</b><br></pre>
+<a name="StringLiteral"></a><pre class="bnf"><i>StringLiteral</i>:
+     <b>"(([^"\\]*(\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8})))?)*)"[cdw]?</b><br>     <b>r"[^"]*"[cdw]?</b><br>     <b>`[^`]*`[cdw]?</b><br>     <b>x"[0-9a-fA-F_\n\r\t ]*"[cdw]?</b><br>     <b>\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8}))</b><br>     <b>q"</b><br>     <b>q\{</b> <a href="#Tokens"><i>Tokens</i></a> <b>\}</b><br>     <b>__FILE__</b><br>     <b>__DATE__</b><br>     <b>__TIME__</b><br>     <b>__TIMESTAMP__</b><br>     <b>__VENDOR__</b><br></pre>
+<a name="Tokens"></a><pre class="bnf"><i>Tokens</i>:
+     <a href="#Tokens"><i>Tokens</i></a> <a href="#Token"><i>Token</i></a><br>     <a href="#Token"><i>Token</i></a><br></pre>
+<a name="Token"></a><pre class="bnf"><i>Token</i>:
+    [ <b>for</b> <b>!\&lt;=</b> <b>private</b> <b>lazy</b> <b>\&lt;\&gt;=</b> <b>r"[^"]*"[cdw]?</b> <b>in</b> <b>class</b> <b>typeof</b> <b>\^=</b> <b>\&lt;</b> <b>override</b> <b>double</b> <b>__VENDOR__</b> <b>[1-9][0-9_]*(L|[uU]|L[uU]|[uU]L)?</b> <b>[0-9][0-9_]*\.?([fFLi]|[fFL]i)</b> <b>\&gt;</b> <b>with</b> <b>uint</b> <b>\?</b> <b>goto</b> <b>is</b> <b>cdouble</b> <b>alias</b> <b>function</b> <b>0([xX][0-9a-fA-F_]*|[bB][01_]*|[0-7_]*)(L|[uU]|L[uU]|[uU]L)?</b> <b>\*=</b> <b>__FILE__</b> <b>q"</b> <b>switch</b> <b>asm</b> <b>dchar</b> <b>foreach</b> <b>idouble</b> <b>\&lt;=</b> <b>static</b> <b>struct</b> <b>!\&lt;</b> <b>import</b> <b>true</b> <b>\.\.\.</b> <b>!\&gt;</b> <b>!\&gt;=</b> <b>auto</b> <b>creal</b> <b>\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8}))</b> <b>foreach_reverse</b> <b>__TIMESTAMP__</b> <b>export</b> <b>\+=</b> <b>!\&lt;\&gt;</b> <b>debug</b> <b>"(([^"\\]*(\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8})))?)*)"[cdw]?</b> <b>float</b> <b>\&lt;\&lt;</b> <b>~</b> <b>break</b> <b>(([0-9_]*\.[0-9][0-9_]*([eE][\+\-]?[0-9][0-9_]*)?)|([0-9][0-9_]*[eE][\+\-]?[0-9][0-9_]*))([fFLi]|[fFL]i)?</b> <b>\&lt;\&gt;</b> <b>!</b> <b>typeid</b> <b>char</b> <b>__TIME__</b> <b>module</b> <b>real</b> <b>\[</b> <b>!=</b> <b>\&gt;\&gt;\&gt;</b> <b>%</b> <b>0[xX][0-9a-fA-F_]*\.?[0-9a-fA-F_]+[pP][\+\-]?[0-9_]+([fFLi]|[fFL]i)?</b> <b>\]</b> <b>&amp;</b> <b>\^</b> <b>unittest</b> <b>\&gt;=</b> <b>\-\-</b> <b>const</b> <b>,</b> <b>\|=</b> <b>`[^`]*`[cdw]?</b> <b>\&gt;\&gt;=</b> <b>do</b> <b>/</b> <b>enum</b> <b>\-=</b> <b>false</b> <b>__LINE__</b> <b>__VERSION__</b> <b>case</b> <b>short</b> <b>scope</b> <b>this</b> <b>package</b> <b>finally</b> <b>==</b> <b>void</b> <b>interface</b> <b>!\&lt;\&gt;=</b> <b>pragma</b> <b>:</b> <b>(0([xX][0-9a-fA-F_]*|[bB][01_]*|[0-7_]*)|([1-9][0-9_]*))[fFL]?i</b> <b>;</b> <b>'(([^'\\]|(\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8})))))'</b> <b>x"[0-9a-fA-F_\n\r\t ]*"[cdw]?</b> <b>extern</b> <b>ubyte</b> <b>=</b> <b>protected</b> <b>int</b> <b>super</b> <b>q\{</b> <b>typedef</b> <b>\.\.</b> <b>cast</b> <b>else</b> <b>null</b> <b>&amp;&amp;</b> <b>ulong</b> <b>ref</b> <b>\|</b> <b>\&gt;\&gt;\&gt;=</b> <b>align</b> <b>version</b> <b>[0-9][0-9_]*\.&gt;[^\.]</b> <b>mixin</b> <b>body</b> <b>synchronized</b> <b>abstract</b> <b>\|\|</b> <b>__DATE__</b> <b>volatile</b> <b>final</b> <b>[a-zA-Z_][_a-zA-Z0-9]*</b> <b>\&lt;\&lt;=</b> <b>\&gt;\&gt;</b> <b>\$</b> <b>inout</b> <b>!is&gt;[^_a-zA-Z0-9]</b> <b>%=</b> <b>delete</b> <b>continue</b> <b>template</b> <b>\(</b> <b>union</b> <b>ifloat</b> <b>\)</b> <b>byte</b> <b>\*</b> <b>delegate</b> <b>try</b> <b>\+</b> <b>catch</b> <b>ireal</b> <b>deprecated</b> <b>bool</b> <b>invariant</b> <b>new</b> <b>\-</b> <b>throw</b> <b>\.</b> <b>\+\+</b> <b>default</b> <b>return</b> <b>ushort</b> <b>~=</b> <b>public</b> <b>out</b> <b>cfloat</b> <b>long</b> <b>&amp;=</b> <b>if</b> <b>/=</b> <b>while</b> <b>__traits</b> <b>assert</b> <b>wchar</b>]<br>     <b>\{</b> <a href="#Tokens"><i>Tokens</i></a> <b>\}</b><br></pre>
+<a name="Integer"></a><pre class="bnf"><i>Integer</i>:
+     <b>0([xX][0-9a-fA-F_]*|[bB][01_]*|[0-7_]*)(L|[uU]|L[uU]|[uU]L)?</b><br>     <b>[1-9][0-9_]*(L|[uU]|L[uU]|[uU]L)?</b><br>     <b>__LINE__</b><br>     <b>__VERSION__</b><br></pre>
+<a name="Float"></a><pre class="bnf"><i>Float</i>:
+     <b>(([0-9_]*\.[0-9][0-9_]*([eE][\+\-]?[0-9][0-9_]*)?)|([0-9][0-9_]*[eE][\+\-]?[0-9][0-9_]*))([fFLi]|[fFL]i)?</b><br>     <b>[0-9][0-9_]*\.?([fFLi]|[fFL]i)</b><br>     <b>[0-9][0-9_]*\.&gt;[^\.]</b><br>     <b>0[xX][0-9a-fA-F_]*\.?[0-9a-fA-F_]+[pP][\+\-]?[0-9_]+([fFLi]|[fFL]i)?</b><br>     <b>(0([xX][0-9a-fA-F_]*|[bB][01_]*|[0-7_]*)|([1-9][0-9_]*))[fFL]?i</b><br></pre>
+<a name="Identifier"></a><pre class="bnf"><i>Identifier</i>:
+     <b>[a-zA-Z_][_a-zA-Z0-9]*</b><br></pre>
+<a name="IdentifierOpt"></a><pre class="bnf"><i>IdentifierOpt</i>:
+     <a href="#Identifier"><i>Identifier</i></a><br>     <i>epsilon</i><br></pre>
+</body>
+</html>

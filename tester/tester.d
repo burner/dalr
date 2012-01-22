@@ -2,17 +2,21 @@ import dalr.filereader;
 import hurt.container.deque;
 import hurt.container.multimap;
 import hurt.container.set;
+import hurt.container.dlst;
 import hurt.string.stringutil;
 import hurt.io.stdio;
+import hurt.io.stream;
 import hurt.util.getopt;
 import hurt.util.slog;
 import hurt.util.random;
 import hurt.string.stringbuffer;
 
+
 void main(string[] args) {
 	Args arguments = Args(args);
 	arguments.setHelpText("Helper programm that producess a random word " ~
-		"for a given grammer.\nWhen creating the text every small written word" 		~ " will be printed unless a replacedment function is found.\n" ~
+		"for a given grammer.\nWhen creating the text every small written word"
+		~ " will be printed unless a replacedment function is found.\n" ~
 		"This replacement function need to be defined in 'tester/tester.d'.");
 	size_t lexCount = 10;
 	string inputFile = "examplegrammer.dlr";
@@ -38,23 +42,97 @@ void main(string[] args) {
 	// fill the map with the productions
 	Deque!(Production) prods = fr.getProductions();
 	foreach(Production it; prods) {
+		//printf("%s := ", it.getStartSymbol);
 		Deque!(string) kw = new Deque!(string)(split(trim(it.getProduction())));
 		rules.insert(trim(it.getStartSymbol()), kw);
 		foreach(string jt; kw) { // to get the names of the keywords
+			//printf("%s ", jt);
 			if(isLowerCase(jt)) {
 				keywords.insert(jt);
 			}
 		}
+		//println();
 	}
 
 	log("%u == %u ???", rules.getSize(), prods.getSize());
 	log("%u", keywords.getSize());
 	foreach(string it; keywords) {
-		log("%s %s", it, processString(it, keywords, tw));
+		//log("%s %s", it, processString(it, keywords, tw));
 	}
+
+	File output = new File(outputFile, FileMode.OutNew);
+	StringBuffer!(char) curline = new StringBuffer!(char)(128);
+	size_t cnt = 0;
+	size_t runs = 0;
+	while(cnt < 128) {
+		log("%u", runs);
+		cnt += process("DeclDefsOpt", rules, output, curline, tw, keywords);
+	}
+	output.writeLine(curline.getString());
+	output.close();
+}
+
+size_t process(string start, MultiMap!(string,Deque!(string)) m, File output, 
+		StringBuffer!(char) curline, Twister tw, Set!(string) keywords) {
+	assert(keywords !is null);
+	assert(m !is null);
+	assert(curline !is null);
+	// the position in the rule
+	size_t pos = 0;
+	// how many terminals have been written
+	size_t count = 0;
+
+	// get the linkedlist of pro
+	hurt.container.multimap.Iterator!(string,Deque!(string)) it = 
+		m.lower(start);
+	assert(it.isValid());
+	Item!(string,Deque!(string)) item = it.getItem();
+	assert(item !is null);
+	DLinkedList!(Deque!(string)) list = item.getItems();
+
+	// get a random rule and process it
+	size_t whichRule = list.getSize() > 1 ? tw.next() % list.getSize()-1 : 0;
+	assert(whichRule >= 0 && whichRule < 1000);
+	log("%u %u", whichRule, list.getSize());
+	Deque!(string) rule = list.get(whichRule);
+	assert(rule !is null);
+	foreach(size_t pos, string symbol; rule) {
+		//log("%u %u %s", whichRule, pos, symbol);
+		printf("%s ", symbol);
+		if(!keywords.contains(symbol)) {
+			count += process(symbol, m, output, curline, tw, keywords);	
+		} else {
+			count++;
+			curline.pushBack(processString(symbol, keywords, tw));
+			if(curline.getSize() >= 80) {
+				output.writeLine(curline.getString());
+				curline.clear();
+			}
+		}
+	}
+	println();
+	return count;
 }
 
 string processString(string str, Set!(string) keywords, Twister tw) {
+	string[string] replace = [ "and": "&", "andassign": "&=", 
+	"assign": "=", "bang": "!", "banggreater": "!>", "banggreaterequal": "!>=",
+	"bangsmaller": "!<", "bangsmallerequal": "!<=", "bangsquare": "!<>",
+	"bangsquareassign": "!<>=", "colon": ":", "comma": ",", "div": "/",
+	"divassign": "/=", "dollar": "$", "dot": ".", "dotdot": "..",
+	"dotdotdot": "...", "equal": "==", "epsilon": "", "greater": ">",
+	"greaterequal": ">=", "lparen": "(", "rparen": ")", "lbrack": "[",
+	"lcurly": "{", "rbrack": "]", "rcurly": "}", "leftshift": "<<",
+	"leftshiftassgin": "<<=", "less": "<", "lessequal": "<=",
+	"logicand": "$$", "logicor": "||", "minus": "-", "minusassign": "-=",
+	"modassign": "%=", "modulo": "%", "multassign": "*=", "notequal": "!=",
+	"or": "|", "orassign": "|=", "plus": "+", "plusassign": "+=",
+	"questionmark": "?", "rightshift": ">>", "rightshiftassgin": ">>=",
+	"semicolon": ",", "star": "*", "tilde": "~", "tildeassign": "~=",
+	"usignedrightshift": ">>>", "usignedrightshiftassign": ">>>=",
+	"xor": "^", "xorassign": "^=",	"xorxor": "^^",	
+	"xorxorassign": "^^="];
+
 	switch(str) {
 		case "identifier": {
 			StringBuffer!(char) ret = new StringBuffer!(char)();
@@ -70,122 +148,11 @@ string processString(string str, Set!(string) keywords, Twister tw) {
 			} while(keywords.contains(ret.getString()));
 			return ret.getString();
 		}
-		case "and":
-			return "&";
-		case "andassign":
-			return "&=";
-		case "assign":
-			return "=";
-		case "bang":
-			return "!";
-		case "banggreater":
-			return "!>";
-		case "banggreaterequal":
-			return "!>=";
-		case "bangsmaller":
-			return "!<";
-		case "bangsmallerequal":
-			return "!<=";
-		case "bangsquare":
-			return "!<>";
-		case "bangsquareassign":
-			return "!<>=";
-		case "colon":
-			return ":";
-		case "comma":
-			return ",";
-		case "div":
-			return "/";
-		case "divassign":
-			return "/=";
-		case "dollar":
-			return "$";
-		case "dot":
-			return ".";
-		case "dotdot":
-			return "..";
-		case "dotdotdot":
-			return "...";
-		case "equal":
-			return "==";
-		case "epsilon":
-			return "";
-		case "greater":
-			return ">";
-		case "greaterequal":
-			return ">=";
-		case "lparen":
-			return "(";
-		case "rparen":
-			return ")";
-		case "lbrack":
-			return "[";
-		case "lcurly":
-			return "{";
-		case "rbrack":
-			return "]";
-		case "rcurly":
-			return "}";
-		case "leftshift":
-			return "<<";
-		case "leftshiftassgin":
-			return "<<=";
-		case "less":
-			return "<";
-		case "lessequal":
-			return "<=";
-		case "logicand":
-			return "$$";
-		case "logicor":
-			return "||";
-		case "minus":
-			return "-";
-		case "minusassign":
-			return "-=";
-		case "modassign":
-			return "%=";
-		case "modulo":
-			return "%";
-		case "multassign":
-			return "*=";
-		case "notequal":
-			return "!=";
-		case "or":
-			return "|";
-		case "orassign":
-			return "|=";
-		case "plus":
-			return "+";
-		case "plusassign":
-			return "+=";
-		case "questionmark":
-			return "?";
-		case "rightshift":
-			return ">>";
-		case "rightshiftassgin":
-			return ">>=";
-		case "semicolon":
-			return ";";
-		case "star":
-			return "*";
-		case "tilde":
-			return "~";
-		case "tildeassign":
-			return "~=";
-		case "usignedrightshift":
-			return ">>>";
-		case "usignedrightshiftassign":
-			return ">>>=";
-		case "xor":
-			return "^";	
-		case "xorassign":
-			return "^=";	
-		case "xorxor":
-			return "^^";	
-		case "xorxorassign":
-			return "^^=";	
 		default:
-			return str;
+			if(str in replace) {
+				return replace[str];
+			} else {
+				return str;
+			}
 	}
 }
-
