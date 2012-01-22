@@ -1,4 +1,5 @@
 import dalr.filereader;
+import hurt.conv.conv;
 import hurt.container.deque;
 import hurt.container.map;
 import hurt.container.set;
@@ -174,6 +175,12 @@ string processString(string str, Set!(string) keywords, Twister tw) {
 			ret.pushBack("\"");
 			return ret.getString();
 		}
+		case "integer": {
+			return conv!(uint,string)(tw.next() % 1024);
+		}
+		case "float":
+			return conv!(uint,string)(tw.next() % 1024) ~ "." ~
+				conv!(uint,string)(tw.next() % 1024);
 		default:
 			if(str in replace) {
 				return replace[str];

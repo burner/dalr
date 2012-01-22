@@ -59,21 +59,21 @@ Condition :=
 	| StaticIfCondition;
 
 VersionCondition :=
-	version lparen Integer rparen;
+	version lparen integer rparen;
 	| version lparen identifier rparen;
 
 VersionSpecification :=
-	version = Integer semicolon;
-	| version = identifier semicolon;
+	version assign integer semicolon;
+	| version assign identifier semicolon;
 
 DebugCondition :=
-	debug lparen Integer rparen;
+	debug lparen integer rparen;
 	| debug lparen identifier rparen;
 	| debug;
 
 DebugSpecification :=
-	debug = identifier semicolon;
-	| debug = Integer semicolon;
+	debug assign identifier semicolon;
+	| debug assign integer semicolon;
 
 StaticIfCondition :=
 	static if lparen AssignExpression rparen;
@@ -147,7 +147,7 @@ LinkageAttribute :=
 	| extern;
 
 AlignAttribute :=
-	align lparen Integer rparen;
+	align lparen integer rparen;
 	| align;
 
 Pragma :=
@@ -905,8 +905,8 @@ UnaryExpression :=
 	| cast lparen TypeNT rparen UnaryExpression;
 
 PostfixExpression :=
-	Integer;
-	| Float;
+	integer;
+	| float;
 	| dollar;
 	| null;
 	| true;
