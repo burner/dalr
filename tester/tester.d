@@ -18,18 +18,21 @@ void main(string[] args) {
 		"for a given grammer.\nWhen creating the text every small written word"
 		~ " will be printed unless a replacedment function is found.\n" ~
 		"This replacement function need to be defined in 'tester/tester.d'.");
-	size_t lexCount = 10;
+	size_t lexCount = 1;
 	string inputFile = "examplegrammer.dlr";
 	string outputFile = "exampleword.d";
+	string startSymbol = "DeclDefsOpt";
 	arguments.setOption("-c", "--count", "of how many lex symbol should " ~
 		"consists ?", lexCount);
 	arguments.setOption("-i", "--input", "inputfile with the grammer", 
 		inputFile);
+	arguments.setOption("-s", "--start", "choose a start for the word to write"
+		, startSymbol);
 	arguments.setOption("-o", "--output", "outputfile with the created word", 
 		outputFile, true); // the last option
 
 	Twister tw = Twister(123134);
-	log("%u %s %s %u", lexCount, inputFile, outputFile, tw.next());
+	//log("%u %s %s %u", lexCount, inputFile, outputFile, tw.next());
 	
 	FileReader fr = new FileReader(inputFile);
 	fr.parse();
@@ -42,7 +45,7 @@ void main(string[] args) {
 	// fill the map with the productions
 	Deque!(Production) prods = fr.getProductions();
 	foreach(Production it; prods) {
-		printf("%s := ", it.getStartSymbol);
+		//printf("%s := ", it.getStartSymbol);
 		Deque!(string) kw = new Deque!(string)(split(trim(it.getProdString())));
 		MapItem!(string,Deque!(Deque!(string))) item = 
 			rules.find(trim(it.getStartSymbol));
@@ -54,16 +57,16 @@ void main(string[] args) {
 			rules.insert(trim(it.getStartSymbol()), tmp);
 		}
 		foreach(string jt; kw) { // to get the names of the keywords
-			printf("%s ", jt);
+			//printf("%s ", jt);
 			if(isLowerCase(jt)) {
 				keywords.insert(jt);
 			}
 		}
-		println();
+		//println();
 	}
 
 	//log("%u == %u ???", rules.getSize(), prods.getSize());
-	log("%u", keywords.getSize());
+	//log("%u", keywords.getSize());
 	foreach(string it; keywords) {
 		//log("%s %s", it, processString(it, keywords, tw));
 	}
@@ -72,9 +75,9 @@ void main(string[] args) {
 	StringBuffer!(char) curline = new StringBuffer!(char)(128);
 	size_t cnt = 0;
 	size_t runs = 0;
-	while(cnt < 128) {
-		log("%u", runs);
-		cnt += process("DeclDefsOpt", rules, output, curline, tw, keywords);
+	while(cnt < lexCount) {
+		//log("%u", runs);
+		cnt += process(startSymbol, rules, output, curline, tw, keywords);
 	}
 	output.writeLine(curline.getString());
 	output.close();
@@ -100,11 +103,11 @@ size_t process(string start, Map!(string,Deque!(Deque!(string))) m,
 	// get a random rule and process it
 	size_t whichRule = tw.next() % list.getSize();
 	assert(whichRule >= 0 && whichRule < 1000);
-	log("%u %u", whichRule, list.getSize());
+	//log("%u %u", whichRule, list.getSize());
 	Deque!(string) rule = list[whichRule];
 	assert(rule !is null);
 	foreach(size_t pos, string symbol; rule) {
-		log("%u %u/%u %s", whichRule, pos, rule.getSize(), symbol);
+		//log("%u %u/%u %s", whichRule, pos, rule.getSize(), symbol);
 		if(symbol[0] >= 65 && symbol[0] < 92) {
 			count += process(symbol, m, output, curline, tw, keywords);	
 		} else {
@@ -117,7 +120,7 @@ size_t process(string start, Map!(string,Deque!(Deque!(string))) m,
 			}
 		}
 	}
-	println();
+	//println();
 	return count;
 }
 
@@ -135,7 +138,7 @@ string processString(string str, Set!(string) keywords, Twister tw) {
 	"modassign": "%=", "modulo": "%", "multassign": "*=", "notequal": "!=",
 	"or": "|", "orassign": "|=", "plus": "+", "plusassign": "+=",
 	"questionmark": "?", "rightshift": ">>", "rightshiftassgin": ">>=",
-	"semicolon": ",", "star": "*", "tilde": "~", "tildeassign": "~=",
+	"semicolon": ";", "star": "*", "tilde": "~", "tildeassign": "~=",
 	"usignedrightshift": ">>>", "usignedrightshiftassign": ">>>=",
 	"xor": "^", "xorassign": "^=",	"xorxor": "^^",	
 	"xorxorassign": "^^=","decrement":"--", "increment":"++"];

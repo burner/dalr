@@ -85,8 +85,10 @@ class FileReader {
 		this.filename = filename;
 
 		// test if file has formated name, very bad test if the file is valid
-		if(!FileReader.isWellFormedFilename(filename))
-			throw new Exception("Filename not well formed");
+		if(!FileReader.isWellFormedFilename(filename)) {
+			throw new Exception(format("Filename not well formed %s",
+				filename));
+		}
 	
 		// test if the file exists
 		if(!exists(this.filename))

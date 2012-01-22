@@ -366,7 +366,8 @@ DoStatement :=
 	do ScopeStatement while lparen Expression rparen;
 
 ForStatement :=
-	for lparen NoScopeNonEmptyStatement ExpressionOpt semicolon ExpressionOpt rparen ScopeStatement;
+	for lparen NoScopeNonEmptyStatement ExpressionOpt semicolon ExpressionOpt 
+		rparen ScopeStatement;
 
 ForeachStatement :=
 	Foreach lparen ForeachTypeList semicolon Expression rparen ScopeStatement;
@@ -388,7 +389,8 @@ ForeachType :=
 	| identifier;
 
 ForeachRangeStatement :=
-	Foreach lparen ForeachType semicolon AssignExpression dotdot AssignExpression rparen ScopeStatement;
+	Foreach lparen ForeachType semicolon AssignExpression dotdot 
+		AssignExpression rparen ScopeStatement;
 
 SwitchStatement :=
 	switch lparen Expression rparen BlockStatement;
@@ -690,7 +692,8 @@ EnumInitializerOpt :=
 	| epsilon;
 
 TemplateDeclaration :=
-	template identifier lparen TemplateParameterListOpt rparen lcurly DeclDefsOpt rcurly;
+	template identifier lparen TemplateParameterListOpt rparen lcurly 
+		DeclDefsOpt rcurly;
 
 TemplateParameterListOpt :=
 	TemplateParameterList;
@@ -707,7 +710,8 @@ TemplateParameter :=
 	| TemplateTypeParameter;
 
 TemplateTypeParameter :=
-	identifier TemplateTypeParameterSpecializationOpt TemplateTypeParameterDefaultOpt;
+	identifier TemplateTypeParameterSpecializationOpt 
+		TemplateTypeParameterDefaultOpt;
 
 TemplateTypeParameterSpecializationOpt :=
 	colon TypeNT;
@@ -718,7 +722,8 @@ TemplateTypeParameterDefaultOpt :=
 	| epsilon;
 
 TemplateValueParameter :=
-	BasicType Declarator TemplateValueParameterSpecializationOpt TemplateValueParameterDefaultOpt;
+	BasicType Declarator TemplateValueParameterSpecializationOpt 
+		TemplateValueParameterDefaultOpt;
 
 TemplateValueParameterSpecializationOpt :=
 	colon ConditionalExpression;
@@ -729,7 +734,8 @@ TemplateValueParameterDefaultOpt :=
 	| epsilon;
 
 TemplateAliasParameter :=
-	alias identifier TemplateAliasParameterSpecializationOpt TemplateAliasParameterDefaultOpt;
+	alias identifier TemplateAliasParameterSpecializationOpt 
+		TemplateAliasParameterDefaultOpt;
 
 TemplateAliasParameterSpecializationOpt :=
 	colon TypeNT;
@@ -743,16 +749,19 @@ TemplateTupleParameter :=
 	identifier dotdotdot;
 
 ClassTemplateDeclaration :=
-	class identifier lparen TemplateParameterListOpt rparen BaseClassListOpt ClassBody;
+	class identifier lparen TemplateParameterListOpt rparen BaseClassListOpt 
+		ClassBody;
 
 InterfaceTemplateDeclaration :=
-	interface identifier lparen TemplateParameterListOpt rparen SuperInterfaceListOpt InterfaceBody;
+	interface identifier lparen TemplateParameterListOpt rparen 
+		SuperInterfaceListOpt InterfaceBody;
 
 StructTemplateDeclaration :=
 	struct identifier lparen TemplateParameterListOpt rparen StructBody;
 
 FunctionTemplateDeclaration :=
-	TypeIdent lparen TemplateParameterList rparen lparen ParameterListOpt rparen FunctionBody;
+	TypeIdent lparen TemplateParameterList rparen lparen ParameterListOpt 
+		rparen FunctionBody;
 
 TypeIdent :=
 	BasicType identifier;
@@ -915,7 +924,8 @@ PostfixExpression2 :=
 	| PostfixExpression2 decrement;
 	| PostfixExpression2 lparen ArgumentList rparen;
 	| PostfixExpression2 lbrack ArgumentList rbrack;
-	| PostfixExpression2 lbrack AssignExpression dotdot AssignExpression rbrack;
+	| PostfixExpression2 lbrack AssignExpression dotdot AssignExpression 
+		rbrack;
 
 PrimaryExpression :=
 	identifier;
@@ -952,8 +962,10 @@ IsExpression :=
 	| IsNotIs lparen TypeNT identifier rparen;
 	| IsNotIs lparen TypeNT identifier colon TypeSpecialization rparen;
 	| IsNotIs lparen TypeNT identifier equal TypeSpecialization rparen;
-	| IsNotIs lparen TypeNT identifier colon TypeSpecialization comma TemplateParameterList rparen;
-	| IsNotIs lparen TypeNT identifier equal TypeSpecialization comma TemplateParameterList rparen;
+	| IsNotIs lparen TypeNT identifier colon TypeSpecialization comma 
+		TemplateParameterList rparen;
+	| IsNotIs lparen TypeNT identifier equal TypeSpecialization comma 
+		TemplateParameterList rparen;
 ;
 TypeSpecialization :=;
 	TypeNT;
