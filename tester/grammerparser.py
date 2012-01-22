@@ -13,10 +13,10 @@ class GrammerRule():
 		self.rules.append(rule)
 
 	def __str__(self):
-		ret = self.name +  " := \n"
+		ret = self.start +  " := \n"
 		for rule in self.rules:
 			for item in rule:
-				ret += item + ' '
+				ret = ret + item + ' '
 			ret += '\n'
 
 		return ret
@@ -30,6 +30,7 @@ def parseFile(filename):
 	state = States.No
 	linenumber = 0
 	last = None
+	tmp = []
 	# run over the complete file
 	for line in f:
 		linenumber += 1
@@ -76,7 +77,8 @@ def parseFile(filename):
 					prod.addProduction(items[2:userCodeStart])
 					state = States.UserCode
 				else:
-					prod.addProduction(items[2:])
+					tmp.extend(items[2:])
+					state = States.Production
 				last = prod # prod is the new last
 
 				continue
@@ -85,15 +87,50 @@ def parseFile(filename):
 					last.addProduction(items[1:userCodeStart])
 					state = States.UserCode
 				else:
-					last.addProduction(items[1:])
+					tmp.extend(items)
+					state = States.Production
 
 				continue
-		#elif state == States.Production:
+		elif state == States.Production:
+			if newProdStart != -1: # found a new production so save the old
+				last.addProduction(tmp)
+				tmp = []
+				if items[0] in productions:
+					prod = productions[items[0]]
+				else:
+					prod = GrammerRule(items[0])
+					productions[items[0]] = prod
+				if userCodeStart != -1:
+					prod.addProduction(items[2:userCodeStart])
+					state = States.UserCode
+				else:
+					tmp.extend(items[2:])
+					state = States.Production
+				last = prod # prod is the new last
+			elif alternativ != -1:
+				last.addProduction(tmp)
+				tmp = []
+				if items[0] in productions:
+					prod = productions[items[0]]
+				else:
+					prod = GrammerRule(items[0])
+					productions[items[0]] = prod
+				if userCodeStart != -1:
+					prod.addProduction(items[2:userCodeStart])
+					state = States.UserCode
+				else:
+					tmp.extend(items[2:])
+					state = States.Production
+				last = prod # prod is the new last
+			elif userCodeStart != -1: # found a usercode
+				tmp.extended(items[0:userCodeStart])
+				last.addProductions(tmp)
+				tmp = []
+				state = States.UserCode
 		#elif state == States.Alternativ:
 		elif state == States.UserCode:
 			if userCodeEnd != -1:
 				state = States.No
-
 			continue
 		else:
 			assert False, state	
@@ -101,5 +138,6 @@ def parseFile(filename):
 	return productions
 		
 if __name__ == "__main__":
-	prod = parseFile("../websitegrammer.dlr")
-	print(prod)
+	prod = parseFile("../d2short.dlr")
+	for key in prod:
+		print(key, prod[key].rules)
