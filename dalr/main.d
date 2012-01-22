@@ -34,8 +34,8 @@ void main() {
 			it++) {
 		actions.insert(pm.insertProduction(
 			gp.processProduction((*it).getProduction())), *it);
-		//log("%s", (*it).getProduction());
 	}
+	log("number of productions %u", fr.getProductions().getSize());
 
 	pm.makeLRZeroItemSets();
 	log();

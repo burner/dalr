@@ -1,0 +1,3385 @@
+<?xml version='1.0'?>
+<apd:grammar xmlns:apd='http://apaged.mainia.de'>
+    <apd:nt name='seatdModule'>
+        <apd:rule index='0'>
+            <apd:ntref name='ModuleDeclarationOpt'/>
+            <apd:ntref name='DeclDefsOpt'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ModuleDeclarationOpt'>
+        <apd:rule index='1'>
+            <apd:ntref name='ModuleKeyword'/>
+            <apd:ntref name='ModuleName'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='2'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ModuleKeyword'>
+        <apd:rule index='3'>
+            <apd:terminal>module</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ModuleName'>
+        <apd:rule index='4'>
+            <apd:ntref name='ModuleName'/>
+            <apd:terminal>\.</apd:terminal>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='5'>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='DeclDefsOpt'>
+        <apd:rule index='6'>
+            <apd:ntref name='DeclDefsOpt'/>
+            <apd:ntref name='DeclDef'/>
+        </apd:rule>
+        <apd:rule index='7'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='DeclDef'>
+        <apd:rule index='8'>
+            <apd:ntref name='ConditionalDeclaration'/>
+        </apd:rule>
+        <apd:rule index='9'>
+            <apd:ntref name='DeclDefNoConditional'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='DeclDefNoConditional'>
+        <apd:rule index='10'>
+            <apd:ntref name='AttributeSpecifier'/>
+        </apd:rule>
+        <apd:rule index='11'>
+            <apd:ntref name='StaticAssert'/>
+        </apd:rule>
+        <apd:rule index='12'>
+            <apd:ntref name='Declaration'/>
+        </apd:rule>
+        <apd:rule index='13'>
+            <apd:ntref name='ImportDeclaration'/>
+        </apd:rule>
+        <apd:rule index='14'>
+            <apd:ntref name='EnumDeclaration'/>
+        </apd:rule>
+        <apd:rule index='15'>
+            <apd:ntref name='TemplateMixin'/>
+        </apd:rule>
+        <apd:rule index='16'>
+            <apd:ntref name='TemplateDeclaration'/>
+        </apd:rule>
+        <apd:rule index='17'>
+            <apd:ntref name='FunctionTemplateDeclaration'/>
+        </apd:rule>
+        <apd:rule index='18'>
+            <apd:ntref name='ClassTemplateDeclaration'/>
+        </apd:rule>
+        <apd:rule index='19'>
+            <apd:ntref name='InterfaceTemplateDeclaration'/>
+        </apd:rule>
+        <apd:rule index='20'>
+            <apd:ntref name='StructTemplateDeclaration'/>
+        </apd:rule>
+        <apd:rule index='21'>
+            <apd:ntref name='ClassDeclaration'/>
+        </apd:rule>
+        <apd:rule index='22'>
+            <apd:ntref name='InterfaceDeclaration'/>
+        </apd:rule>
+        <apd:rule index='23'>
+            <apd:ntref name='AggregateDeclaration'/>
+        </apd:rule>
+        <apd:rule index='24'>
+            <apd:ntref name='Constructor'/>
+        </apd:rule>
+        <apd:rule index='25'>
+            <apd:ntref name='Destructor'/>
+        </apd:rule>
+        <apd:rule index='26'>
+            <apd:ntref name='Invariant'/>
+        </apd:rule>
+        <apd:rule index='27'>
+            <apd:ntref name='UnitTest'/>
+        </apd:rule>
+        <apd:rule index='28'>
+            <apd:ntref name='StaticConstructor'/>
+        </apd:rule>
+        <apd:rule index='29'>
+            <apd:ntref name='StaticDestructor'/>
+        </apd:rule>
+        <apd:rule index='30'>
+            <apd:ntref name='MixinDeclaration'/>
+        </apd:rule>
+        <apd:rule index='31'>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='32'>
+            <apd:ntref name='DebugSpecification'/>
+        </apd:rule>
+        <apd:rule index='33'>
+            <apd:ntref name='VersionSpecification'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ConditionalDeclaration'>
+        <apd:rule index='34'>
+            <apd:ntref name='Condition'/>
+            <apd:terminal>:</apd:terminal>
+        </apd:rule>
+        <apd:rule index='35'>
+            <apd:ntref name='Condition'/>
+            <apd:ntref name='DeclarationBlock'/>
+        </apd:rule>
+        <apd:rule index='36'>
+            <apd:ntref name='Condition'/>
+            <apd:ntref name='DeclarationBlock'/>
+            <apd:terminal>else</apd:terminal>
+            <apd:ntref name='DeclarationBlock'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Condition'>
+        <apd:rule index='37'>
+            <apd:ntref name='VersionCondition'/>
+        </apd:rule>
+        <apd:rule index='38'>
+            <apd:ntref name='DebugCondition'/>
+        </apd:rule>
+        <apd:rule index='39'>
+            <apd:ntref name='StaticIfCondition'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='VersionCondition'>
+        <apd:rule index='40'>
+            <apd:terminal>version</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Integer'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='41'>
+            <apd:terminal>version</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='VersionSpecification'>
+        <apd:rule index='42'>
+            <apd:terminal>version</apd:terminal>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='Integer'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='43'>
+            <apd:terminal>version</apd:terminal>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='DebugCondition'>
+        <apd:rule index='44'>
+            <apd:terminal>debug</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Integer'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='45'>
+            <apd:terminal>debug</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='46'>
+            <apd:terminal>debug</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='DebugSpecification'>
+        <apd:rule index='47'>
+            <apd:terminal>debug</apd:terminal>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='48'>
+            <apd:terminal>debug</apd:terminal>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='Integer'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StaticIfCondition'>
+        <apd:rule index='49'>
+            <apd:terminal>static</apd:terminal>
+            <apd:terminal>if</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StaticAssert'>
+        <apd:rule index='50'>
+            <apd:terminal>static</apd:terminal>
+            <apd:terminal>assert</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='51'>
+            <apd:terminal>static</apd:terminal>
+            <apd:terminal>assert</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ImportDeclaration'>
+        <apd:rule index='52'>
+            <apd:terminal>import</apd:terminal>
+            <apd:ntref name='ImportList'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ImportList'>
+        <apd:rule index='53'>
+            <apd:ntref name='Import'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='ImportList'/>
+        </apd:rule>
+        <apd:rule index='54'>
+            <apd:ntref name='Import'/>
+            <apd:ntref name='ImportBindListOpt'/>
+        </apd:rule>
+        <apd:rule index='55'>
+            <apd:ntref name='Import'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Import'>
+        <apd:rule index='56'>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='ModuleName'/>
+        </apd:rule>
+        <apd:rule index='57'>
+            <apd:ntref name='ModuleName'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ImportBindListOpt'>
+        <apd:rule index='58'>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='ImportBindList'/>
+        </apd:rule>
+        <apd:rule index='59'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ImportBindList'>
+        <apd:rule index='60'>
+            <apd:ntref name='ImportBindList'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='ImportBind'/>
+        </apd:rule>
+        <apd:rule index='61'>
+            <apd:ntref name='ImportBind'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ImportBind'>
+        <apd:rule index='62'>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='63'>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='AttributeSpecifier'>
+        <apd:rule index='64'>
+            <apd:ntref name='Attributes'/>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='DeclDefsOpt'/>
+        </apd:rule>
+        <apd:rule index='65'>
+            <apd:ntref name='Attributes'/>
+            <apd:ntref name='DeclarationBlock'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Attributes'>
+        <apd:rule index='66'>
+            <apd:ntref name='Attributes'/>
+            <apd:ntref name='Attribute'/>
+        </apd:rule>
+        <apd:rule index='67'>
+            <apd:ntref name='Attribute'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Attribute'>
+        <apd:rule index='68'>
+            <apd:ntref name='StorageClassAttribute'/>
+        </apd:rule>
+        <apd:rule index='69'>
+            <apd:ntref name='ProtectionAttribute'/>
+        </apd:rule>
+        <apd:rule index='70'>
+            <apd:ntref name='LinkageAttribute'/>
+        </apd:rule>
+        <apd:rule index='71'>
+            <apd:ntref name='AlignAttribute'/>
+        </apd:rule>
+        <apd:rule index='72'>
+            <apd:ntref name='Pragma'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StorageClassAttribute'>
+        <apd:rule index='73'>
+            <apd:terminal>synchronized</apd:terminal>
+        </apd:rule>
+        <apd:rule index='74'>
+            <apd:terminal>deprecated</apd:terminal>
+        </apd:rule>
+        <apd:rule index='75'>
+            <apd:terminal>static</apd:terminal>
+        </apd:rule>
+        <apd:rule index='76'>
+            <apd:terminal>final</apd:terminal>
+        </apd:rule>
+        <apd:rule index='77'>
+            <apd:terminal>override</apd:terminal>
+        </apd:rule>
+        <apd:rule index='78'>
+            <apd:terminal>abstract</apd:terminal>
+        </apd:rule>
+        <apd:rule index='79'>
+            <apd:terminal>const</apd:terminal>
+        </apd:rule>
+        <apd:rule index='80'>
+            <apd:terminal>auto</apd:terminal>
+        </apd:rule>
+        <apd:rule index='81'>
+            <apd:terminal>scope</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ProtectionAttribute'>
+        <apd:rule index='82'>
+            <apd:terminal>private</apd:terminal>
+        </apd:rule>
+        <apd:rule index='83'>
+            <apd:terminal>package</apd:terminal>
+        </apd:rule>
+        <apd:rule index='84'>
+            <apd:terminal>protected</apd:terminal>
+        </apd:rule>
+        <apd:rule index='85'>
+            <apd:terminal>public</apd:terminal>
+        </apd:rule>
+        <apd:rule index='86'>
+            <apd:terminal>export</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='LinkageAttribute'>
+        <apd:rule index='87'>
+            <apd:terminal>extern</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='88'>
+            <apd:terminal>extern</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\+\+</apd:terminal>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='89'>
+            <apd:terminal>extern</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='AlignAttribute'>
+        <apd:rule index='90'>
+            <apd:terminal>align</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Integer'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='91'>
+            <apd:terminal>align</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Pragma'>
+        <apd:rule index='92'>
+            <apd:terminal>pragma</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='93'>
+            <apd:terminal>pragma</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='FunctionBody'>
+        <apd:rule index='94'>
+            <apd:ntref name='InStatement'/>
+            <apd:ntref name='OutStatement'/>
+            <apd:ntref name='BodyStatement'/>
+        </apd:rule>
+        <apd:rule index='95'>
+            <apd:ntref name='OutStatement'/>
+            <apd:ntref name='InStatement'/>
+            <apd:ntref name='BodyStatement'/>
+        </apd:rule>
+        <apd:rule index='96'>
+            <apd:ntref name='InStatement'/>
+            <apd:ntref name='BodyStatement'/>
+        </apd:rule>
+        <apd:rule index='97'>
+            <apd:ntref name='OutStatement'/>
+            <apd:ntref name='BodyStatement'/>
+        </apd:rule>
+        <apd:rule index='98'>
+            <apd:ntref name='BodyStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='FunctionBodyOpt'>
+        <apd:rule index='99'>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+        <apd:rule index='100'>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='InStatement'>
+        <apd:rule index='101'>
+            <apd:terminal>in</apd:terminal>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='OutStatement'>
+        <apd:rule index='102'>
+            <apd:terminal>out</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+        <apd:rule index='103'>
+            <apd:terminal>out</apd:terminal>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='BodyStatement'>
+        <apd:rule index='104'>
+            <apd:terminal>body</apd:terminal>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+        <apd:rule index='105'>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ClassDeclaration'>
+        <apd:rule index='106'>
+            <apd:terminal>class</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:ntref name='BaseClassListOpt'/>
+            <apd:ntref name='ClassBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='BaseClassListOpt'>
+        <apd:rule index='107'>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='BaseClassList'/>
+        </apd:rule>
+        <apd:rule index='108'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='BaseClassList'>
+        <apd:rule index='109'>
+            <apd:ntref name='BaseClassList'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='SuperClass'/>
+        </apd:rule>
+        <apd:rule index='110'>
+            <apd:ntref name='SuperClass'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='SuperClass'>
+        <apd:rule index='111'>
+            <apd:ntref name='ProtectionNT'/>
+            <apd:ntref name='IdentifierList'/>
+        </apd:rule>
+        <apd:rule index='112'>
+            <apd:ntref name='IdentifierList'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ProtectionNT'>
+        <apd:rule index='113'>
+            <apd:terminal>private</apd:terminal>
+        </apd:rule>
+        <apd:rule index='114'>
+            <apd:terminal>package</apd:terminal>
+        </apd:rule>
+        <apd:rule index='115'>
+            <apd:terminal>public</apd:terminal>
+        </apd:rule>
+        <apd:rule index='116'>
+            <apd:terminal>export</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ClassBody'>
+        <apd:rule index='117'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+        <apd:rule index='118'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:ntref name='ClassBodyDeclarations'/>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ClassBodyDeclarations'>
+        <apd:rule index='119'>
+            <apd:ntref name='ClassBodyDeclarations'/>
+            <apd:ntref name='ClassBodyDeclaration'/>
+        </apd:rule>
+        <apd:rule index='120'>
+            <apd:ntref name='ClassBodyDeclaration'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ClassBodyDeclaration'>
+        <apd:rule index='121'>
+            <apd:ntref name='DeclDef'/>
+        </apd:rule>
+        <apd:rule index='122'>
+            <apd:ntref name='ClassAllocator'/>
+        </apd:rule>
+        <apd:rule index='123'>
+            <apd:ntref name='ClassDeallocator'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Constructor'>
+        <apd:rule index='124'>
+            <apd:terminal>this</apd:terminal>
+            <apd:ntref name='Parameters'/>
+            <apd:ntref name='FunctionBodyOpt'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Destructor'>
+        <apd:rule index='125'>
+            <apd:terminal>~</apd:terminal>
+            <apd:terminal>this</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='FunctionBodyOpt'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StaticConstructor'>
+        <apd:rule index='126'>
+            <apd:terminal>static</apd:terminal>
+            <apd:terminal>this</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StaticDestructor'>
+        <apd:rule index='127'>
+            <apd:terminal>static</apd:terminal>
+            <apd:terminal>~</apd:terminal>
+            <apd:terminal>this</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Invariant'>
+        <apd:rule index='128'>
+            <apd:terminal>invariant</apd:terminal>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+        <apd:rule index='129'>
+            <apd:terminal>invariant</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='UnitTest'>
+        <apd:rule index='130'>
+            <apd:terminal>unittest</apd:terminal>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ClassAllocator'>
+        <apd:rule index='131'>
+            <apd:terminal>new</apd:terminal>
+            <apd:ntref name='Parameters'/>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ClassDeallocator'>
+        <apd:rule index='132'>
+            <apd:terminal>delete</apd:terminal>
+            <apd:ntref name='Parameters'/>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='InterfaceDeclaration'>
+        <apd:rule index='133'>
+            <apd:terminal>interface</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:ntref name='SuperInterfaceListOpt'/>
+            <apd:ntref name='InterfaceBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='SuperInterfaceListOpt'>
+        <apd:rule index='134'>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='SuperInterfaces'/>
+        </apd:rule>
+        <apd:rule index='135'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='SuperInterfaces'>
+        <apd:rule index='136'>
+            <apd:ntref name='SuperInterfaces'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='SuperInterface'/>
+        </apd:rule>
+        <apd:rule index='137'>
+            <apd:ntref name='SuperInterface'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='SuperInterface'>
+        <apd:rule index='138'>
+            <apd:ntref name='ProtectionNT'/>
+            <apd:ntref name='IdentifierList'/>
+        </apd:rule>
+        <apd:rule index='139'>
+            <apd:ntref name='IdentifierList'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='InterfaceBody'>
+        <apd:rule index='140'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:ntref name='DeclDefsOpt'/>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='AggregateDeclaration'>
+        <apd:rule index='141'>
+            <apd:ntref name='Tag'/>
+            <apd:ntref name='IdentifierOpt'/>
+            <apd:ntref name='StructBody'/>
+        </apd:rule>
+        <apd:rule index='142'>
+            <apd:ntref name='Tag'/>
+            <apd:ntref name='IdentifierOpt'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Tag'>
+        <apd:rule index='143'>
+            <apd:terminal>struct</apd:terminal>
+        </apd:rule>
+        <apd:rule index='144'>
+            <apd:terminal>union</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StructBody'>
+        <apd:rule index='145'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+        <apd:rule index='146'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:terminal>\}</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='147'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:ntref name='StructBodyDeclarations'/>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+        <apd:rule index='148'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:ntref name='StructBodyDeclarations'/>
+            <apd:terminal>\}</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StructBodyDeclarations'>
+        <apd:rule index='149'>
+            <apd:ntref name='StructBodyDeclarations'/>
+            <apd:ntref name='StructBodyDeclaration'/>
+        </apd:rule>
+        <apd:rule index='150'>
+            <apd:ntref name='StructBodyDeclaration'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StructBodyDeclaration'>
+        <apd:rule index='151'>
+            <apd:ntref name='DeclDef'/>
+        </apd:rule>
+        <apd:rule index='152'>
+            <apd:ntref name='StructAllocator'/>
+        </apd:rule>
+        <apd:rule index='153'>
+            <apd:ntref name='StructDeallocator'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StructAllocator'>
+        <apd:rule index='154'>
+            <apd:ntref name='ClassAllocator'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StructDeallocator'>
+        <apd:rule index='155'>
+            <apd:ntref name='ClassDeallocator'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ConditionalStatement'>
+        <apd:rule index='156'>
+            <apd:ntref name='Condition'/>
+            <apd:ntref name='Statement'/>
+            <apd:terminal>else</apd:terminal>
+            <apd:ntref name='Statement'/>
+        </apd:rule>
+        <apd:rule index='157'>
+            <apd:ntref name='Condition'/>
+            <apd:ntref name='Statement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Statement'>
+        <apd:rule index='158'>
+            <apd:ntref name='NonEmptyStatement'/>
+        </apd:rule>
+        <apd:rule index='159'>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StatementList'>
+        <apd:rule index='160'>
+            <apd:ntref name='StatementList'/>
+            <apd:ntref name='Statement'/>
+        </apd:rule>
+        <apd:rule index='161'>
+            <apd:ntref name='Statement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='NoScopeNonEmptyStatement'>
+        <apd:rule index='162'>
+            <apd:ntref name='NonEmptyStatement'/>
+        </apd:rule>
+        <apd:rule index='163'>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='NoScopeStatement'>
+        <apd:rule index='164'>
+            <apd:ntref name='NonEmptyStatement'/>
+        </apd:rule>
+        <apd:rule index='165'>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='NonEmptyStatement'>
+        <apd:rule index='166'>
+            <apd:ntref name='DeclDefNoConditional'/>
+        </apd:rule>
+        <apd:rule index='167'>
+            <apd:ntref name='NonEmptyNoDeclStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='NonEmptyNoDeclStatement'>
+        <apd:rule index='168'>
+            <apd:ntref name='LabeledStatement'/>
+        </apd:rule>
+        <apd:rule index='169'>
+            <apd:ntref name='ExpressionStatement'/>
+        </apd:rule>
+        <apd:rule index='170'>
+            <apd:ntref name='IfStatement'/>
+        </apd:rule>
+        <apd:rule index='171'>
+            <apd:ntref name='ConditionalStatement'/>
+        </apd:rule>
+        <apd:rule index='172'>
+            <apd:ntref name='WhileStatement'/>
+        </apd:rule>
+        <apd:rule index='173'>
+            <apd:ntref name='DoStatement'/>
+        </apd:rule>
+        <apd:rule index='174'>
+            <apd:ntref name='ForStatement'/>
+        </apd:rule>
+        <apd:rule index='175'>
+            <apd:ntref name='ForeachStatement'/>
+        </apd:rule>
+        <apd:rule index='176'>
+            <apd:ntref name='ForeachRangeStatement'/>
+        </apd:rule>
+        <apd:rule index='177'>
+            <apd:ntref name='SwitchStatement'/>
+        </apd:rule>
+        <apd:rule index='178'>
+            <apd:ntref name='CaseStatement'/>
+        </apd:rule>
+        <apd:rule index='179'>
+            <apd:ntref name='DefaultStatement'/>
+        </apd:rule>
+        <apd:rule index='180'>
+            <apd:ntref name='ContinueStatement'/>
+        </apd:rule>
+        <apd:rule index='181'>
+            <apd:ntref name='BreakStatement'/>
+        </apd:rule>
+        <apd:rule index='182'>
+            <apd:ntref name='ReturnStatement'/>
+        </apd:rule>
+        <apd:rule index='183'>
+            <apd:ntref name='GotoStatement'/>
+        </apd:rule>
+        <apd:rule index='184'>
+            <apd:ntref name='WithStatement'/>
+        </apd:rule>
+        <apd:rule index='185'>
+            <apd:ntref name='SynchronizedStatement'/>
+        </apd:rule>
+        <apd:rule index='186'>
+            <apd:ntref name='TryStatement'/>
+        </apd:rule>
+        <apd:rule index='187'>
+            <apd:ntref name='ScopeGuardStatement'/>
+        </apd:rule>
+        <apd:rule index='188'>
+            <apd:ntref name='ThrowStatement'/>
+        </apd:rule>
+        <apd:rule index='189'>
+            <apd:ntref name='VolatileStatement'/>
+        </apd:rule>
+        <apd:rule index='190'>
+            <apd:ntref name='AsmStatement'/>
+        </apd:rule>
+        <apd:rule index='191'>
+            <apd:ntref name='PragmaStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ScopeStatement'>
+        <apd:rule index='192'>
+            <apd:ntref name='NonEmptyStatement'/>
+        </apd:rule>
+        <apd:rule index='193'>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='NoDeclScopeStatement'>
+        <apd:rule index='194'>
+            <apd:ntref name='NonEmptyNoDeclStatement'/>
+        </apd:rule>
+        <apd:rule index='195'>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='LabeledStatement'>
+        <apd:rule index='196'>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='NoScopeStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='BlockStatement'>
+        <apd:rule index='197'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+        <apd:rule index='198'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:ntref name='StatementList'/>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ExpressionStatement'>
+        <apd:rule index='199'>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='IfStatement'>
+        <apd:rule index='200'>
+            <apd:terminal>if</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='IfCondition'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+        </apd:rule>
+        <apd:rule index='201'>
+            <apd:terminal>if</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='IfCondition'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+            <apd:terminal>else</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='IfCondition'>
+        <apd:rule index='202'>
+            <apd:ntref name='Expression'/>
+        </apd:rule>
+        <apd:rule index='203'>
+            <apd:terminal>auto</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='Expression'/>
+        </apd:rule>
+        <apd:rule index='204'>
+            <apd:ntref name='BasicType'/>
+            <apd:ntref name='Declarator'/>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='Expression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='WhileStatement'>
+        <apd:rule index='205'>
+            <apd:terminal>while</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='DoStatement'>
+        <apd:rule index='206'>
+            <apd:terminal>do</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+            <apd:terminal>while</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ForStatement'>
+        <apd:rule index='207'>
+            <apd:terminal>for</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='NoScopeNonEmptyStatement'/>
+            <apd:ntref name='ExpressionOpt'/>
+            <apd:terminal>;</apd:terminal>
+            <apd:ntref name='ExpressionOpt'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ForeachStatement'>
+        <apd:rule index='208'>
+            <apd:ntref name='Foreach'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='ForeachTypeList'/>
+            <apd:terminal>;</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Foreach'>
+        <apd:rule index='209'>
+            <apd:terminal>foreach</apd:terminal>
+        </apd:rule>
+        <apd:rule index='210'>
+            <apd:terminal>foreach_reverse</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ForeachTypeList'>
+        <apd:rule index='211'>
+            <apd:ntref name='ForeachTypeList'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='ForeachType'/>
+        </apd:rule>
+        <apd:rule index='212'>
+            <apd:ntref name='ForeachType'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ForeachType'>
+        <apd:rule index='213'>
+            <apd:terminal>inout</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='214'>
+            <apd:terminal>ref</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='215'>
+            <apd:ntref name='TypeNT'/>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='216'>
+            <apd:terminal>inout</apd:terminal>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='217'>
+            <apd:terminal>ref</apd:terminal>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='218'>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ForeachRangeStatement'>
+        <apd:rule index='219'>
+            <apd:ntref name='Foreach'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='ForeachType'/>
+            <apd:terminal>;</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\.\.</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='SwitchStatement'>
+        <apd:rule index='220'>
+            <apd:terminal>switch</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='BlockStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='CaseStatement'>
+        <apd:rule index='221'>
+            <apd:terminal>case</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>:</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='DefaultStatement'>
+        <apd:rule index='222'>
+            <apd:terminal>default</apd:terminal>
+            <apd:terminal>:</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ContinueStatement'>
+        <apd:rule index='223'>
+            <apd:terminal>continue</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='224'>
+            <apd:terminal>continue</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='BreakStatement'>
+        <apd:rule index='225'>
+            <apd:terminal>break</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='226'>
+            <apd:terminal>break</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ReturnStatement'>
+        <apd:rule index='227'>
+            <apd:terminal>return</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='228'>
+            <apd:terminal>return</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='GotoStatement'>
+        <apd:rule index='229'>
+            <apd:terminal>goto</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='230'>
+            <apd:terminal>goto</apd:terminal>
+            <apd:terminal>default</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='231'>
+            <apd:terminal>goto</apd:terminal>
+            <apd:terminal>case</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='232'>
+            <apd:terminal>goto</apd:terminal>
+            <apd:terminal>case</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='WithStatement'>
+        <apd:rule index='233'>
+            <apd:terminal>with</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+        </apd:rule>
+        <apd:rule index='234'>
+            <apd:terminal>with</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TemplateInstance'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='SynchronizedStatement'>
+        <apd:rule index='235'>
+            <apd:terminal>synchronized</apd:terminal>
+            <apd:ntref name='NoDeclScopeStatement'/>
+        </apd:rule>
+        <apd:rule index='236'>
+            <apd:terminal>synchronized</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TryStatement'>
+        <apd:rule index='237'>
+            <apd:terminal>try</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+            <apd:ntref name='Catches'/>
+        </apd:rule>
+        <apd:rule index='238'>
+            <apd:terminal>try</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+            <apd:ntref name='Catches'/>
+            <apd:ntref name='FinallyStatement'/>
+        </apd:rule>
+        <apd:rule index='239'>
+            <apd:terminal>try</apd:terminal>
+            <apd:ntref name='ScopeStatement'/>
+            <apd:ntref name='FinallyStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Catches'>
+        <apd:rule index='240'>
+            <apd:ntref name='LastCatch'/>
+        </apd:rule>
+        <apd:rule index='241'>
+            <apd:ntref name='Catch'/>
+            <apd:ntref name='Catches'/>
+        </apd:rule>
+        <apd:rule index='242'>
+            <apd:ntref name='Catch'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='LastCatch'>
+        <apd:rule index='243'>
+            <apd:terminal>catch</apd:terminal>
+            <apd:ntref name='NoScopeNonEmptyStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Catch'>
+        <apd:rule index='244'>
+            <apd:terminal>catch</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Parameter'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='NoScopeNonEmptyStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='FinallyStatement'>
+        <apd:rule index='245'>
+            <apd:terminal>finally</apd:terminal>
+            <apd:ntref name='NoScopeNonEmptyStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ThrowStatement'>
+        <apd:rule index='246'>
+            <apd:terminal>throw</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ScopeGuardStatement'>
+        <apd:rule index='247'>
+            <apd:terminal>scope</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='Statement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='VolatileStatement'>
+        <apd:rule index='248'>
+            <apd:terminal>volatile</apd:terminal>
+            <apd:ntref name='Statement'/>
+        </apd:rule>
+        <apd:rule index='249'>
+            <apd:terminal>volatile</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='AsmStatement'>
+        <apd:rule index='250'>
+            <apd:terminal>asm</apd:terminal>
+            <apd:terminal>\{</apd:terminal>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+        <apd:rule index='251'>
+            <apd:terminal>asm</apd:terminal>
+            <apd:terminal>\{</apd:terminal>
+            <apd:ntref name='AsmInstructionList'/>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='AsmInstructionList'>
+        <apd:rule index='252'>
+            <apd:ntref name='AsmInstructionList'/>
+            <apd:ntref name='AsmInstruction'/>
+        </apd:rule>
+        <apd:rule index='253'>
+            <apd:ntref name='AsmInstruction'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='AsmInstruction'>
+        <apd:rule index='254'>
+            <apd:altern>
+            <apd:terminal>for</apd:terminal>
+            <apd:terminal>!\&lt;=</apd:terminal>
+            <apd:terminal>private</apd:terminal>
+            <apd:terminal>lazy</apd:terminal>
+            <apd:terminal>\&lt;\&gt;=</apd:terminal>
+            <apd:terminal>r"[^"]*"[cdw]?</apd:terminal>
+            <apd:terminal>in</apd:terminal>
+            <apd:terminal>class</apd:terminal>
+            <apd:terminal>typeof</apd:terminal>
+            <apd:terminal>\^=</apd:terminal>
+            <apd:terminal>\&lt;</apd:terminal>
+            <apd:terminal>override</apd:terminal>
+            <apd:terminal>double</apd:terminal>
+            <apd:terminal>__VENDOR__</apd:terminal>
+            <apd:terminal>[1-9][0-9_]*(L|[uU]|L[uU]|[uU]L)?</apd:terminal>
+            <apd:terminal>[0-9][0-9_]*\.?([fFLi]|[fFL]i)</apd:terminal>
+            <apd:terminal>\&gt;</apd:terminal>
+            <apd:terminal>with</apd:terminal>
+            <apd:terminal>uint</apd:terminal>
+            <apd:terminal>\?</apd:terminal>
+            <apd:terminal>goto</apd:terminal>
+            <apd:terminal>is</apd:terminal>
+            <apd:terminal>cdouble</apd:terminal>
+            <apd:terminal>alias</apd:terminal>
+            <apd:terminal>function</apd:terminal>
+            <apd:terminal>0([xX][0-9a-fA-F_]*|[bB][01_]*|[0-7_]*)(L|[uU]|L[uU]|[uU]L)?</apd:terminal>
+            <apd:terminal>\*=</apd:terminal>
+            <apd:terminal>__FILE__</apd:terminal>
+            <apd:terminal>q"</apd:terminal>
+            <apd:terminal>switch</apd:terminal>
+            <apd:terminal>asm</apd:terminal>
+            <apd:terminal>dchar</apd:terminal>
+            <apd:terminal>foreach</apd:terminal>
+            <apd:terminal>idouble</apd:terminal>
+            <apd:terminal>\&lt;=</apd:terminal>
+            <apd:terminal>static</apd:terminal>
+            <apd:terminal>struct</apd:terminal>
+            <apd:terminal>!\&lt;</apd:terminal>
+            <apd:terminal>import</apd:terminal>
+            <apd:terminal>true</apd:terminal>
+            <apd:terminal>\.\.\.</apd:terminal>
+            <apd:terminal>!\&gt;</apd:terminal>
+            <apd:terminal>!\&gt;=</apd:terminal>
+            <apd:terminal>auto</apd:terminal>
+            <apd:terminal>creal</apd:terminal>
+            <apd:terminal>\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8}))</apd:terminal>
+            <apd:terminal>foreach_reverse</apd:terminal>
+            <apd:terminal>__TIMESTAMP__</apd:terminal>
+            <apd:terminal>export</apd:terminal>
+            <apd:terminal>\+=</apd:terminal>
+            <apd:terminal>!\&lt;\&gt;</apd:terminal>
+            <apd:terminal>debug</apd:terminal>
+            <apd:terminal>"(([^"\\]*(\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8})))?)*)"[cdw]?</apd:terminal>
+            <apd:terminal>float</apd:terminal>
+            <apd:terminal>\&lt;\&lt;</apd:terminal>
+            <apd:terminal>~</apd:terminal>
+            <apd:terminal>break</apd:terminal>
+            <apd:terminal>(([0-9_]*\.[0-9][0-9_]*([eE][\+\-]?[0-9][0-9_]*)?)|([0-9][0-9_]*[eE][\+\-]?[0-9][0-9_]*))([fFLi]|[fFL]i)?</apd:terminal>
+            <apd:terminal>\&lt;\&gt;</apd:terminal>
+            <apd:terminal>!</apd:terminal>
+            <apd:terminal>typeid</apd:terminal>
+            <apd:terminal>char</apd:terminal>
+            <apd:terminal>__TIME__</apd:terminal>
+            <apd:terminal>module</apd:terminal>
+            <apd:terminal>real</apd:terminal>
+            <apd:terminal>\[</apd:terminal>
+            <apd:terminal>!=</apd:terminal>
+            <apd:terminal>\&gt;\&gt;\&gt;</apd:terminal>
+            <apd:terminal>%</apd:terminal>
+            <apd:terminal>0[xX][0-9a-fA-F_]*\.?[0-9a-fA-F_]+[pP][\+\-]?[0-9_]+([fFLi]|[fFL]i)?</apd:terminal>
+            <apd:terminal>\]</apd:terminal>
+            <apd:terminal>&amp;</apd:terminal>
+            <apd:terminal>\^</apd:terminal>
+            <apd:terminal>unittest</apd:terminal>
+            <apd:terminal>\&gt;=</apd:terminal>
+            <apd:terminal>\-\-</apd:terminal>
+            <apd:terminal>const</apd:terminal>
+            <apd:terminal>,</apd:terminal>
+            <apd:terminal>\|=</apd:terminal>
+            <apd:terminal>`[^`]*`[cdw]?</apd:terminal>
+            <apd:terminal>\&gt;\&gt;=</apd:terminal>
+            <apd:terminal>do</apd:terminal>
+            <apd:terminal>/</apd:terminal>
+            <apd:terminal>enum</apd:terminal>
+            <apd:terminal>\-=</apd:terminal>
+            <apd:terminal>false</apd:terminal>
+            <apd:terminal>__LINE__</apd:terminal>
+            <apd:terminal>__VERSION__</apd:terminal>
+            <apd:terminal>case</apd:terminal>
+            <apd:terminal>short</apd:terminal>
+            <apd:terminal>scope</apd:terminal>
+            <apd:terminal>this</apd:terminal>
+            <apd:terminal>package</apd:terminal>
+            <apd:terminal>finally</apd:terminal>
+            <apd:terminal>==</apd:terminal>
+            <apd:terminal>void</apd:terminal>
+            <apd:terminal>interface</apd:terminal>
+            <apd:terminal>!\&lt;\&gt;=</apd:terminal>
+            <apd:terminal>pragma</apd:terminal>
+            <apd:terminal>:</apd:terminal>
+            <apd:terminal>(0([xX][0-9a-fA-F_]*|[bB][01_]*|[0-7_]*)|([1-9][0-9_]*))[fFL]?i</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+            <apd:terminal>'(([^'\\]|(\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8})))))'</apd:terminal>
+            <apd:terminal>x"[0-9a-fA-F_\n\r\t ]*"[cdw]?</apd:terminal>
+            <apd:terminal>extern</apd:terminal>
+            <apd:terminal>ubyte</apd:terminal>
+            <apd:terminal>=</apd:terminal>
+            <apd:terminal>protected</apd:terminal>
+            <apd:terminal>int</apd:terminal>
+            <apd:terminal>super</apd:terminal>
+            <apd:terminal>q\{</apd:terminal>
+            <apd:terminal>typedef</apd:terminal>
+            <apd:terminal>\.\.</apd:terminal>
+            <apd:terminal>cast</apd:terminal>
+            <apd:terminal>else</apd:terminal>
+            <apd:terminal>null</apd:terminal>
+            <apd:terminal>&amp;&amp;</apd:terminal>
+            <apd:terminal>ulong</apd:terminal>
+            <apd:terminal>ref</apd:terminal>
+            <apd:terminal>\|</apd:terminal>
+            <apd:terminal>\&gt;\&gt;\&gt;=</apd:terminal>
+            <apd:terminal>align</apd:terminal>
+            <apd:terminal>version</apd:terminal>
+            <apd:terminal>[0-9][0-9_]*\.&gt;[^\.]</apd:terminal>
+            <apd:terminal>mixin</apd:terminal>
+            <apd:terminal>body</apd:terminal>
+            <apd:terminal>synchronized</apd:terminal>
+            <apd:terminal>abstract</apd:terminal>
+            <apd:terminal>\|\|</apd:terminal>
+            <apd:terminal>__DATE__</apd:terminal>
+            <apd:terminal>volatile</apd:terminal>
+            <apd:terminal>final</apd:terminal>
+            <apd:terminal>[a-zA-Z_][_a-zA-Z0-9]*</apd:terminal>
+            <apd:terminal>\&lt;\&lt;=</apd:terminal>
+            <apd:terminal>\&gt;\&gt;</apd:terminal>
+            <apd:terminal>\$</apd:terminal>
+            <apd:terminal>inout</apd:terminal>
+            <apd:terminal>!is&gt;[^_a-zA-Z0-9]</apd:terminal>
+            <apd:terminal>%=</apd:terminal>
+            <apd:terminal>delete</apd:terminal>
+            <apd:terminal>continue</apd:terminal>
+            <apd:terminal>template</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:terminal>union</apd:terminal>
+            <apd:terminal>ifloat</apd:terminal>
+            <apd:terminal>\)</apd:terminal>
+            <apd:terminal>byte</apd:terminal>
+            <apd:terminal>\*</apd:terminal>
+            <apd:terminal>delegate</apd:terminal>
+            <apd:terminal>try</apd:terminal>
+            <apd:terminal>\+</apd:terminal>
+            <apd:terminal>catch</apd:terminal>
+            <apd:terminal>ireal</apd:terminal>
+            <apd:terminal>deprecated</apd:terminal>
+            <apd:terminal>bool</apd:terminal>
+            <apd:terminal>invariant</apd:terminal>
+            <apd:terminal>new</apd:terminal>
+            <apd:terminal>\-</apd:terminal>
+            <apd:terminal>throw</apd:terminal>
+            <apd:terminal>\.</apd:terminal>
+            <apd:terminal>\+\+</apd:terminal>
+            <apd:terminal>default</apd:terminal>
+            <apd:terminal>return</apd:terminal>
+            <apd:terminal>ushort</apd:terminal>
+            <apd:terminal>~=</apd:terminal>
+            <apd:terminal>public</apd:terminal>
+            <apd:terminal>out</apd:terminal>
+            <apd:terminal>cfloat</apd:terminal>
+            <apd:terminal>long</apd:terminal>
+            <apd:terminal>&amp;=</apd:terminal>
+            <apd:terminal>if</apd:terminal>
+            <apd:terminal>/=</apd:terminal>
+            <apd:terminal>while</apd:terminal>
+            <apd:terminal>__traits</apd:terminal>
+            <apd:terminal>assert</apd:terminal>
+            <apd:terminal>wchar</apd:terminal>
+            </apd:altern>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='PragmaStatement'>
+        <apd:rule index='255'>
+            <apd:ntref name='Pragma'/>
+            <apd:ntref name='NoScopeStatement'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='DeclarationBlock'>
+        <apd:rule index='256'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:ntref name='DeclDefsOpt'/>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+        <apd:rule index='257'>
+            <apd:ntref name='DeclDef'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='MixinDeclaration'>
+        <apd:rule index='258'>
+            <apd:terminal>mixin</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Declaration'>
+        <apd:rule index='259'>
+            <apd:ntref name='TypedefAlias'/>
+            <apd:ntref name='Declaration2'/>
+        </apd:rule>
+        <apd:rule index='260'>
+            <apd:ntref name='TypedefAlias'/>
+            <apd:ntref name='Attributes'/>
+            <apd:ntref name='Declaration2'/>
+        </apd:rule>
+        <apd:rule index='261'>
+            <apd:ntref name='TypedefAlias'/>
+            <apd:ntref name='Attributes'/>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='262'>
+            <apd:ntref name='Attributes'/>
+            <apd:ntref name='Declaration2'/>
+        </apd:rule>
+        <apd:rule index='263'>
+            <apd:ntref name='Attributes'/>
+            <apd:ntref name='IdentifierSimpleInitializerList'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='264'>
+            <apd:ntref name='Declaration2'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TypedefAlias'>
+        <apd:rule index='265'>
+            <apd:terminal>typedef</apd:terminal>
+        </apd:rule>
+        <apd:rule index='266'>
+            <apd:terminal>alias</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Declaration2'>
+        <apd:rule index='267'>
+            <apd:ntref name='BasicType'/>
+            <apd:ntref name='Declarator'/>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+        <apd:rule index='268'>
+            <apd:ntref name='BasicType'/>
+            <apd:ntref name='Declarators'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='IdentifierSimpleInitializerList'>
+        <apd:rule index='269'>
+            <apd:ntref name='IdentifierSimpleInitializerList'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='270'>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Declarators'>
+        <apd:rule index='271'>
+            <apd:ntref name='DeclaratorInitializer'/>
+        </apd:rule>
+        <apd:rule index='272'>
+            <apd:ntref name='DeclaratorInitializer'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='IdentifierInitializerList'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='DeclaratorInitializer'>
+        <apd:rule index='273'>
+            <apd:ntref name='Declarator'/>
+        </apd:rule>
+        <apd:rule index='274'>
+            <apd:ntref name='Declarator'/>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='Initializer'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='IdentifierInitializerList'>
+        <apd:rule index='275'>
+            <apd:ntref name='IdentifierInitializerList'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='IdentifierInitializer'/>
+        </apd:rule>
+        <apd:rule index='276'>
+            <apd:ntref name='IdentifierInitializer'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='IdentifierInitializer'>
+        <apd:rule index='277'>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='278'>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='Initializer'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='BasicType'>
+        <apd:rule index='279'>
+            <apd:ntref name='BasicTypeNoIdList'/>
+        </apd:rule>
+        <apd:rule index='280'>
+            <apd:terminal>\.</apd:terminal>
+            <apd:ntref name='IdentifierList'/>
+        </apd:rule>
+        <apd:rule index='281'>
+            <apd:ntref name='IdentifierList'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='BasicTypeNoIdList'>
+        <apd:rule index='282'>
+            <apd:terminal>bool</apd:terminal>
+        </apd:rule>
+        <apd:rule index='283'>
+            <apd:terminal>byte</apd:terminal>
+        </apd:rule>
+        <apd:rule index='284'>
+            <apd:terminal>ubyte</apd:terminal>
+        </apd:rule>
+        <apd:rule index='285'>
+            <apd:terminal>short</apd:terminal>
+        </apd:rule>
+        <apd:rule index='286'>
+            <apd:terminal>ushort</apd:terminal>
+        </apd:rule>
+        <apd:rule index='287'>
+            <apd:terminal>int</apd:terminal>
+        </apd:rule>
+        <apd:rule index='288'>
+            <apd:terminal>uint</apd:terminal>
+        </apd:rule>
+        <apd:rule index='289'>
+            <apd:terminal>long</apd:terminal>
+        </apd:rule>
+        <apd:rule index='290'>
+            <apd:terminal>ulong</apd:terminal>
+        </apd:rule>
+        <apd:rule index='291'>
+            <apd:terminal>char</apd:terminal>
+        </apd:rule>
+        <apd:rule index='292'>
+            <apd:terminal>wchar</apd:terminal>
+        </apd:rule>
+        <apd:rule index='293'>
+            <apd:terminal>dchar</apd:terminal>
+        </apd:rule>
+        <apd:rule index='294'>
+            <apd:terminal>float</apd:terminal>
+        </apd:rule>
+        <apd:rule index='295'>
+            <apd:terminal>double</apd:terminal>
+        </apd:rule>
+        <apd:rule index='296'>
+            <apd:terminal>real</apd:terminal>
+        </apd:rule>
+        <apd:rule index='297'>
+            <apd:terminal>ifloat</apd:terminal>
+        </apd:rule>
+        <apd:rule index='298'>
+            <apd:terminal>idouble</apd:terminal>
+        </apd:rule>
+        <apd:rule index='299'>
+            <apd:terminal>ireal</apd:terminal>
+        </apd:rule>
+        <apd:rule index='300'>
+            <apd:terminal>cfloat</apd:terminal>
+        </apd:rule>
+        <apd:rule index='301'>
+            <apd:terminal>cdouble</apd:terminal>
+        </apd:rule>
+        <apd:rule index='302'>
+            <apd:terminal>creal</apd:terminal>
+        </apd:rule>
+        <apd:rule index='303'>
+            <apd:terminal>void</apd:terminal>
+        </apd:rule>
+        <apd:rule index='304'>
+            <apd:ntref name='Typeof'/>
+        </apd:rule>
+        <apd:rule index='305'>
+            <apd:ntref name='Typeof'/>
+            <apd:ntref name='IdentifierList'/>
+        </apd:rule>
+        <apd:rule index='306'>
+            <apd:ntref name='TypeConstructor'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='BasicType2'>
+        <apd:rule index='307'>
+            <apd:terminal>\*</apd:terminal>
+        </apd:rule>
+        <apd:rule index='308'>
+            <apd:terminal>\[</apd:terminal>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+        <apd:rule index='309'>
+            <apd:terminal>\[</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+        <apd:rule index='310'>
+            <apd:terminal>\[</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+        <apd:rule index='311'>
+            <apd:terminal>\[</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\.\.</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+        <apd:rule index='312'>
+            <apd:terminal>delegate</apd:terminal>
+            <apd:ntref name='Parameters'/>
+        </apd:rule>
+        <apd:rule index='313'>
+            <apd:terminal>function</apd:terminal>
+            <apd:ntref name='Parameters'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TypeConstructor'>
+        <apd:rule index='314'>
+            <apd:terminal>const</apd:terminal>
+        </apd:rule>
+        <apd:rule index='315'>
+            <apd:terminal>invariant</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Declarator'>
+        <apd:rule index='316'>
+            <apd:ntref name='BasicType2'/>
+            <apd:ntref name='DeclaratorOpt'/>
+        </apd:rule>
+        <apd:rule index='317'>
+            <apd:ntref name='Identifier'/>
+            <apd:ntref name='DeclaratorSuffixesOpt'/>
+        </apd:rule>
+        <apd:rule index='318'>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Declarator'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='DeclaratorSuffixesOpt'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='DeclaratorOpt'>
+        <apd:rule index='319'>
+            <apd:ntref name='Declarator'/>
+        </apd:rule>
+        <apd:rule index='320'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='DeclaratorSuffixesOpt'>
+        <apd:rule index='321'>
+            <apd:ntref name='DeclaratorSuffixesOpt'/>
+            <apd:ntref name='DeclaratorSuffix'/>
+        </apd:rule>
+        <apd:rule index='322'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='DeclaratorSuffix'>
+        <apd:rule index='323'>
+            <apd:terminal>\[</apd:terminal>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+        <apd:rule index='324'>
+            <apd:terminal>\[</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+        <apd:rule index='325'>
+            <apd:terminal>\[</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+        <apd:rule index='326'>
+            <apd:ntref name='Parameters'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='IdentifierList'>
+        <apd:rule index='327'>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='328'>
+            <apd:ntref name='IdentifierList'/>
+            <apd:terminal>\.</apd:terminal>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='329'>
+            <apd:ntref name='TemplateInstance'/>
+        </apd:rule>
+        <apd:rule index='330'>
+            <apd:ntref name='IdentifierList'/>
+            <apd:terminal>\.</apd:terminal>
+            <apd:ntref name='TemplateInstance'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Typeof'>
+        <apd:rule index='331'>
+            <apd:terminal>typeof</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TypeNT'>
+        <apd:rule index='332'>
+            <apd:ntref name='BasicType'/>
+        </apd:rule>
+        <apd:rule index='333'>
+            <apd:ntref name='BasicType'/>
+            <apd:ntref name='Declarator2'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TypeOpt'>
+        <apd:rule index='334'>
+            <apd:ntref name='TypeNT'/>
+        </apd:rule>
+        <apd:rule index='335'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Declarator2'>
+        <apd:rule index='336'>
+            <apd:ntref name='BasicType2'/>
+        </apd:rule>
+        <apd:rule index='337'>
+            <apd:ntref name='BasicType2'/>
+            <apd:ntref name='Declarator2'/>
+        </apd:rule>
+        <apd:rule index='338'>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Declarator2'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='DeclaratorSuffixesOpt'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Parameters'>
+        <apd:rule index='339'>
+            <apd:terminal>\(</apd:terminal>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='340'>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='ParameterList'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ParameterListOpt'>
+        <apd:rule index='341'>
+            <apd:ntref name='ParameterList'/>
+        </apd:rule>
+        <apd:rule index='342'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ParameterList'>
+        <apd:rule index='343'>
+            <apd:ntref name='Parameter'/>
+        </apd:rule>
+        <apd:rule index='344'>
+            <apd:ntref name='Parameter'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='ParameterList'/>
+        </apd:rule>
+        <apd:rule index='345'>
+            <apd:ntref name='Parameter'/>
+            <apd:terminal>\.\.\.</apd:terminal>
+        </apd:rule>
+        <apd:rule index='346'>
+            <apd:terminal>\.\.\.</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Parameter'>
+        <apd:rule index='347'>
+            <apd:ntref name='Parameter2'/>
+        </apd:rule>
+        <apd:rule index='348'>
+            <apd:ntref name='InOut'/>
+            <apd:ntref name='Parameter2'/>
+        </apd:rule>
+        <apd:rule index='349'>
+            <apd:ntref name='ParameterStorageClasses'/>
+            <apd:ntref name='Parameter2'/>
+        </apd:rule>
+        <apd:rule index='350'>
+            <apd:ntref name='InOut'/>
+            <apd:ntref name='ParameterStorageClasses'/>
+            <apd:ntref name='Parameter2'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Parameter2'>
+        <apd:rule index='351'>
+            <apd:ntref name='BasicType'/>
+            <apd:ntref name='DeclaratorOpt'/>
+        </apd:rule>
+        <apd:rule index='352'>
+            <apd:ntref name='BasicType'/>
+            <apd:ntref name='DeclaratorOpt'/>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ParameterStorageClasses'>
+        <apd:rule index='353'>
+            <apd:ntref name='ParameterStorageClasses'/>
+            <apd:ntref name='ParameterStorageClass'/>
+        </apd:rule>
+        <apd:rule index='354'>
+            <apd:ntref name='ParameterStorageClass'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ParameterStorageClass'>
+        <apd:rule index='355'>
+            <apd:terminal>const</apd:terminal>
+        </apd:rule>
+        <apd:rule index='356'>
+            <apd:terminal>invariant</apd:terminal>
+        </apd:rule>
+        <apd:rule index='357'>
+            <apd:terminal>final</apd:terminal>
+        </apd:rule>
+        <apd:rule index='358'>
+            <apd:terminal>scope</apd:terminal>
+        </apd:rule>
+        <apd:rule index='359'>
+            <apd:terminal>static</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='InOut'>
+        <apd:rule index='360'>
+            <apd:terminal>inout</apd:terminal>
+        </apd:rule>
+        <apd:rule index='361'>
+            <apd:terminal>in</apd:terminal>
+        </apd:rule>
+        <apd:rule index='362'>
+            <apd:terminal>out</apd:terminal>
+        </apd:rule>
+        <apd:rule index='363'>
+            <apd:terminal>ref</apd:terminal>
+        </apd:rule>
+        <apd:rule index='364'>
+            <apd:terminal>lazy</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Initializer'>
+        <apd:rule index='365'>
+            <apd:terminal>void</apd:terminal>
+        </apd:rule>
+        <apd:rule index='366'>
+            <apd:ntref name='NonVoidInitializer'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='NonVoidInitializer'>
+        <apd:rule index='367'>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='368'>
+            <apd:ntref name='ArrayInitializer'/>
+        </apd:rule>
+        <apd:rule index='369'>
+            <apd:ntref name='StructInitializer'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ArrayInitializer'>
+        <apd:rule index='370'>
+            <apd:terminal>\[</apd:terminal>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+        <apd:rule index='371'>
+            <apd:terminal>\[</apd:terminal>
+            <apd:ntref name='ArrayStructMemberInitializers'/>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StructInitializer'>
+        <apd:rule index='372'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+        <apd:rule index='373'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:ntref name='ArrayStructMemberInitializers'/>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ArrayStructMemberInitializers'>
+        <apd:rule index='374'>
+            <apd:ntref name='ArrayStructMemberInitializers'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='ArrayStructMemberInitializer'/>
+        </apd:rule>
+        <apd:rule index='375'>
+            <apd:ntref name='ArrayStructMemberInitializers'/>
+            <apd:terminal>,</apd:terminal>
+        </apd:rule>
+        <apd:rule index='376'>
+            <apd:ntref name='ArrayStructMemberInitializer'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ArrayStructMemberInitializer'>
+        <apd:rule index='377'>
+            <apd:ntref name='NonVoidInitializer'/>
+        </apd:rule>
+        <apd:rule index='378'>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='NonVoidInitializer'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='EnumDeclaration'>
+        <apd:rule index='379'>
+            <apd:terminal>enum</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:ntref name='EnumBaseTypeOpt'/>
+            <apd:ntref name='EnumBody'/>
+        </apd:rule>
+        <apd:rule index='380'>
+            <apd:terminal>enum</apd:terminal>
+            <apd:ntref name='EnumBaseTypeOpt'/>
+            <apd:ntref name='EnumBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='EnumBaseTypeOpt'>
+        <apd:rule index='381'>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+        </apd:rule>
+        <apd:rule index='382'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='EnumBody'>
+        <apd:rule index='383'>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+        <apd:rule index='384'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:ntref name='EnumMembers'/>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='EnumMembers'>
+        <apd:rule index='385'>
+            <apd:ntref name='EnumMembers'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='EnumMember'/>
+        </apd:rule>
+        <apd:rule index='386'>
+            <apd:ntref name='EnumMembers'/>
+            <apd:terminal>,</apd:terminal>
+        </apd:rule>
+        <apd:rule index='387'>
+            <apd:ntref name='EnumMember'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='EnumMember'>
+        <apd:rule index='388'>
+            <apd:ntref name='Identifier'/>
+            <apd:ntref name='EnumInitializerOpt'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='EnumInitializerOpt'>
+        <apd:rule index='389'>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='390'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateDeclaration'>
+        <apd:rule index='391'>
+            <apd:terminal>template</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TemplateParameterListOpt'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:terminal>\{</apd:terminal>
+            <apd:ntref name='DeclDefsOpt'/>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateParameterListOpt'>
+        <apd:rule index='392'>
+            <apd:ntref name='TemplateParameterList'/>
+        </apd:rule>
+        <apd:rule index='393'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateParameterList'>
+        <apd:rule index='394'>
+            <apd:ntref name='TemplateParameterList'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='TemplateParameter'/>
+        </apd:rule>
+        <apd:rule index='395'>
+            <apd:ntref name='TemplateParameter'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateParameter'>
+        <apd:rule index='396'>
+            <apd:ntref name='TemplateAliasParameter'/>
+        </apd:rule>
+        <apd:rule index='397'>
+            <apd:ntref name='TemplateTupleParameter'/>
+        </apd:rule>
+        <apd:rule index='398'>
+            <apd:ntref name='TemplateValueParameter'/>
+        </apd:rule>
+        <apd:rule index='399'>
+            <apd:ntref name='TemplateTypeParameter'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateTypeParameter'>
+        <apd:rule index='400'>
+            <apd:ntref name='Identifier'/>
+            <apd:ntref name='TemplateTypeParameterSpecializationOpt'/>
+            <apd:ntref name='TemplateTypeParameterDefaultOpt'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateTypeParameterSpecializationOpt'>
+        <apd:rule index='401'>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+        </apd:rule>
+        <apd:rule index='402'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateTypeParameterDefaultOpt'>
+        <apd:rule index='403'>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+        </apd:rule>
+        <apd:rule index='404'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateValueParameter'>
+        <apd:rule index='405'>
+            <apd:ntref name='BasicType'/>
+            <apd:ntref name='Declarator'/>
+            <apd:ntref name='TemplateValueParameterSpecializationOpt'/>
+            <apd:ntref name='TemplateValueParameterDefaultOpt'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateValueParameterSpecializationOpt'>
+        <apd:rule index='406'>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='ConditionalExpression'/>
+        </apd:rule>
+        <apd:rule index='407'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateValueParameterDefaultOpt'>
+        <apd:rule index='408'>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='ConditionalExpression'/>
+        </apd:rule>
+        <apd:rule index='409'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateAliasParameter'>
+        <apd:rule index='410'>
+            <apd:terminal>alias</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:ntref name='TemplateAliasParameterSpecializationOpt'/>
+            <apd:ntref name='TemplateAliasParameterDefaultOpt'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateAliasParameterSpecializationOpt'>
+        <apd:rule index='411'>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+        </apd:rule>
+        <apd:rule index='412'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateAliasParameterDefaultOpt'>
+        <apd:rule index='413'>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+        </apd:rule>
+        <apd:rule index='414'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateTupleParameter'>
+        <apd:rule index='415'>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\.\.\.</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ClassTemplateDeclaration'>
+        <apd:rule index='416'>
+            <apd:terminal>class</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TemplateParameterListOpt'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='BaseClassListOpt'/>
+            <apd:ntref name='ClassBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='InterfaceTemplateDeclaration'>
+        <apd:rule index='417'>
+            <apd:terminal>interface</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TemplateParameterListOpt'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='SuperInterfaceListOpt'/>
+            <apd:ntref name='InterfaceBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StructTemplateDeclaration'>
+        <apd:rule index='418'>
+            <apd:terminal>struct</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TemplateParameterListOpt'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='StructBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='FunctionTemplateDeclaration'>
+        <apd:rule index='419'>
+            <apd:ntref name='TypeIdent'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TemplateParameterList'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='ParameterListOpt'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TypeIdent'>
+        <apd:rule index='420'>
+            <apd:ntref name='BasicType'/>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='421'>
+            <apd:ntref name='TypeNT'/>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateInstance'>
+        <apd:rule index='422'>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>!</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TemplateArgumentListOpt'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateArgumentListOpt'>
+        <apd:rule index='423'>
+            <apd:ntref name='TemplateArgumentList'/>
+        </apd:rule>
+        <apd:rule index='424'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateArgumentList'>
+        <apd:rule index='425'>
+            <apd:ntref name='TemplateArgumentList'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='TemplateArgument'/>
+        </apd:rule>
+        <apd:rule index='426'>
+            <apd:ntref name='TemplateArgument'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateArgument'>
+        <apd:rule index='427'>
+            <apd:ntref name='TypeNT'/>
+        </apd:rule>
+        <apd:rule index='428'>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='429'>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateMixin'>
+        <apd:rule index='430'>
+            <apd:terminal>mixin</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:ntref name='TemplateMixin2'/>
+            <apd:ntref name='IdentifierOpt'/>
+            <apd:terminal>;</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TemplateMixin2'>
+        <apd:rule index='431'>
+            <apd:terminal>!</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TemplateArgumentListOpt'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='432'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Expression'>
+        <apd:rule index='433'>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='434'>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ExpressionOpt'>
+        <apd:rule index='435'>
+            <apd:ntref name='Expression'/>
+        </apd:rule>
+        <apd:rule index='436'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='AssignExpression'>
+        <apd:rule index='437'>
+            <apd:ntref name='ConditionalExpression'/>
+        </apd:rule>
+        <apd:rule index='438'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='439'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>\+=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='440'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>\-=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='441'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>\*=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='442'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>/=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='443'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>%=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='444'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>&amp;=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='445'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>\|=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='446'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>\^=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='447'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>~=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='448'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>\&lt;\&lt;=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='449'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>\&gt;\&gt;=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='450'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>\&gt;\&gt;\&gt;=</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ConditionalExpression'>
+        <apd:rule index='451'>
+            <apd:ntref name='OrOrExpression'/>
+        </apd:rule>
+        <apd:rule index='452'>
+            <apd:ntref name='OrOrExpression'/>
+            <apd:terminal>\?</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='ConditionalExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='OrOrExpression'>
+        <apd:rule index='453'>
+            <apd:ntref name='AndAndExpression'/>
+        </apd:rule>
+        <apd:rule index='454'>
+            <apd:ntref name='OrOrExpression'/>
+            <apd:terminal>\|\|</apd:terminal>
+            <apd:ntref name='AndAndExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='AndAndExpression'>
+        <apd:rule index='455'>
+            <apd:ntref name='OrExpression'/>
+        </apd:rule>
+        <apd:rule index='456'>
+            <apd:ntref name='AndAndExpression'/>
+            <apd:terminal>&amp;&amp;</apd:terminal>
+            <apd:ntref name='OrExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='OrExpression'>
+        <apd:rule index='457'>
+            <apd:ntref name='XorExpression'/>
+        </apd:rule>
+        <apd:rule index='458'>
+            <apd:ntref name='OrExpression'/>
+            <apd:terminal>\|</apd:terminal>
+            <apd:ntref name='XorExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='XorExpression'>
+        <apd:rule index='459'>
+            <apd:ntref name='AndExpression'/>
+        </apd:rule>
+        <apd:rule index='460'>
+            <apd:ntref name='XorExpression'/>
+            <apd:terminal>\^</apd:terminal>
+            <apd:ntref name='AndExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='AndExpression'>
+        <apd:rule index='461'>
+            <apd:ntref name='CmpExpression'/>
+        </apd:rule>
+        <apd:rule index='462'>
+            <apd:ntref name='AndExpression'/>
+            <apd:terminal>&amp;</apd:terminal>
+            <apd:ntref name='CmpExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='CmpExpression'>
+        <apd:rule index='463'>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='464'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>==</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='465'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>!=</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='466'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>is</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='467'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:ntref name='NotIs'/>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='468'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>\&lt;</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='469'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>\&lt;=</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='470'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>\&gt;</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='471'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>\&gt;=</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='472'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>!\&lt;\&gt;=</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='473'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>!\&lt;\&gt;</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='474'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>\&lt;\&gt;</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='475'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>\&lt;\&gt;=</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='476'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>!\&gt;</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='477'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>!\&gt;=</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='478'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>!\&lt;</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='479'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>!\&lt;=</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+        <apd:rule index='480'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>in</apd:terminal>
+            <apd:ntref name='ShiftExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='NotIs'>
+        <apd:rule index='481'>
+            <apd:terminal>!is&gt;[^_a-zA-Z0-9]</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='IsNotIs'>
+        <apd:rule index='482'>
+            <apd:terminal>is</apd:terminal>
+        </apd:rule>
+        <apd:rule index='483'>
+            <apd:terminal>!is&gt;[^_a-zA-Z0-9]</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ShiftExpression'>
+        <apd:rule index='484'>
+            <apd:ntref name='AddExpression'/>
+        </apd:rule>
+        <apd:rule index='485'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>\&lt;\&lt;</apd:terminal>
+            <apd:ntref name='AddExpression'/>
+        </apd:rule>
+        <apd:rule index='486'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>\&gt;\&gt;</apd:terminal>
+            <apd:ntref name='AddExpression'/>
+        </apd:rule>
+        <apd:rule index='487'>
+            <apd:ntref name='ShiftExpression'/>
+            <apd:terminal>\&gt;\&gt;\&gt;</apd:terminal>
+            <apd:ntref name='AddExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='AddExpression'>
+        <apd:rule index='488'>
+            <apd:ntref name='MulExpression'/>
+        </apd:rule>
+        <apd:rule index='489'>
+            <apd:ntref name='AddExpression'/>
+            <apd:terminal>\+</apd:terminal>
+            <apd:ntref name='MulExpression'/>
+        </apd:rule>
+        <apd:rule index='490'>
+            <apd:ntref name='AddExpression'/>
+            <apd:terminal>\-</apd:terminal>
+            <apd:ntref name='MulExpression'/>
+        </apd:rule>
+        <apd:rule index='491'>
+            <apd:ntref name='CatExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='CatExpression'>
+        <apd:rule index='492'>
+            <apd:ntref name='AddExpression'/>
+            <apd:terminal>~</apd:terminal>
+            <apd:ntref name='MulExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='MulExpression'>
+        <apd:rule index='493'>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+        <apd:rule index='494'>
+            <apd:ntref name='MulExpression'/>
+            <apd:terminal>\*</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+        <apd:rule index='495'>
+            <apd:ntref name='MulExpression'/>
+            <apd:terminal>/</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+        <apd:rule index='496'>
+            <apd:ntref name='MulExpression'/>
+            <apd:terminal>%</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='UnaryExpression'>
+        <apd:rule index='497'>
+            <apd:ntref name='PostfixExpression'/>
+        </apd:rule>
+        <apd:rule index='498'>
+            <apd:terminal>&amp;</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+        <apd:rule index='499'>
+            <apd:terminal>\+\+</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+        <apd:rule index='500'>
+            <apd:terminal>\-\-</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+        <apd:rule index='501'>
+            <apd:terminal>\*</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+        <apd:rule index='502'>
+            <apd:terminal>\-</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+        <apd:rule index='503'>
+            <apd:terminal>\+</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+        <apd:rule index='504'>
+            <apd:terminal>!</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+        <apd:rule index='505'>
+            <apd:terminal>~</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+        <apd:rule index='506'>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:terminal>\.</apd:terminal>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='507'>
+            <apd:ntref name='NewExpression'/>
+        </apd:rule>
+        <apd:rule index='508'>
+            <apd:terminal>delete</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+        <apd:rule index='509'>
+            <apd:terminal>cast</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='UnaryExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='PostfixExpression'>
+        <apd:rule index='510'>
+            <apd:ntref name='Integer'/>
+        </apd:rule>
+        <apd:rule index='511'>
+            <apd:ntref name='Float'/>
+        </apd:rule>
+        <apd:rule index='512'>
+            <apd:terminal>\$</apd:terminal>
+        </apd:rule>
+        <apd:rule index='513'>
+            <apd:terminal>null</apd:terminal>
+        </apd:rule>
+        <apd:rule index='514'>
+            <apd:terminal>true</apd:terminal>
+        </apd:rule>
+        <apd:rule index='515'>
+            <apd:terminal>false</apd:terminal>
+        </apd:rule>
+        <apd:rule index='516'>
+            <apd:ntref name='AssertExpression'/>
+        </apd:rule>
+        <apd:rule index='517'>
+            <apd:ntref name='MixinExpression'/>
+        </apd:rule>
+        <apd:rule index='518'>
+            <apd:ntref name='IsExpression'/>
+        </apd:rule>
+        <apd:rule index='519'>
+            <apd:ntref name='PostfixExpression2'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='PostfixExpression2'>
+        <apd:rule index='520'>
+            <apd:ntref name='PrimaryExpression'/>
+        </apd:rule>
+        <apd:rule index='521'>
+            <apd:ntref name='PostfixExpression2'/>
+            <apd:terminal>\.</apd:terminal>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='522'>
+            <apd:ntref name='PostfixExpression2'/>
+            <apd:terminal>\.</apd:terminal>
+            <apd:ntref name='TemplateInstance'/>
+        </apd:rule>
+        <apd:rule index='523'>
+            <apd:ntref name='PostfixExpression2'/>
+            <apd:terminal>\+\+</apd:terminal>
+        </apd:rule>
+        <apd:rule index='524'>
+            <apd:ntref name='PostfixExpression2'/>
+            <apd:terminal>\-\-</apd:terminal>
+        </apd:rule>
+        <apd:rule index='525'>
+            <apd:ntref name='PostfixExpression2'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='ArgumentList'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='526'>
+            <apd:ntref name='PostfixExpression2'/>
+            <apd:terminal>\[</apd:terminal>
+            <apd:ntref name='ArgumentList'/>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+        <apd:rule index='527'>
+            <apd:ntref name='PostfixExpression2'/>
+            <apd:terminal>\[</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\.\.</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='PrimaryExpression'>
+        <apd:rule index='528'>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='529'>
+            <apd:terminal>\.</apd:terminal>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='530'>
+            <apd:ntref name='TemplateInstance'/>
+        </apd:rule>
+        <apd:rule index='531'>
+            <apd:terminal>\.</apd:terminal>
+            <apd:ntref name='TemplateInstance'/>
+        </apd:rule>
+        <apd:rule index='532'>
+            <apd:terminal>this</apd:terminal>
+        </apd:rule>
+        <apd:rule index='533'>
+            <apd:terminal>super</apd:terminal>
+        </apd:rule>
+        <apd:rule index='534'>
+            <apd:ntref name='CharacterLiteral'/>
+        </apd:rule>
+        <apd:rule index='535'>
+            <apd:ntref name='StringLiterals'/>
+        </apd:rule>
+        <apd:rule index='536'>
+            <apd:ntref name='ArrayLiteral'/>
+        </apd:rule>
+        <apd:rule index='537'>
+            <apd:ntref name='AssocArrayLiteral'/>
+        </apd:rule>
+        <apd:rule index='538'>
+            <apd:ntref name='FunctionLiteral'/>
+        </apd:rule>
+        <apd:rule index='539'>
+            <apd:ntref name='ImportExpression'/>
+        </apd:rule>
+        <apd:rule index='540'>
+            <apd:ntref name='BasicTypeNoIdList'/>
+            <apd:terminal>\.</apd:terminal>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='541'>
+            <apd:terminal>typeid</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='542'>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Expression'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='543'>
+            <apd:ntref name='TraitsExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='AssertExpression'>
+        <apd:rule index='544'>
+            <apd:terminal>assert</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='545'>
+            <apd:terminal>assert</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='MixinExpression'>
+        <apd:rule index='546'>
+            <apd:terminal>mixin</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ImportExpression'>
+        <apd:rule index='547'>
+            <apd:terminal>import</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='IsExpression'>
+        <apd:rule index='548'>
+            <apd:ntref name='IsNotIs'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='549'>
+            <apd:ntref name='IsNotIs'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='TypeSpecialization'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='550'>
+            <apd:ntref name='IsNotIs'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:terminal>==</apd:terminal>
+            <apd:ntref name='TypeSpecialization'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='551'>
+            <apd:ntref name='IsNotIs'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='552'>
+            <apd:ntref name='IsNotIs'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='TypeSpecialization'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='553'>
+            <apd:ntref name='IsNotIs'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>==</apd:terminal>
+            <apd:ntref name='TypeSpecialization'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='554'>
+            <apd:ntref name='IsNotIs'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='TypeSpecialization'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='TemplateParameterList'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='555'>
+            <apd:ntref name='IsNotIs'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='TypeNT'/>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>==</apd:terminal>
+            <apd:ntref name='TypeSpecialization'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='TemplateParameterList'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TypeSpecialization'>
+        <apd:rule index='556'>
+            <apd:ntref name='TypeNT'/>
+        </apd:rule>
+        <apd:rule index='557'>
+            <apd:terminal>typedef</apd:terminal>
+        </apd:rule>
+        <apd:rule index='558'>
+            <apd:terminal>struct</apd:terminal>
+        </apd:rule>
+        <apd:rule index='559'>
+            <apd:terminal>union</apd:terminal>
+        </apd:rule>
+        <apd:rule index='560'>
+            <apd:terminal>class</apd:terminal>
+        </apd:rule>
+        <apd:rule index='561'>
+            <apd:terminal>interface</apd:terminal>
+        </apd:rule>
+        <apd:rule index='562'>
+            <apd:terminal>enum</apd:terminal>
+        </apd:rule>
+        <apd:rule index='563'>
+            <apd:terminal>function</apd:terminal>
+        </apd:rule>
+        <apd:rule index='564'>
+            <apd:terminal>delegate</apd:terminal>
+        </apd:rule>
+        <apd:rule index='565'>
+            <apd:terminal>super</apd:terminal>
+        </apd:rule>
+        <apd:rule index='566'>
+            <apd:terminal>return</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StringLiterals'>
+        <apd:rule index='567'>
+            <apd:ntref name='StringLiteral'/>
+        </apd:rule>
+        <apd:rule index='568'>
+            <apd:ntref name='StringLiterals'/>
+            <apd:ntref name='StringLiteral'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ArrayLiteral'>
+        <apd:rule index='569'>
+            <apd:terminal>\[</apd:terminal>
+            <apd:ntref name='ArgumentList'/>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='AssocArrayLiteral'>
+        <apd:rule index='570'>
+            <apd:terminal>\[</apd:terminal>
+            <apd:ntref name='KeyValuePairs'/>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='KeyValuePairs'>
+        <apd:rule index='571'>
+            <apd:ntref name='KeyValuePair'/>
+        </apd:rule>
+        <apd:rule index='572'>
+            <apd:ntref name='KeyValuePair'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='KeyValuePairs'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='KeyValuePair'>
+        <apd:rule index='573'>
+            <apd:ntref name='ConditionalExpression'/>
+            <apd:terminal>:</apd:terminal>
+            <apd:ntref name='ConditionalExpression'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='FunctionLiteral'>
+        <apd:rule index='574'>
+            <apd:terminal>function</apd:terminal>
+            <apd:ntref name='TypeOpt'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='ParameterListOpt'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+        <apd:rule index='575'>
+            <apd:terminal>delegate</apd:terminal>
+            <apd:ntref name='TypeOpt'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='ParameterListOpt'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+        <apd:rule index='576'>
+            <apd:terminal>function</apd:terminal>
+            <apd:ntref name='TypeOpt'/>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+        <apd:rule index='577'>
+            <apd:terminal>delegate</apd:terminal>
+            <apd:ntref name='TypeOpt'/>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+        <apd:rule index='578'>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='ParameterListOpt'/>
+            <apd:terminal>\)</apd:terminal>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+        <apd:rule index='579'>
+            <apd:ntref name='FunctionBody'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='NewExpression'>
+        <apd:rule index='580'>
+            <apd:ntref name='NewArguments'/>
+            <apd:ntref name='TypeNT'/>
+            <apd:terminal>\[</apd:terminal>
+            <apd:ntref name='AssignExpression'/>
+            <apd:terminal>\]</apd:terminal>
+        </apd:rule>
+        <apd:rule index='581'>
+            <apd:ntref name='NewArguments'/>
+            <apd:ntref name='TypeNT'/>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='ArgumentList'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='582'>
+            <apd:ntref name='NewArguments'/>
+            <apd:ntref name='TypeNT'/>
+        </apd:rule>
+        <apd:rule index='583'>
+            <apd:ntref name='NewArguments'/>
+            <apd:ntref name='ClassArguments'/>
+            <apd:ntref name='BaseClassListOpt'/>
+            <apd:terminal>\{</apd:terminal>
+            <apd:ntref name='DeclDefsOpt'/>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='NewArguments'>
+        <apd:rule index='584'>
+            <apd:terminal>new</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='ArgumentList'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='585'>
+            <apd:terminal>new</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ClassArguments'>
+        <apd:rule index='586'>
+            <apd:terminal>class</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='ArgumentList'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='587'>
+            <apd:terminal>class</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='ArgumentList'>
+        <apd:rule index='588'>
+            <apd:ntref name='Expression'/>
+        </apd:rule>
+        <apd:rule index='589'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TraitsExpression'>
+        <apd:rule index='590'>
+            <apd:terminal>__traits</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:ntref name='Identifier'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='TraitsArguments'/>
+            <apd:terminal>\)</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TraitsArguments'>
+        <apd:rule index='591'>
+            <apd:ntref name='TraitsArguments'/>
+            <apd:terminal>,</apd:terminal>
+            <apd:ntref name='TraitsArgument'/>
+        </apd:rule>
+        <apd:rule index='592'>
+            <apd:ntref name='TraitsArgument'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='TraitsArgument'>
+        <apd:rule index='593'>
+            <apd:ntref name='AssignExpression'/>
+        </apd:rule>
+        <apd:rule index='594'>
+            <apd:ntref name='TypeNT'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='CharacterLiteral'>
+        <apd:rule index='595'>
+            <apd:terminal>'(([^'\\]|(\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8})))))'</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='StringLiteral'>
+        <apd:rule index='596'>
+            <apd:terminal>"(([^"\\]*(\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8})))?)*)"[cdw]?</apd:terminal>
+        </apd:rule>
+        <apd:rule index='597'>
+            <apd:terminal>r"[^"]*"[cdw]?</apd:terminal>
+        </apd:rule>
+        <apd:rule index='598'>
+            <apd:terminal>`[^`]*`[cdw]?</apd:terminal>
+        </apd:rule>
+        <apd:rule index='599'>
+            <apd:terminal>x"[0-9a-fA-F_\n\r\t ]*"[cdw]?</apd:terminal>
+        </apd:rule>
+        <apd:rule index='600'>
+            <apd:terminal>\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8}))</apd:terminal>
+        </apd:rule>
+        <apd:rule index='601'>
+            <apd:terminal>q"</apd:terminal>
+        </apd:rule>
+        <apd:rule index='602'>
+            <apd:terminal>q\{</apd:terminal>
+            <apd:ntref name='Tokens'/>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+        <apd:rule index='603'>
+            <apd:terminal>__FILE__</apd:terminal>
+        </apd:rule>
+        <apd:rule index='604'>
+            <apd:terminal>__DATE__</apd:terminal>
+        </apd:rule>
+        <apd:rule index='605'>
+            <apd:terminal>__TIME__</apd:terminal>
+        </apd:rule>
+        <apd:rule index='606'>
+            <apd:terminal>__TIMESTAMP__</apd:terminal>
+        </apd:rule>
+        <apd:rule index='607'>
+            <apd:terminal>__VENDOR__</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Tokens'>
+        <apd:rule index='608'>
+            <apd:ntref name='Tokens'/>
+            <apd:ntref name='Token'/>
+        </apd:rule>
+        <apd:rule index='609'>
+            <apd:ntref name='Token'/>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Token'>
+        <apd:rule index='610'>
+            <apd:altern>
+            <apd:terminal>for</apd:terminal>
+            <apd:terminal>!\&lt;=</apd:terminal>
+            <apd:terminal>private</apd:terminal>
+            <apd:terminal>lazy</apd:terminal>
+            <apd:terminal>\&lt;\&gt;=</apd:terminal>
+            <apd:terminal>r"[^"]*"[cdw]?</apd:terminal>
+            <apd:terminal>in</apd:terminal>
+            <apd:terminal>class</apd:terminal>
+            <apd:terminal>typeof</apd:terminal>
+            <apd:terminal>\^=</apd:terminal>
+            <apd:terminal>\&lt;</apd:terminal>
+            <apd:terminal>override</apd:terminal>
+            <apd:terminal>double</apd:terminal>
+            <apd:terminal>__VENDOR__</apd:terminal>
+            <apd:terminal>[1-9][0-9_]*(L|[uU]|L[uU]|[uU]L)?</apd:terminal>
+            <apd:terminal>[0-9][0-9_]*\.?([fFLi]|[fFL]i)</apd:terminal>
+            <apd:terminal>\&gt;</apd:terminal>
+            <apd:terminal>with</apd:terminal>
+            <apd:terminal>uint</apd:terminal>
+            <apd:terminal>\?</apd:terminal>
+            <apd:terminal>goto</apd:terminal>
+            <apd:terminal>is</apd:terminal>
+            <apd:terminal>cdouble</apd:terminal>
+            <apd:terminal>alias</apd:terminal>
+            <apd:terminal>function</apd:terminal>
+            <apd:terminal>0([xX][0-9a-fA-F_]*|[bB][01_]*|[0-7_]*)(L|[uU]|L[uU]|[uU]L)?</apd:terminal>
+            <apd:terminal>\*=</apd:terminal>
+            <apd:terminal>__FILE__</apd:terminal>
+            <apd:terminal>q"</apd:terminal>
+            <apd:terminal>switch</apd:terminal>
+            <apd:terminal>asm</apd:terminal>
+            <apd:terminal>dchar</apd:terminal>
+            <apd:terminal>foreach</apd:terminal>
+            <apd:terminal>idouble</apd:terminal>
+            <apd:terminal>\&lt;=</apd:terminal>
+            <apd:terminal>static</apd:terminal>
+            <apd:terminal>struct</apd:terminal>
+            <apd:terminal>!\&lt;</apd:terminal>
+            <apd:terminal>import</apd:terminal>
+            <apd:terminal>true</apd:terminal>
+            <apd:terminal>\.\.\.</apd:terminal>
+            <apd:terminal>!\&gt;</apd:terminal>
+            <apd:terminal>!\&gt;=</apd:terminal>
+            <apd:terminal>auto</apd:terminal>
+            <apd:terminal>creal</apd:terminal>
+            <apd:terminal>\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8}))</apd:terminal>
+            <apd:terminal>foreach_reverse</apd:terminal>
+            <apd:terminal>__TIMESTAMP__</apd:terminal>
+            <apd:terminal>export</apd:terminal>
+            <apd:terminal>\+=</apd:terminal>
+            <apd:terminal>!\&lt;\&gt;</apd:terminal>
+            <apd:terminal>debug</apd:terminal>
+            <apd:terminal>"(([^"\\]*(\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8})))?)*)"[cdw]?</apd:terminal>
+            <apd:terminal>float</apd:terminal>
+            <apd:terminal>\&lt;\&lt;</apd:terminal>
+            <apd:terminal>~</apd:terminal>
+            <apd:terminal>break</apd:terminal>
+            <apd:terminal>(([0-9_]*\.[0-9][0-9_]*([eE][\+\-]?[0-9][0-9_]*)?)|([0-9][0-9_]*[eE][\+\-]?[0-9][0-9_]*))([fFLi]|[fFL]i)?</apd:terminal>
+            <apd:terminal>\&lt;\&gt;</apd:terminal>
+            <apd:terminal>!</apd:terminal>
+            <apd:terminal>typeid</apd:terminal>
+            <apd:terminal>char</apd:terminal>
+            <apd:terminal>__TIME__</apd:terminal>
+            <apd:terminal>module</apd:terminal>
+            <apd:terminal>real</apd:terminal>
+            <apd:terminal>\[</apd:terminal>
+            <apd:terminal>!=</apd:terminal>
+            <apd:terminal>\&gt;\&gt;\&gt;</apd:terminal>
+            <apd:terminal>%</apd:terminal>
+            <apd:terminal>0[xX][0-9a-fA-F_]*\.?[0-9a-fA-F_]+[pP][\+\-]?[0-9_]+([fFLi]|[fFL]i)?</apd:terminal>
+            <apd:terminal>\]</apd:terminal>
+            <apd:terminal>&amp;</apd:terminal>
+            <apd:terminal>\^</apd:terminal>
+            <apd:terminal>unittest</apd:terminal>
+            <apd:terminal>\&gt;=</apd:terminal>
+            <apd:terminal>\-\-</apd:terminal>
+            <apd:terminal>const</apd:terminal>
+            <apd:terminal>,</apd:terminal>
+            <apd:terminal>\|=</apd:terminal>
+            <apd:terminal>`[^`]*`[cdw]?</apd:terminal>
+            <apd:terminal>\&gt;\&gt;=</apd:terminal>
+            <apd:terminal>do</apd:terminal>
+            <apd:terminal>/</apd:terminal>
+            <apd:terminal>enum</apd:terminal>
+            <apd:terminal>\-=</apd:terminal>
+            <apd:terminal>false</apd:terminal>
+            <apd:terminal>__LINE__</apd:terminal>
+            <apd:terminal>__VERSION__</apd:terminal>
+            <apd:terminal>case</apd:terminal>
+            <apd:terminal>short</apd:terminal>
+            <apd:terminal>scope</apd:terminal>
+            <apd:terminal>this</apd:terminal>
+            <apd:terminal>package</apd:terminal>
+            <apd:terminal>finally</apd:terminal>
+            <apd:terminal>==</apd:terminal>
+            <apd:terminal>void</apd:terminal>
+            <apd:terminal>interface</apd:terminal>
+            <apd:terminal>!\&lt;\&gt;=</apd:terminal>
+            <apd:terminal>pragma</apd:terminal>
+            <apd:terminal>:</apd:terminal>
+            <apd:terminal>(0([xX][0-9a-fA-F_]*|[bB][01_]*|[0-7_]*)|([1-9][0-9_]*))[fFL]?i</apd:terminal>
+            <apd:terminal>;</apd:terminal>
+            <apd:terminal>'(([^'\\]|(\\(['"\?\\abfnrtv]|([0-7_]{1,3})|(x[0-9a-fA-F]{2})|(u[0-9a-fA-F]{4})|(U[0-9a-fA-F]{8})))))'</apd:terminal>
+            <apd:terminal>x"[0-9a-fA-F_\n\r\t ]*"[cdw]?</apd:terminal>
+            <apd:terminal>extern</apd:terminal>
+            <apd:terminal>ubyte</apd:terminal>
+            <apd:terminal>=</apd:terminal>
+            <apd:terminal>protected</apd:terminal>
+            <apd:terminal>int</apd:terminal>
+            <apd:terminal>super</apd:terminal>
+            <apd:terminal>q\{</apd:terminal>
+            <apd:terminal>typedef</apd:terminal>
+            <apd:terminal>\.\.</apd:terminal>
+            <apd:terminal>cast</apd:terminal>
+            <apd:terminal>else</apd:terminal>
+            <apd:terminal>null</apd:terminal>
+            <apd:terminal>&amp;&amp;</apd:terminal>
+            <apd:terminal>ulong</apd:terminal>
+            <apd:terminal>ref</apd:terminal>
+            <apd:terminal>\|</apd:terminal>
+            <apd:terminal>\&gt;\&gt;\&gt;=</apd:terminal>
+            <apd:terminal>align</apd:terminal>
+            <apd:terminal>version</apd:terminal>
+            <apd:terminal>[0-9][0-9_]*\.&gt;[^\.]</apd:terminal>
+            <apd:terminal>mixin</apd:terminal>
+            <apd:terminal>body</apd:terminal>
+            <apd:terminal>synchronized</apd:terminal>
+            <apd:terminal>abstract</apd:terminal>
+            <apd:terminal>\|\|</apd:terminal>
+            <apd:terminal>__DATE__</apd:terminal>
+            <apd:terminal>volatile</apd:terminal>
+            <apd:terminal>final</apd:terminal>
+            <apd:terminal>[a-zA-Z_][_a-zA-Z0-9]*</apd:terminal>
+            <apd:terminal>\&lt;\&lt;=</apd:terminal>
+            <apd:terminal>\&gt;\&gt;</apd:terminal>
+            <apd:terminal>\$</apd:terminal>
+            <apd:terminal>inout</apd:terminal>
+            <apd:terminal>!is&gt;[^_a-zA-Z0-9]</apd:terminal>
+            <apd:terminal>%=</apd:terminal>
+            <apd:terminal>delete</apd:terminal>
+            <apd:terminal>continue</apd:terminal>
+            <apd:terminal>template</apd:terminal>
+            <apd:terminal>\(</apd:terminal>
+            <apd:terminal>union</apd:terminal>
+            <apd:terminal>ifloat</apd:terminal>
+            <apd:terminal>\)</apd:terminal>
+            <apd:terminal>byte</apd:terminal>
+            <apd:terminal>\*</apd:terminal>
+            <apd:terminal>delegate</apd:terminal>
+            <apd:terminal>try</apd:terminal>
+            <apd:terminal>\+</apd:terminal>
+            <apd:terminal>catch</apd:terminal>
+            <apd:terminal>ireal</apd:terminal>
+            <apd:terminal>deprecated</apd:terminal>
+            <apd:terminal>bool</apd:terminal>
+            <apd:terminal>invariant</apd:terminal>
+            <apd:terminal>new</apd:terminal>
+            <apd:terminal>\-</apd:terminal>
+            <apd:terminal>throw</apd:terminal>
+            <apd:terminal>\.</apd:terminal>
+            <apd:terminal>\+\+</apd:terminal>
+            <apd:terminal>default</apd:terminal>
+            <apd:terminal>return</apd:terminal>
+            <apd:terminal>ushort</apd:terminal>
+            <apd:terminal>~=</apd:terminal>
+            <apd:terminal>public</apd:terminal>
+            <apd:terminal>out</apd:terminal>
+            <apd:terminal>cfloat</apd:terminal>
+            <apd:terminal>long</apd:terminal>
+            <apd:terminal>&amp;=</apd:terminal>
+            <apd:terminal>if</apd:terminal>
+            <apd:terminal>/=</apd:terminal>
+            <apd:terminal>while</apd:terminal>
+            <apd:terminal>__traits</apd:terminal>
+            <apd:terminal>assert</apd:terminal>
+            <apd:terminal>wchar</apd:terminal>
+            </apd:altern>
+        </apd:rule>
+        <apd:rule index='611'>
+            <apd:terminal>\{</apd:terminal>
+            <apd:ntref name='Tokens'/>
+            <apd:terminal>\}</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Integer'>
+        <apd:rule index='612'>
+            <apd:terminal>0([xX][0-9a-fA-F_]*|[bB][01_]*|[0-7_]*)(L|[uU]|L[uU]|[uU]L)?</apd:terminal>
+        </apd:rule>
+        <apd:rule index='613'>
+            <apd:terminal>[1-9][0-9_]*(L|[uU]|L[uU]|[uU]L)?</apd:terminal>
+        </apd:rule>
+        <apd:rule index='614'>
+            <apd:terminal>__LINE__</apd:terminal>
+        </apd:rule>
+        <apd:rule index='615'>
+            <apd:terminal>__VERSION__</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Float'>
+        <apd:rule index='616'>
+            <apd:terminal>(([0-9_]*\.[0-9][0-9_]*([eE][\+\-]?[0-9][0-9_]*)?)|([0-9][0-9_]*[eE][\+\-]?[0-9][0-9_]*))([fFLi]|[fFL]i)?</apd:terminal>
+        </apd:rule>
+        <apd:rule index='617'>
+            <apd:terminal>[0-9][0-9_]*\.?([fFLi]|[fFL]i)</apd:terminal>
+        </apd:rule>
+        <apd:rule index='618'>
+            <apd:terminal>[0-9][0-9_]*\.&gt;[^\.]</apd:terminal>
+        </apd:rule>
+        <apd:rule index='619'>
+            <apd:terminal>0[xX][0-9a-fA-F_]*\.?[0-9a-fA-F_]+[pP][\+\-]?[0-9_]+([fFLi]|[fFL]i)?</apd:terminal>
+        </apd:rule>
+        <apd:rule index='620'>
+            <apd:terminal>(0([xX][0-9a-fA-F_]*|[bB][01_]*|[0-7_]*)|([1-9][0-9_]*))[fFL]?i</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='Identifier'>
+        <apd:rule index='621'>
+            <apd:terminal>[a-zA-Z_][_a-zA-Z0-9]*</apd:terminal>
+        </apd:rule>
+    </apd:nt>
+    <apd:nt name='IdentifierOpt'>
+        <apd:rule index='622'>
+            <apd:ntref name='Identifier'/>
+        </apd:rule>
+        <apd:rule index='623'>
+        <apd:epsilon/>
+        </apd:rule>
+    </apd:nt>
+</apd:grammar>

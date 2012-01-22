@@ -771,9 +771,11 @@ class ProductionManager {
 		int cnt = 0;
 		while(!stack.isEmpty()) {
 			if(cnt % 100 == 0) {
+				version(DALR) {
 				log("%d %u %u %u", cnt, stack.getSize(), processed.getSize(),
 					processedTrie.getSize());
 				Trace.printStats();
+				}
 			}
 			cnt++;
 			iSet = stack.popFront();
@@ -1534,7 +1536,9 @@ unittest {
 	MapItem!(int,Set!(int)) mi = map.find(sm.getSymbolId("S"));
 	ISRIterator!(MapItem!(int,Set!(int))) it = map.begin();
 	for(; it.isValid(); it++) {
-		printfln("%d", (*it).getKey());
+		version(DALR) {
+			printfln("%d", (*it).getKey());
+		}
 	}
 	assert(mi !is null);
 	assert(mi.getData().contains(-2));

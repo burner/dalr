@@ -1,7 +1,6 @@
 module dalr.filereader;
 
 import dalr.grammerparser;
-import dalr.productionmanager;
 
 import hurt.container.deque;
 import hurt.conv.conv;
@@ -15,9 +14,9 @@ import hurt.util.array;
 import hurt.util.slog;
 
 class Production {
-	string startSymbol;
-	string prodString;
-	string action;
+	private string startSymbol;
+	private string prodString;
+	private string action;
 
 	this(string startSymbol) {
 		this.startSymbol = startSymbol;
@@ -44,6 +43,14 @@ class Production {
 	public string getProduction() {
 		return trim(this.startSymbol) ~ " := " ~ trim(this.prodString);
 	}
+
+	public string getProdString() {
+		return this.prodString;
+	}
+
+	public string getStartSymbol() const {
+		return this.startSymbol;
+	}
 }
 
 class FileReader {
@@ -52,6 +59,7 @@ class FileReader {
 	private Deque!(string) userCode;
 	private Deque!(Production) productions;
 	private Deque!(string) stash;
+	private size_t line;
 	
 	// input file
 	private InputStream inFile;
@@ -77,8 +85,10 @@ class FileReader {
 		this.filename = filename;
 
 		// test if file has formated name, very bad test if the file is valid
-		if(!FileReader.isWellFormedFilename(filename))
-			throw new Exception("Filename not well formed");
+		if(!FileReader.isWellFormedFilename(filename)) {
+			throw new Exception(format("Filename not well formed %s",
+				filename));
+		}
 	
 		// test if the file exists
 		if(!exists(this.filename))
@@ -89,6 +99,7 @@ class FileReader {
 		this.userCode = new Deque!(string)();
 		this.productions = new Deque!(Production)();
 		this.stash = new Deque!(string)();
+		this.line = 1;
 	}
 
 	public string getNextLine() {
@@ -97,8 +108,17 @@ class FileReader {
 		} else if(!this.stash.isEmpty()) {
 			return this.stash.popBack();	
 		} else {
+			this.line++;
 			return this.inFile.readLine().idup;
 		}
+	}
+
+	private size_t getLineNumber() const {
+		return this.line;
+	}
+
+	public Deque!(Production) getProductions() {
+		return this.productions;
 	}
 
 	public bool isEof() {
@@ -113,140 +133,97 @@ class FileReader {
 	public void parse() {
 		while(!this.isEof()) {
 			string cur = this.getNextLine();
-			//log("%s",cur);
+
 			// is the line a comment
 			size_t comment = findArr!(char)(cur, "//");
+			if(comment < cur.length) {
+				continue;
+			}
+
 			// check for usercode
 			int userCodeIdx = userCodeParanthesis(cur);
 			if(userCodeIdx != -1 && userCodeIdx < comment) {
 				this.parseUserCode(cur);
 				continue;
 			}
+
+			// grammer rules
 			size_t prodStart = findArr!(char)(cur, ":=");
-			if(prodStart < cur.length && prodStart < comment) {
-				this.parseProduction(cur);
-				continue;
-			}
 			size_t pipe = find!(char)(cur, '|');
-			if(pipe < cur.length) {
-				this.parseProduction(cur, true);
+			//log("%u %u", prodStart, pipe);
+			if(prodStart < cur.length) {
+				cur = this.parseProduction(cur);
+			} else if(pipe < cur.length) {
+				cur = this.parseProduction(cur, true);
+			}
+
+			// production code 
+			size_t prodCodeStart = findArr!(char)(cur, "{:");
+			if(prodCodeStart < cur.length) {
+				cur = this.parseProductionAction(cur);
 			}
 		}
 	}
 
-	private void parseProduction(string cur, bool startOld = false) {
+	private string parseProduction(string cur, bool startOld = false) {
 		string start;
 		size_t colom;
+		size_t semi = find!(char)(cur, ';');
+		StringBuffer!(char) tmp = new StringBuffer!(char)(128);
+		bool startRound = true;
+
 		if(startOld) {
 			colom = find!(char)(cur, '|');
-			start = cur[0 .. colom];
+			assert(colom < cur.length,
+				format("should have found a colom %d %d %s", colom, cur.length,
+				cur));
+			tmp.pushBack(cur[colom+1 .. semi]);
 		} else {
 			colom = findArr!(char)(cur, ":=");
 			start = cur[0 .. colom];
 			assert(colom < cur.length, 
 				format("should have found a colom %d %d %s", colom, cur.length,
 				cur));
+			tmp.pushBack(cur[colom+2 .. semi]);
 		}
-		
-		size_t prodCodeStart = findArr!(char)(cur, "{:", colom+2);
-		size_t prodCodeEnd = findArr!(char)(cur, ":}", colom+2);
-		if(prodCodeStart < cur.length && prodCodeEnd < cur.length) {
-			if(startOld) {
-				this.productions.pushBack(new Production(
-					this.productions.back().startSymbol, 
-					cur[colom+2 .. prodCodeStart], 
-					cur[prodCodeStart+2 .. prodCodeEnd]));
+		// as long as we find no semicolom
+		while(semi == cur.length) {
+			startRound = false;
+			if(this.isEof()) {
+				assert(false, "haven't found a semicolom befor eof");
 			} else {
-				this.productions.pushBack(new Production(start, 
-					cur[colom+2 .. prodCodeStart], 
-					cur[prodCodeStart+2 .. prodCodeEnd]));
-			}
-			return;
-		} else if(prodCodeStart < cur.length && prodCodeEnd == cur.length) {
-			// production is done and the prod code starts
-			if(startOld) {
-				this.productions.pushBack(new Production(
-					this.productions.back().startSymbol, 
-					cur[colom+2 .. prodCodeStart]));
-			} else {
-				this.productions.pushBack(new Production(start, 
-					cur[colom+2 .. prodCodeStart]));
-				// need to save everything till we find a :}
-			}
-			this.parseProductionAction(cur);
-			return;
-		} else {
-			if(startOld) {
-				this.productions.pushBack(new Production(
-					this.productions.back().startSymbol));
-			} else {
-				this.productions.pushBack(new Production(start, 
-					start));
-			}
-			StringBuffer!(char) tmp = new StringBuffer!(char)();
-			tmp.pushBack(cur[colom+2 .. $]);
-			tmp.pushBack('\n');
-			//log("%s", cur);
-			size_t pipe = size_t.max;
-			if(!this.isEof()) {
-				cur = this.getNextLine();
-				//log("%s", cur);
-				pipe = find!(char)(cur, '|');
-				prodCodeStart = findArr!(char)(cur, "{:");
+				cur = this.getNextLine();	
+				semi = find!(char)(cur, ';');
+
+				colom = find!(char)(cur, '|');
+				assert(colom == cur.length, 
+					format("found a pipe will parsing a production at line %u",
+					this.getLineNumber()));
 				colom = findArr!(char)(cur, ":=");
-				//log("%s %d %d %d %d", cur, cur.length, pipe, prodCodeStart, 
-				//	colom);
-				while(pipe == cur.length && prodCodeStart == cur.length
-						&& colom == cur.length) {
-					tmp.pushBack(cur);
-					tmp.pushBack('\n');
-					if(!this.isEof()) {
-						cur = this.getNextLine();
-					} else {
-						break;
-					}
-					pipe = find!(char)(cur, '|');
-					prodCodeStart = findArr!(char)(cur, "{:");
-					colom = findArr!(char)(cur, ":=");
-					//log("%s %d %d %d %d", cur, cur.length, pipe, 
-					//	prodCodeStart, colom);
-				}
+				assert(colom == cur.length, format("found a productionstart" ~
+					" will parsing a production at line %u %s", 
+					this.getLineNumber(), cur));
 			}
-			
-			// a pipe ends the current production
-			if(pipe < cur.length) {
-				tmp.pushBack(cur[0 .. pipe]);	
-				tmp.pushBack('\n');
-				this.productions.back().setProdString(tmp.getString());
-				this.stashString(cur[pipe .. $]);
-				return;
-			} else if(colom < cur.length) {
-				this.productions.back().setProdString(tmp.getString());
-				//log("%s", tmp.getString());
-				this.stashString(cur);
-				return;
-			} else if(prodCodeStart < cur.length) {
-				tmp.pushBack(cur[0 .. prodCodeStart]);	
-				tmp.pushBack('\n');
-				this.productions.back().setProdString(tmp.getString());
-				this.parseProductionAction(cur[prodCodeStart .. $]);
-				return;
-			} else if(tmp.getSize() > 0) {
-				this.productions.back().setProdString(tmp.getString());
-				return;
-			} else {
-				assert(false, "should be unreachable");
-			}
+			tmp.pushBack(cur[0 .. semi]);
 		}
+		if(startOld) { // semicolom was in first line
+			Production last = this.productions.back();
+			this.productions.pushBack(
+				new Production(last.startSymbol, tmp.getString()));
+		} else if(!startOld) { // semicolom wasn't in first line
+			this.productions.pushBack(
+				new Production(start, tmp.getString()));
+		}
+		return cur;
 	}
 
-	private void parseProductionAction(string cur) {
+	private string parseProductionAction(string cur) {
 		size_t actionStart = findArr!(char)(cur, "{:");	
 		size_t actionEnd = findArr!(char)(cur, ":}");	
 		// the action spans only one line
 		if(actionStart < cur.length && actionEnd < cur.length) {
 			this.productions.back().setAction(cur[actionStart+2 .. actionEnd]);
-			return;
+			return cur;
 		// the action spans for more than one line
 		} else if(actionStart < cur.length && actionEnd == cur.length) {
 			StringBuffer!(char) tmp = new StringBuffer!(char)(128);
@@ -268,11 +245,13 @@ class FileReader {
 			tmp.pushBack('\n');
 			this.stashString(cur[actionEnd+2 .. $]);
 			this.productions.back().setAction(tmp.getString());
-			return;
+			return cur;
+		} else {
+			assert(false, "current line has no {: symbol");
 		}
 	}
 
-	private void parseUserCode(string cur) {
+	private string parseUserCode(string cur) {
 		StringBuffer!(char) tmp = new StringBuffer!(char)();
 		// this should allways work
 		int userCodeIdxStart = userCodeParanthesis(cur);
@@ -281,7 +260,7 @@ class FileReader {
 		if(userCodeIdxStart != -1 && userCodeIdxEnd != -1) {
 			this.userCode.pushBack(cur[userCodeIdxStart+2 .. userCodeIdxEnd]);	
 			this.stashString(cur[userCodeIdxEnd+2 .. $]);
-			return;
+			return cur;
 		// while we didn't found anything save it
 		} else if(userCodeIdxStart != -1 && userCodeIdxEnd == -1) {
 			tmp.pushBack(cur[userCodeIdxStart+2 .. $]);	
@@ -298,7 +277,7 @@ class FileReader {
 			tmp.pushBack('\n');
 			this.stashString(cur[userCodeIdxEnd+2 .. $]);
 			this.userCode.pushBack(tmp.getString());
-			return;
+			return cur;
 		} 
 		assert(false, "this should not be reached");
 	}
