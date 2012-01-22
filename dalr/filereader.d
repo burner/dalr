@@ -44,6 +44,10 @@ class Production {
 		return trim(this.startSymbol) ~ " := " ~ trim(this.prodString);
 	}
 
+	public string getProdString() {
+		return this.prodString;
+	}
+
 	public string getStartSymbol() const {
 		return this.startSymbol;
 	}

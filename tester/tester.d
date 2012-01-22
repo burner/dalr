@@ -1,6 +1,6 @@
 import dalr.filereader;
 import hurt.container.deque;
-import hurt.container.multimap;
+import hurt.container.map;
 import hurt.container.set;
 import hurt.container.dlst;
 import hurt.string.stringutil;
@@ -33,8 +33,8 @@ void main(string[] args) {
 	
 	FileReader fr = new FileReader(inputFile);
 	fr.parse();
-	MultiMap!(string,Deque!(string)) rules = 
-		new MultiMap!(string,Deque!(string));
+	Map!(string,Deque!(Deque!(string))) rules = 
+		new Map!(string,Deque!(Deque!(string)));
 
 	// this is needed to create identifer that don't resample keywords
 	Set!(string) keywords = new Set!(string)();
@@ -42,19 +42,27 @@ void main(string[] args) {
 	// fill the map with the productions
 	Deque!(Production) prods = fr.getProductions();
 	foreach(Production it; prods) {
-		//printf("%s := ", it.getStartSymbol);
-		Deque!(string) kw = new Deque!(string)(split(trim(it.getProduction())));
-		rules.insert(trim(it.getStartSymbol()), kw);
+		printf("%s := ", it.getStartSymbol);
+		Deque!(string) kw = new Deque!(string)(split(trim(it.getProdString())));
+		MapItem!(string,Deque!(Deque!(string))) item = 
+			rules.find(trim(it.getStartSymbol));
+		if(item !is null) {
+			item.getData().pushBack(kw);
+		} else {
+			Deque!(Deque!(string)) tmp = new Deque!(Deque!(string))();
+			tmp.pushBack(kw);
+			rules.insert(trim(it.getStartSymbol()), tmp);
+		}
 		foreach(string jt; kw) { // to get the names of the keywords
-			//printf("%s ", jt);
+			printf("%s ", jt);
 			if(isLowerCase(jt)) {
 				keywords.insert(jt);
 			}
 		}
-		//println();
+		println();
 	}
 
-	log("%u == %u ???", rules.getSize(), prods.getSize());
+	//log("%u == %u ???", rules.getSize(), prods.getSize());
 	log("%u", keywords.getSize());
 	foreach(string it; keywords) {
 		//log("%s %s", it, processString(it, keywords, tw));
@@ -72,8 +80,10 @@ void main(string[] args) {
 	output.close();
 }
 
-size_t process(string start, MultiMap!(string,Deque!(string)) m, File output, 
-		StringBuffer!(char) curline, Twister tw, Set!(string) keywords) {
+size_t process(string start, Map!(string,Deque!(Deque!(string))) m, 
+		File output, StringBuffer!(char) curline, Twister tw, 
+		Set!(string) keywords) {
+	tw.seed();
 	assert(keywords !is null);
 	assert(m !is null);
 	assert(curline !is null);
@@ -83,27 +93,24 @@ size_t process(string start, MultiMap!(string,Deque!(string)) m, File output,
 	size_t count = 0;
 
 	// get the linkedlist of pro
-	hurt.container.multimap.Iterator!(string,Deque!(string)) it = 
-		m.lower(start);
-	assert(it.isValid());
-	Item!(string,Deque!(string)) item = it.getItem();
-	assert(item !is null);
-	DLinkedList!(Deque!(string)) list = item.getItems();
+	MapItem!(string,Deque!(Deque!(string))) it = m.find(start);
+	assert(it !is null, start);
+	Deque!(Deque!(string)) list = it.getData();
 
 	// get a random rule and process it
-	size_t whichRule = list.getSize() > 1 ? tw.next() % list.getSize()-1 : 0;
+	size_t whichRule = tw.next() % list.getSize();
 	assert(whichRule >= 0 && whichRule < 1000);
 	log("%u %u", whichRule, list.getSize());
-	Deque!(string) rule = list.get(whichRule);
+	Deque!(string) rule = list[whichRule];
 	assert(rule !is null);
 	foreach(size_t pos, string symbol; rule) {
-		//log("%u %u %s", whichRule, pos, symbol);
-		printf("%s ", symbol);
-		if(!keywords.contains(symbol)) {
+		log("%u %u/%u %s", whichRule, pos, rule.getSize(), symbol);
+		if(symbol[0] >= 65 && symbol[0] < 92) {
 			count += process(symbol, m, output, curline, tw, keywords);	
 		} else {
 			count++;
 			curline.pushBack(processString(symbol, keywords, tw));
+			curline.pushBack(' ');
 			if(curline.getSize() >= 80) {
 				output.writeLine(curline.getString());
 				curline.clear();
@@ -131,7 +138,7 @@ string processString(string str, Set!(string) keywords, Twister tw) {
 	"semicolon": ",", "star": "*", "tilde": "~", "tildeassign": "~=",
 	"usignedrightshift": ">>>", "usignedrightshiftassign": ">>>=",
 	"xor": "^", "xorassign": "^=",	"xorxor": "^^",	
-	"xorxorassign": "^^="];
+	"xorxorassign": "^^=","decrement":"--", "increment":"++"];
 
 	switch(str) {
 		case "identifier": {
@@ -146,6 +153,22 @@ string processString(string str, Set!(string) keywords, Twister tw) {
 						tw.next() % 26 + 97); // small chars
 				}
 			} while(keywords.contains(ret.getString()));
+			return ret.getString();
+		}
+		case "astring": {
+			StringBuffer!(char) ret = new StringBuffer!(char)();
+			ret.pushBack("\"");
+			do {
+				tw.seed();
+				ret.clear();
+				size_t len = tw.next() % 14;
+				for(size_t i = 0; i < len; i++) {
+					ret.pushBack(tw.next() % 2 == 0 ?
+						tw.next() % 26 + 65 : // big chars
+						tw.next() % 26 + 97); // small chars
+				}
+			} while(keywords.contains(ret.getString()));
+			ret.pushBack("\"");
 			return ret.getString();
 		}
 		default:

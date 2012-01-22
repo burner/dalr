@@ -969,8 +969,8 @@ TypeSpecialization :=;
 	| return;
 
 StringLiterals :=
-	StringLiteral;
-	| StringLiterals StringLiteral;
+	astring;
+	| StringLiterals astring;
 
 ArrayLiteral :=
 	lbrack ArgumentList rbrack;
