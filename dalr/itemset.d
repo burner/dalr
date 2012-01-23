@@ -1,6 +1,7 @@
 module dalr.itemset;
 
 import dalr.item;
+import dalr.productionmanager;
 
 import hurt.math.bigintbase10;
 import hurt.container.deque;
@@ -107,6 +108,34 @@ class ItemSet {
 
 	public Map!(int, ItemSet) getFollowSet() {
 		return this.followSets;
+	}
+
+	public bool removeItem(Item item, ProductionManager pm) {
+		size_t idx = this.items.find(item);
+		// item not found
+		if(idx == this.items.getSize()) {
+			return false;
+		} 
+		this.items.remove(idx);
+		// test that the remove worked, still not 100% sure if deque is all right
+		idx = this.items.find(item);
+		assert(idx == this.items.getSize());
+
+		// remove the followSymbol from the folloSets because this is now
+		// saved in the followSet of the subitem
+		int followSymbol = pm.getSymbolFromProduction(item);
+		MapItem!(int,ItemSet) followIt = this.followSets.find(followSymbol);	
+
+		// sanity
+		assert(followIt !is null);
+
+		this.followSets.remove(followIt.getKey());
+		followIt = this.followSets.find(followSymbol);	
+
+		// sanity
+		assert(followIt is null);
+
+		return true;
 	}
 
 	public long getFollowOnInput(int input) {

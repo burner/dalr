@@ -62,7 +62,7 @@ dalr.mergedreduction.o: dalr/mergedreduction.d Makefile
 dalr.grammerparser.o: dalr/grammerparser.d dalr/symbolmanager.d Makefile
 	dmd $(CFLAGS) -c dalr/grammerparser.d -ofdalr.grammerparser.o
 
-dalr.itemset.o: dalr/itemset.d dalr/item.d Makefile
+dalr.itemset.o: dalr/itemset.d dalr/item.d dalr/productionmanager.d Makefile
 	dmd $(CFLAGS) -c dalr/itemset.d -ofdalr.itemset.o
 
 dalr.symbolmanager.o: dalr/symbolmanager.d Makefile
@@ -71,7 +71,6 @@ dalr.symbolmanager.o: dalr/symbolmanager.d Makefile
 dalr.dotfilewriter.o: dalr/dotfilewriter.d dalr/symbolmanager.d dalr/item.d \
 dalr/itemset.d Makefile
 	dmd $(CFLAGS) -c dalr/dotfilewriter.d -ofdalr.dotfilewriter.o
-
 
 tester.tester.o: tester/tester.d Makefile
 	dmd $(CFLAGS) -c tester/tester.d -oftester.tester.o

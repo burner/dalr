@@ -108,7 +108,7 @@ class ProductionManager {
 		return this.prod;
 	}
 
-	private int getSymbolFromProduction(const Item item) {
+	public int getSymbolFromProduction(const Item item) {
 		return this.getSymbolFromProduction(item.getProd(), 
 			item.getDotPosition());
 	}
