@@ -3,6 +3,7 @@ module dalr.dotfilewriter;
 import dalr.item;
 import dalr.itemset;
 import dalr.symbolmanager;
+import dalr.productionmanager;
 
 import hurt.algo.sorting;
 import hurt.container.map;

@@ -1,7 +1,7 @@
 module dalr.itemset;
 
 import dalr.item;
-import dalr.productionmanager;
+//import dalr.productionmanager;
 
 import hurt.math.bigintbase10;
 import hurt.container.deque;
@@ -110,7 +110,7 @@ class ItemSet {
 		return this.followSets;
 	}
 
-	public bool removeItem(Item item, ProductionManager pm) {
+	public bool removeItem(Item item, int followSymbol) {
 		size_t idx = this.items.find(item);
 		// item not found
 		if(idx == this.items.getSize()) {
@@ -123,7 +123,6 @@ class ItemSet {
 
 		// remove the followSymbol from the folloSets because this is now
 		// saved in the followSet of the subitem
-		int followSymbol = pm.getSymbolFromProduction(item);
 		MapItem!(int,ItemSet) followIt = this.followSets.find(followSymbol);	
 
 		// sanity
