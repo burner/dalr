@@ -6,6 +6,7 @@ import dalr.symbolmanager;
 
 import hurt.algo.sorting;
 import hurt.container.map;
+import hurt.container.mapset;
 import hurt.container.isr;
 import hurt.conv.conv;
 import hurt.container.deque;
@@ -93,7 +94,7 @@ private string makeTransitions(ItemSet iSet, SymbolManager sm) {
 	return ret.getString();
 }
 
-public Deque!(ItemSet) copyDeque(Deque!(ItemSet) de) {
+private Deque!(ItemSet) copyDeque(Deque!(ItemSet) de) {
 	Deque!(ItemSet) ret = new Deque!(ItemSet)();
 	foreach(ItemSet it; de) {
 		ret.pushBack(it);
@@ -102,12 +103,20 @@ public Deque!(ItemSet) copyDeque(Deque!(ItemSet) de) {
 	return ret;
 }
 
+private MapSet!(ItemSet,ItemSet) minItemSets(Deque!(ItemSet) de) {
+	MapSet!(ItemSet,ItemSet) ret = new MapSet!(ItemSet,ItemSet)();
+
+	// sort it so you can process the list from big to small
+	sortDeque!(ItemSet)(de, function(in ItemSet a, in ItemSet b) {
+		return a.getItemCount() > b.getItemCount(); });
+
+	return ret;
+}
 
 public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm, 
 		Deque!(Deque!(int)) prod, string filename) {
 	
 	de = copyDeque(de);
-	return;
 
 	hurt.io.stream.File file = new hurt.io.stream.File(filename ~ ".dot", 
 		FileMode.OutNew);

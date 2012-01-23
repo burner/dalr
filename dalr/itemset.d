@@ -97,6 +97,10 @@ class ItemSet {
 		return this.items;
 	}
 
+	public size_t getItemCount() const {
+		return this.items.getSize();
+	}
+
 	public void setItems(Deque!(Item) ne) {
 		this.items = new Deque!(Item)(ne);
 	}
@@ -129,31 +133,7 @@ class ItemSet {
 
 	public override int opCmp(Object o) const {
 		ItemSet c = cast(ItemSet)o;
-		/*int cntT = 0, cntC = 0;
-		for(size_t idx = 0; idx < this.items.getSize(); idx++) {
-			if(idx >= c.items.getSize()) {
-				cntT++;
-			} else if(this.items.opIndexConst(idx) > 
-					c.items.opIndexConst(idx)) {
-				cntT++;
-			} else if(this.items.opIndexConst(idx) < 
-					c.items.opIndexConst(idx)) {
-				cntC++;
-			} else if(this.items.opIndexConst(idx) == 
-					c.items.opIndexConst(idx)) {
-				continue;
-			} else {
-				assert(false, "invalid case");
-			}
-		}
-		if(cntT == cntC)
-			return 0;
-		else if(cntT > cntC)
-			return 1;
-		else if(cntT < cntC)
-			return -1;
-		else
-			assert(false, "invalid case");*/
+
 		ulong tCnt = 0;
 		ulong cCnt = 0;
 		for(size_t idx; idx < this.items.getSize(); idx++) {
