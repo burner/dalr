@@ -24,11 +24,36 @@ class ItemSet {
 		this.id = id;
 	}
 
+	this(long id) {
+		this.id = id;
+		this.items = new Deque!(Item)();
+	}
+
 	public void addItem(Item item) {
 		assert(item !is null);
 		// check that there are not duplications
 		assert(!this.items.contains(item));
 		this.items.pushBack(item);
+	}
+
+	public ItemSet copy() {
+		ItemSet ret = new ItemSet(this.id);	
+		foreach(Item it; this.items) {
+			assert(it !is null);
+			Item copy = it.copy();
+			assert(copy !is null);
+			ret.addItem(copy);
+		}
+		
+		// new follow set
+		Map!(int,ItemSet) nfs = new Map!(int,ItemSet)(ISRType.HashTable);
+		ISRIterator!(MapItem!(int,ItemSet)) it = this.followSets.begin();
+		for(; it.isValid(); it++) {
+			nfs.insert((*it).getKey, (*it).getData().copy());
+		}
+		assert(nfs == this.followSets);
+		ret.setFollow(nfs);
+		return ret;
 	}
 
 	public void makeFrontOfExtended(int prod, Deque!(int) extProd, bool last) {
@@ -191,6 +216,9 @@ unittest {
 	assert(map.contains(a), "item not contained");
 	de.pushBack(new Item(2,0));
 	ItemSet b = new ItemSet(de);
+
+	ItemSet c = b.copy();
+	assert(c == b);
 
 	assert(a <= a);
 	assert(a >= a);

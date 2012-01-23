@@ -934,7 +934,7 @@ PrimaryExpression :=
 	| dot TemplateInstance;
 	| this;
 	| super;
-	| CharacterLiteral;
+	| characterliteral;
 	| StringLiterals;
 	| ArrayLiteral;
 	| AssocArrayLiteral;
@@ -966,8 +966,8 @@ IsExpression :=
 		TemplateParameterList rparen;
 	| IsNotIs lparen TypeNT identifier equal TypeSpecialization comma 
 		TemplateParameterList rparen;
-;
-TypeSpecialization :=;
+
+TypeSpecialization :=
 	TypeNT;
 	| typedef;
 	| struct;
@@ -1033,3 +1033,7 @@ TraitsArguments :=
 TraitsArgument :=
 	AssignExpression;
 	| TypeNT;
+
+IdentifierOpt :=
+	identifier;
+	| epsilon;

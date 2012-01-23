@@ -12,6 +12,7 @@ import hurt.util.slog;
 import hurt.util.random;
 import hurt.string.stringbuffer;
 
+immutable size_t maxdepth = 5;
 
 void main(string[] args) {
 	Args arguments = Args(args);
@@ -78,7 +79,7 @@ void main(string[] args) {
 	size_t runs = 0;
 	while(cnt < lexCount) {
 		//log("%u", runs);
-		cnt += process(startSymbol, rules, output, curline, tw, keywords);
+		cnt += process(startSymbol, rules, output, curline, tw, keywords, 0);
 	}
 	output.writeLine(curline.getString());
 	output.close();
@@ -86,8 +87,9 @@ void main(string[] args) {
 
 size_t process(string start, Map!(string,Deque!(Deque!(string))) m, 
 		File output, StringBuffer!(char) curline, Twister tw, 
-		Set!(string) keywords) {
+		Set!(string) keywords, size_t depth) {
 	tw.seed();
+	assert(start !is null);
 	assert(keywords !is null);
 	assert(m !is null);
 	assert(curline !is null);
@@ -106,12 +108,23 @@ size_t process(string start, Map!(string,Deque!(Deque!(string))) m,
 	assert(whichRule >= 0 && whichRule < 1000);
 	//log("%u %u", whichRule, list.getSize());
 	Deque!(string) rule = list[whichRule];
+	if(depth > maxdepth) { // maximal maxdepth
+		foreach(Deque!(string) it; list) {
+			if(it[0] == "epsilon") {
+				rule = it;
+				break;
+			}
+		}
+	}
 	assert(rule !is null);
 	foreach(size_t pos, string symbol; rule) {
 		//log("%u %u/%u %s", whichRule, pos, rule.getSize(), symbol);
-		if(symbol[0] >= 65 && symbol[0] < 92) {
-			count += process(symbol, m, output, curline, tw, keywords);	
+		//log(symbol);
+		if(symbol[0] >= 65 && symbol[0] < 91) {
+			//log("%u %b %b %b %b", depth, symbol is null, m is null, curline is null, keywords is null);
+			count += process(symbol, m, output, curline, tw, keywords, depth++);	
 		} else {
+			//log();
 			count++;
 			curline.pushBack(processString(symbol, keywords, tw));
 			curline.pushBack(' ');
@@ -119,6 +132,7 @@ size_t process(string start, Map!(string,Deque!(Deque!(string))) m,
 				output.writeLine(curline.getString());
 				curline.clear();
 			}
+			//log();
 		}
 	}
 	//println();
@@ -174,6 +188,27 @@ string processString(string str, Set!(string) keywords, Twister tw) {
 			} while(keywords.contains(ret.getString()));
 			ret.pushBack("\"");
 			return ret.getString();
+		}
+		case "characterliteral": {
+			StringBuffer!(char) ret = new StringBuffer!(char)();
+			ret.pushBack("'");
+			switch(tw.next() % 3) {
+				case 0:
+					ret.pushBack(conv!(int,string)(tw.next() % 10));
+					ret.pushBack("'");
+					return ret.getString();
+				case 1:
+					ret.pushBack(cast(char)(tw.next() % 26 + 65));
+					ret.pushBack("'");
+					return ret.getString();
+				case 2:
+					ret.pushBack(cast(char)(tw.next() % 26 + 97));
+					ret.pushBack("'");
+					return ret.getString();
+				default:
+					assert(false);
+			}
+			assert(false);
 		}
 		case "integer": {
 			return conv!(uint,string)(tw.next() % 1024);

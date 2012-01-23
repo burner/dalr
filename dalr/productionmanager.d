@@ -933,7 +933,9 @@ class ProductionManager {
 			this.extGrammerComplex), -1);
 
 		foreach(size_t idx, Deque!(ExtendedItem) it; this.extGrammerComplex) {
-			log("%u from %u", idx, this.extGrammerComplex.getSize());
+			if(idx % 100 == 0) {
+				log("%u from %u", idx, this.extGrammerComplex.getSize());
+			}
 			foreach(size_t jdx, ExtendedItem jt; it) {
 				// nothing for the first two
 				if(jdx == 0) {

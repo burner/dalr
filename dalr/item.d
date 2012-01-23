@@ -48,6 +48,10 @@ class Item {
 	public override string toString() const {
 		return format("%d %d", this.prod, this.dotPos);
 	}
+
+	public Item copy() {
+		return new Item(prod, dotPos);
+	}
 }
 
 unittest {

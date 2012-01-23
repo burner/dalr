@@ -93,8 +93,21 @@ private string makeTransitions(ItemSet iSet, SymbolManager sm) {
 	return ret.getString();
 }
 
+public Deque!(ItemSet) copyDeque(Deque!(ItemSet) de) {
+	Deque!(ItemSet) ret = new Deque!(ItemSet)();
+	foreach(ItemSet it; de) {
+		ret.pushBack(it);
+	}
+	assert(ret == de);
+	return ret;
+}
+
+
 public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm, 
 		Deque!(Deque!(int)) prod, string filename) {
+	
+	de = copyDeque(de);
+	return;
 
 	hurt.io.stream.File file = new hurt.io.stream.File(filename ~ ".dot", 
 		FileMode.OutNew);
