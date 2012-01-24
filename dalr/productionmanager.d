@@ -79,7 +79,35 @@ class ProductionManager {
 		this();
 		this.symbolManager = symbolManager;
 	}
-
+	
+	public void makeAll() {
+		log();
+		this.makeLRZeroItemSets();
+		log();
+		//writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0", pm);
+		log();
+		this.makeExtendedGrammer();
+		log();
+		//print(extendedGrammerToString(pm, sm));
+		//log();
+		//pm.makeNormalFirstSet();
+		//print(normalFirstSetToString(pm, sm));
+		//log();
+		this.makeExtendedFirstSet();
+		//print(extendedFirstSetToString(pm, sm));
+		//log();
+		//pm.makeNormalFollowSet();
+		//println(normalFollowSetToString(pm, sm));
+		//println(extendedGrammerItemsToString(pm, sm));
+		log();
+		this.makeExtendedFollowSetLinear();
+		log();
+		this.getTranslationTable();
+		log();
+		//println(transitionTableToString(pm, sm));
+		//println(mergedExtendedToString(pm, sm));
+		this.computeFinalTable();
+	}
 
 	/************************************************************************* 
 	 *  Getter
@@ -490,6 +518,8 @@ class ProductionManager {
 		// make the reduce stuff into the table
 		this.reduceExtGrammerFollow();
 
+		int ambiguityCnt = 0;
+
 		// run over all merged reductions
 		// the key is the row
 		ISRIterator!(MapItem!(size_t, MergedReduction)) it = 
@@ -527,9 +557,12 @@ class ProductionManager {
 						for(; rt.isValid(); rt++) {
 							theRow[idx].pushBack(FinalItem(Type.Reduce, 
 								conv!(size_t,int)(*rt)));
-							/*log("%s %u %u", 
-								this.symbolManager.getSymbolName(tt[0].number)
-								, *rt, idx+1);*/
+							if(theRow[idx].getSize() > 1) {
+								log("ambiguity cnt %d", ambiguityCnt++);
+								log("%s %u %u", 
+									this.symbolManager.getSymbolName(
+									tt[0].number) , *rt, idx+1);
+							}
 						}
 
 					}

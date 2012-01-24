@@ -12,6 +12,7 @@ import hurt.container.deque;
 import hurt.container.map;
 import hurt.container.isr;
 import hurt.io.stdio;
+import hurt.io.stream;
 import hurt.util.slog;
 
 void main() {
@@ -37,36 +38,9 @@ void main() {
 	}
 	log("number of productions %u", fr.getProductions().getSize());
 
-	pm.makeLRZeroItemSets();
-	log();
-	writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0", pm);
-	return;
-	log();
-	pm.makeExtendedGrammer();
-	log();
-	//print(extendedGrammerToString(pm, sm));
-	log();
-	pm.makeNormalFirstSet();
-	//print(normalFirstSetToString(pm, sm));
-	//log();
-	pm.makeExtendedFirstSet();
-	//print(extendedFirstSetToString(pm, sm));
-	//log();
-	pm.makeNormalFollowSet();
-	//println(normalFollowSetToString(pm, sm));
-	//println(extendedGrammerItemsToString(pm, sm));
-	log();
-	pm.makeExtendedFollowSetLinear();
-	log();
-	println(extendedFollowSetToString(pm, sm));
-	log();
-	pm.getTranslationTable();
-	//log();
-	//println(transitionTableToString(pm, sm));
-	//println(mergedExtendedToString(pm, sm));
-	pm.computeFinalTable();
-	//log();
-	//println(extFollowRulesToString(pm, sm));
-	//println(normalProductionToString(pm, sm));
-	//println(finalTransitionTableToString(pm, sm));
+	pm.makeAll();
+
+	File finalTable = new File("finalTable", FileMode.OutNew);
+	finalTable.writeString(finalTransitionTableToString(pm, sm));
+	finalTable.close();
 }

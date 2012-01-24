@@ -239,7 +239,7 @@ public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm,
 		file.writeString(itemsetToHTML(iSet, prod, sm));
 		file.writeString("> ];\n");
 		rank.insert(iSet);
-		numItems += iSet.getItemCount();
+		/*numItems += iSet.getItemCount();
 		if(numItems >= average) {
 			// the pseudolevel
 			file.writeString("\"level");
@@ -257,11 +257,11 @@ public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm,
 			file.writeString("}\n");
 			level++;
 			rank.clear();
-			numItems = 0;
-			if(idx > 50) {
+			numItems = 0;*/
+			if(idx > 100) {
 				break;
 			}
-		}
+		//}
 		processed.insert(iSet);
 	}
 	ISRIterator!(ItemSet) iSet = processed.begin();
