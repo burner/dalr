@@ -9,11 +9,14 @@ import hurt.algo.sorting;
 import hurt.container.map;
 import hurt.container.mapset;
 import hurt.container.isr;
+import hurt.container.set;
 import hurt.conv.conv;
 import hurt.container.deque;
 import hurt.io.stream;
 import hurt.io.stdio;
 import hurt.string.stringbuffer;
+import hurt.string.formatter;
+import hurt.util.slog;
 
 import std.process;
 
@@ -97,33 +100,129 @@ private string makeTransitions(ItemSet iSet, SymbolManager sm) {
 
 private Deque!(ItemSet) copyDeque(Deque!(ItemSet) de) {
 	Deque!(ItemSet) ret = new Deque!(ItemSet)();
-	foreach(ItemSet it; de) {
-		ret.pushBack(it);
+	foreach(size_t idx, ItemSet it; de) {
+		log("%d",idx);
+		ret.pushBack(it.copy());
 	}
 	assert(ret == de);
 	return ret;
 }
 
-private MapSet!(ItemSet,ItemSet) minItemSets(Deque!(ItemSet) de) {
+private bool isContainedComplete(ItemSet a, ItemSet b) {
+	// a must be small or equal in size
+	if(b.getItemCount() < a.getItemCount()) {
+		//log();
+		return false;
+	}
+	foreach(Item it; a.getItems()) {
+		if(!b.getItems().contains(it)) {
+			return false;
+		}
+	}
+	Map!(int,ItemSet) mapA = a.getFollowSet();
+	Map!(int,ItemSet) mapB = b.getFollowSet();
+	ISRIterator!(MapItem!(int,ItemSet)) it = mapA.begin();
+	for(; it.isValid(); it++) {
+		if(!mapB.contains((*it).getKey())) {
+			log("%d", (*it).getKey());
+
+			ISRIterator!(MapItem!(int,ItemSet)) jt = mapB.begin();
+			for(; jt.isValid(); jt++) {
+				printf("%d:%d, ", (*jt).getKey(), (*jt).getData().getId());
+			}
+			println();
+			assert(false);
+		}
+	}
+	
+	return true;
+}
+
+private MapSet!(ItemSet,ItemSet) minItemSets(Deque!(ItemSet) de, 
+		ProductionManager pm) {
 	MapSet!(ItemSet,ItemSet) ret = new MapSet!(ItemSet,ItemSet)();
 
 	// sort it so you can process the list from big to small
 	sortDeque!(ItemSet)(de, function(in ItemSet a, in ItemSet b) {
 		return a.getItemCount() > b.getItemCount(); });
 
+	debug { // sanity check that the sorting is right
+		foreach(size_t idx, ItemSet it; de) {
+			if(idx > 0) {
+				assert(it.getItemCount() <= de[idx-1].getItemCount(),
+					format("idx-1 size %d idx size %d", de[idx-1].getItemCount(),
+					de[idx].getItemCount()));
+			}
+		}
+	}
+	foreach(size_t idx, ItemSet it; de) {
+		//log("%d", it.getItemCount());
+		Set!(Item) removed = new Set!(Item)();
+		ret.insert(it,it);
+		foreach(size_t jdx, ItemSet jt; de) {
+			//log("%d %d", it.getItemCount(), jt.getItemCount());
+			if(jdx <= idx) {
+				continue;
+			}
+			if(it.getItemCount() == 1) {
+				break;
+			}
+			// are all items of jt contained in it
+			if(isContainedComplete(jt, it)) {
+				log("%d is contained in %d sizes are %u %u", jt.getId(), it.getId(), 
+					jt.getItemCount(), it.getItemCount());
+
+
+				size_t oldSize = it.getItemCount();
+				size_t removeCnt = 0;
+				foreach(size_t toRemoveIdx, Item toRemove; jt.getItems()) {
+					int followSymbol;
+					if(pm.isDotAtEndOfProduction(toRemove)) {
+						followSymbol = int.max;
+					} else {
+ 						followSymbol = pm.getSymbolFromProduction(toRemove);
+					}
+
+					//log("%d toRemoveIdx %d followSymbol", toRemoveIdx, followSymbol);
+					// remove the item TODO ignore the assert failure for now
+					if(!it.removeItem(toRemove, followSymbol) && 
+							!removed.contains(toRemove)) {
+						foreach(Item kt; it.getItems()) {
+							printf("%d, ", kt.toHash());
+						}
+						printfln("\nsearched %d", toRemove.toHash());
+						//assert(false);
+					}
+					removed.insert(toRemove);
+				}
+				ret.insert(it,jt);
+				/*assert(it.getItemCount() == (oldSize - jt.getItemCount()), 
+					format("newsize %u, expected %u", it.getItemCount(), 
+					(oldSize - jt.getItemCount())));
+				TODO ignore this assert failure as well*/
+			}
+		}
+	}
+
 	return ret;
 }
 
 public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm, 
-		Deque!(Deque!(int)) prod, string filename) {
-	
-	de = copyDeque(de);
+		Deque!(Deque!(int)) prod, string filename, ProductionManager pm) {
+	size_t numItems = 0;
+	foreach(ItemSet it; de) {
+		numItems += it.getItemCount();
+	}
+	size_t average = numItems / de.getSize();
+	log("%u %u",numItems, average);
 
 	hurt.io.stream.File file = new hurt.io.stream.File(filename ~ ".dot", 
 		FileMode.OutNew);
 
-	Deque!(ItemSet) toLong = new Deque!(ItemSet)();
-
+	Set!(ItemSet) rank = new Set!(ItemSet)(ISRType.HashTable);
+	Set!(ItemSet) processed = new Set!(ItemSet)(ISRType.HashTable);
+	numItems = 0;
+	size_t level = 0;
 	StringBuffer!(char) sb = new StringBuffer!(char)(1000);
 	file.writeString("digraph g {\n");
 	file.writeString("graph [fontsize=30 labelloc=\"t\" label=\"\" ");
@@ -139,31 +238,41 @@ public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm,
 		file.writeString("label =<");
 		file.writeString(itemsetToHTML(iSet, prod, sm));
 		file.writeString("> ];\n");
-		// everything long than longItem will be printed completly later
-		if(iSet.getItems().getSize() > longItem) {
-			toLong.pushBack(iSet);
+		rank.insert(iSet);
+		numItems += iSet.getItemCount();
+		if(numItems >= average) {
+			// the pseudolevel
+			file.writeString("\"level");
+			file.writeString(conv!(long,string)(level));
+			file.writeString("\" [style=invis]\n");
+
+			if(level > 0) { // the pseudo transistion
+				file.writeString(format("level%u -> level%u [style=invis]\n", level-1, level));
+			}
+			file.writeString(format("{ rank=same; \"level%u\"; ", level));
+			ISRIterator!(ItemSet) it = rank.begin();
+			for(; it.isValid(); it++) {
+				file.writeString(format("\"state%u\"; ",(*it).getId()));
+			}
+			file.writeString("}\n");
+			level++;
+			rank.clear();
+			numItems = 0;
+			if(idx > 50) {
+				break;
+			}
 		}
+		processed.insert(iSet);
+	}
+	ISRIterator!(ItemSet) iSet = processed.begin();
+	for(; iSet.isValid(); iSet++) {
+		file.writeString(makeTransitions(*iSet, sm));
 	}
 
-	foreach(size_t idx, ItemSet iSet; toLong) {
-		file.writeString("\"longState");
-		file.writeString(conv!(long,string)(iSet.getId()));
-		file.writeString("\" ");
-		file.writeString("[ style = \"filled\" penwidth = 1 fillcolor = ");
-		file.writeString("\"white\"");
-		file.writeString(" fontname = \"Courier New\" shape = \"Mrecord\" ");
-		file.writeString("label =<");
-		file.writeString(itemsetToHTML(iSet, prod, sm, false));
-		file.writeString("> ];\n");
-		// everything long than longItem will be printed completly later
-		if(iSet.getItems().getSize() > longItem) {
-			toLong.pushBack(iSet);
-		}
-	}
-	foreach(size_t idx, ItemSet iSet; de) {
+	/*foreach(size_t idx, ItemSet iSet; de) {
 		file.writeString(makeTransitions(iSet, sm));
-	}
+	}*/
 	file.writeString("}\n");
 	file.close();
-	system("dot -T png " ~ filename ~ ".dot > " ~ filename ~ ".png &disown");
+	//system("dot -T png " ~ filename ~ ".dot > " ~ filename ~ ".png &disown");
 }

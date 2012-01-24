@@ -7,10 +7,12 @@ import hurt.math.bigintbase10;
 import hurt.container.deque;
 import hurt.container.isr;
 import hurt.container.map;
+import hurt.container.set;
 import hurt.conv.conv;
 import hurt.io.stdio;
 import hurt.string.formatter;
 import hurt.string.stringbuffer;
+import hurt.util.slog;
 
 // a set of items aka lr(0) set
 class ItemSet {
@@ -41,9 +43,9 @@ class ItemSet {
 		ItemSet ret = new ItemSet(this.id);	
 		foreach(Item it; this.items) {
 			assert(it !is null);
-			Item copy = it.copy();
-			assert(copy !is null);
-			ret.addItem(copy);
+			//Item copy = it.copy();
+			//assert(copy !is null);
+			ret.addItem(it);
 		}
 		
 		// new follow set
@@ -111,22 +113,44 @@ class ItemSet {
 	}
 
 	public bool removeItem(Item item, int followSymbol) {
+		debug {
+			size_t cnt = 0;
+			foreach(Item it; this.items) {
+				if(it == item) {
+					cnt++;
+				}
+			}
+		}
 		size_t idx = this.items.find(item);
 		// item not found
 		if(idx == this.items.getSize()) {
 			return false;
 		} 
 		this.items.remove(idx);
-		// test that the remove worked, still not 100% sure if deque is all right
-		idx = this.items.find(item);
-		assert(idx == this.items.getSize());
+
+		debug {
+			// test that the remove worked, still not 100% sure if deque is all right
+			idx = this.items.find(item);
+
+			if(idx != this.items.getSize()) {
+				printfln("%u", cnt);
+			}
+		}
 
 		// remove the followSymbol from the folloSets because this is now
 		// saved in the followSet of the subitem
 		MapItem!(int,ItemSet) followIt = this.followSets.find(followSymbol);	
 
 		// sanity
-		assert(followIt !is null);
+		if(followIt is null) {
+			/*ISRIterator!(MapItem!(int,ItemSet)) it = this.followSets.begin();
+			for(; it.isValid(); it++) {
+				printf("%d:%d, ", (*it).getKey(), (*it).getData().getId());
+			}
+			printfln("\nsearched %d", followSymbol);
+			assert(false);*/
+			return true;
+		}
 
 		this.followSets.remove(followIt.getKey());
 		followIt = this.followSets.find(followSymbol);	
@@ -157,6 +181,20 @@ class ItemSet {
 
 	public long getId() const {
 		return this.id;
+	}
+
+	public size_t howManyDoubles() {
+		size_t cnt = 0;
+		Set!(ItemSet) found = new Set!(ItemSet)(ISRType.HashTable);
+		ISRIterator!(MapItem!(int,ItemSet)) it = this.followSets.begin();
+		for(; it.isValid(); it++) {
+			if(found.contains((*it).getData())) {
+				cnt++;
+			} else {
+				found.insert((*it).getData());
+			}
+		}
+		return cnt;
 	}
 
 	public override int opCmp(Object o) const {

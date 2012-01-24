@@ -587,7 +587,7 @@ class ProductionManager {
 		this.prod.pushFront(newStart);
 	}
 
-	private bool isDotAtEndOfProduction(const Item item) {
+	public bool isDotAtEndOfProduction(const Item item) {
 		Deque!(int) pro = this.getProduction(item.getProd());
 		return pro.getSize() == item.getDotPosition();
 	}
