@@ -14,6 +14,7 @@ import hurt.container.isr;
 import hurt.io.stdio;
 import hurt.io.stream;
 import hurt.util.slog;
+import hurt.util.getopt;
 
 void main() {
 	// create all facilities
