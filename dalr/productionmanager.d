@@ -8,6 +8,7 @@ import dalr.itemset;
 import dalr.mergedreduction;
 import dalr.symbolmanager;
 import dalr.tostring;
+import dalr.dotfilewriter;
 
 import hurt.algo.sorting;
 import hurt.container.deque;
@@ -80,11 +81,14 @@ class ProductionManager {
 		this.symbolManager = symbolManager;
 	}
 	
-	public void makeAll() {
+	public void makeAll(string graphFileName) {
 		log();
 		this.makeLRZeroItemSets();
 		log();
-		//writeLR0Graph(pm.getItemSets(), sm, pm.getProductions(), "lr0", pm);
+		if(graphFileName.length > 0) {
+			writeLR0Graph(this.getItemSets(), this.symbolManager, 
+				this.getProductions(), graphFileName, this);
+		}
 		log();
 		this.makeExtendedGrammer();
 		log();

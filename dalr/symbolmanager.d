@@ -207,16 +207,12 @@ public class SymbolManager {
 			new StringBuffer!(char)(this.intSymbols.getSize() * 4);
 		sb.pushBack("Symbols = { ");
 
-		size_t cnt = 0;
 		ISRIterator!(MapItem!(int,Symbol)) it = this.intSymbols.begin();
 		for(; it.isValid(); it++) {
 			string tmp = (*it).getData().toString();
-			if(((sb.getSize()+tmp.length) / (80 * (cnt+1))) > 0) {
-				sb.pushBack("\n");
-				cnt++;
-			}
 			sb.pushBack(tmp);
 			sb.pushBack(" , ");	
+			sb.pushBack("\n");	
 		}
 		sb.popBack();
 		sb.popBack();

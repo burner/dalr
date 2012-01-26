@@ -274,5 +274,5 @@ public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm,
 	}*/
 	file.writeString("}\n");
 	file.close();
-	//system("dot -T png " ~ filename ~ ".dot > " ~ filename ~ ".png &disown");
+	system("dot -T png " ~ filename ~ ".dot > " ~ filename ~ ".png &disown");
 }
