@@ -3,6 +3,8 @@ module dalr.filereader;
 import dalr.grammerparser;
 
 import hurt.container.deque;
+import hurt.container.mapset;
+import hurt.container.set;
 import hurt.conv.conv;
 import hurt.io.stream;
 import hurt.io.file;
@@ -59,6 +61,10 @@ class FileReader {
 	private Deque!(string) userCode;
 	private Deque!(Production) productions;
 	private Deque!(string) stash;
+	private MapSet!(int,string) leftAssociation;
+	private MapSet!(int,string) rightAssociation;
+	private Set!(string) nonAssociation;
+	private int associationCnt;
 	private size_t line;
 	
 	// input file
@@ -99,6 +105,12 @@ class FileReader {
 		this.userCode = new Deque!(string)();
 		this.productions = new Deque!(Production)();
 		this.stash = new Deque!(string)();
+
+		// assocication
+		this.leftAssociation = new MapSet!(int,string)();
+		this.rightAssociation = new MapSet!(int,string)();
+		this.nonAssociation = new Set!(string)();
+		this.associationCnt = 1;
 		this.line = 1;
 	}
 
@@ -147,6 +159,19 @@ class FileReader {
 				continue;
 			}
 
+			// check for precedence symbols
+			size_t left = findArr!(char)(cur, "%left");
+			size_t right = findArr!(char)(cur, "%right");
+			size_t nonassoc = findArr!(char)(cur, "%nonassoc");
+
+			if(left < cur.length || right < cur.length || 
+					nonassoc < cur.length) {
+				this.parseAssociation(cur, left < cur.length ? 0 :
+					right < cur.length ? 1 : 
+					nonassoc < cur.length ? 2 : 3);
+				continue;
+			}
+
 			// grammer rules
 			size_t prodStart = findArr!(char)(cur, ":=");
 			size_t pipe = find!(char)(cur, '|');
@@ -162,6 +187,38 @@ class FileReader {
 			if(prodCodeStart < cur.length) {
 				cur = this.parseProductionAction(cur);
 			}
+		}
+	}
+
+	private void parseAssociation(string cur, int type) {
+		string[] split = split(cur);
+		assert(split.length > 1);
+
+		// save the symbols stupid in case of nonassoc
+		// but I'm to tried to figure something better
+		Set!(string) set = new Set!(string)();
+		foreach(string str; split[1 .. $]) {
+			set.insert(trim(str));
+		}
+
+		switch(type) {
+			case 0: // left
+				assert(trim(split[0]) == "%left");
+				this.leftAssociation.insert(this.associationCnt++, set);
+				return;
+			case 1: // right
+				assert(trim(split[0]) == "%right");
+				this.rightAssociation.insert(this.associationCnt++, set);
+				return;
+			case 2: // nonassoc
+				assert(trim(split[0]) == "%nonassoc");
+				foreach(string it; split[1 .. $]) {
+					this.nonAssociation.insert(trim(it));
+				}
+				return;
+			default:
+				assert(false, format("precedence definiation failed." ~
+					" type value was %d in line %s", type, cur));
 		}
 	}
 
@@ -370,5 +427,17 @@ class FileReader {
 
 	public Iterator!(Production) getProductionIterator() {
 		return this.productions.begin();
+	}
+
+	public MapSet!(int,string) getLeftAssociation() {
+		return this.leftAssociation;
+	}
+
+	public MapSet!(int,string) getRightAssociation() {
+		return this.rightAssociation;
+	}
+
+	public Set!(string) getNonAssociation() {
+		return this.nonAssociation;
 	}
 }

@@ -10,6 +10,8 @@ import dalr.filereader;
 
 import hurt.container.deque;
 import hurt.container.map;
+import hurt.container.mapset;
+import hurt.container.set;
 import hurt.container.isr;
 import hurt.io.stdio;
 import hurt.io.stream;
@@ -37,15 +39,35 @@ void main(string[] args) {
 		" if non is set no graph will be printed", graphfile);
 
 	// create all facilities
+	FileReader fr = new FileReader(inputFile);
+	fr.parse();
+
 	SymbolManager sm = new SymbolManager();
 	GrammerParser gp = new GrammerParser(sm);
 	ProductionManager pm = new ProductionManager(sm);
-	FileReader fr = new FileReader(inputFile);
-	fr.parse();
 
 	// map the actions to the productions
 	Map!(size_t, Production) actions = new Map!(size_t, Production)(
 		ISRType.HashTable);
+	
+	MapSet!(int,string) left = fr.getLeftAssociation();
+	MapSet!(int,string) right = fr.getRightAssociation();
+	Set!(string) non = fr.getNonAssociation();
+
+	sm.checkIfPrecedenceIsCorrect(left, right, non);
+
+	foreach(int idx, string it; left) {
+		log("%d -> %s", idx, it);
+	}
+
+	foreach(int idx, string it; right) {
+		log("%d -> %s", idx, it);
+	}
+
+	ISRIterator!(string) jt = non.begin();
+	for(; jt.isValid(); jt++) {
+		log("nonassociation %s", *jt);
+	}
 
 	// for all productions in the filereader. 
 	// add them to the productionsmanager

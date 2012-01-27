@@ -2,6 +2,7 @@ module dalr.symbolmanager;
 
 import hurt.container.deque;
 import hurt.container.map;
+import hurt.container.mapset;
 import hurt.container.set;
 import hurt.container.isr;
 import hurt.io.stdio;
@@ -66,6 +67,35 @@ public class SymbolManager {
 		this.intSymbols.insert(e.getId(), e);
 		this.stringSymbols.insert(e.getSymbolName(), e);
 
+	}
+
+	public bool checkIfPrecedenceIsCorrect(MapSet!(int,string) left,
+			MapSet!(int,string) right, Set!(string) nonAsso) {
+		Set!(string) lSet = left.getSet();	
+		Set!(string) rSet = right.getSet();	
+		// check that the mapset do not contain elements double
+		assert(lSet.getSize() == left.getSize());
+		assert(rSet.getSize() == right.getSize());
+
+		// check that the sets do not intersect
+		assert(lSet.notIntersecting(rSet));
+		assert(nonAsso.notIntersecting(rSet));
+		assert(nonAsso.notIntersecting(lSet));
+
+		// check if all items are terminal symbols
+		foreach(string it; lSet) {
+			assert(!this.getKind(it));
+		}
+
+		foreach(string it; rSet) {
+			assert(!this.getKind(it));
+		}
+
+		foreach(string it; nonAsso) {
+			assert(!this.getKind(it));
+		}
+
+		return true;
 	}
 
 	public int insertSymbol(string sym, bool kind) {
@@ -150,6 +180,10 @@ public class SymbolManager {
 		} else {
 			return f.getData().setKind(kind);
 		}
+	}
+
+	public bool getKind(string symbol) {
+		return this.getKind(this.getSymbolId(symbol));
 	}
 
 	public bool getKind(const int symbol) {
