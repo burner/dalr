@@ -1,0 +1,11 @@
+%left - +
+%left * /
+%nonassoc f
+
+S := E;
+E := E * E;
+  | E / E;
+  | E + E;
+  | E - E;
+  | e;
+  | f;
