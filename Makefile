@@ -15,7 +15,7 @@ DALROBJS=dalr.main.o
 TESTEROBJS=tester.tester.o
 
 count:
-	wc -l `find dalr -name \*.d`
+	wc -l `find dalr -name \*.d && find tester -name \*.d`
 
 clean:
 	rm *.o
