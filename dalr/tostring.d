@@ -16,6 +16,7 @@ import hurt.container.isr;
 import hurt.container.set;
 import hurt.container.map;
 import hurt.util.pair;
+import hurt.util.slog;
 
 public string extFollowRulesToString(ProductionManager pm, SymbolManager sm) {
 	StringBuffer!(char) tmp = new StringBuffer!(char)(256);
@@ -124,6 +125,55 @@ public string mergedExtendedToString(ProductionManager pm, SymbolManager sm) {
 			}
 		}
 	}
+	return ret.getString();
+}
+
+public string finalTransitionTableToStringShort(ProductionManager pm,
+		SymbolManager sm) {
+
+	StringBuffer!(char) ret = new StringBuffer!(char)(1024);
+	Deque!(Deque!(Deque!(FinalItem))) table = pm.getFinalTable();
+	foreach(size_t idx, Deque!(Deque!(FinalItem)) it; table) {
+		if(idx == 0) { // first row contains names
+			continue;
+		}
+
+		// run the row, but only print items present
+		inner: foreach(size_t jdx, Deque!(FinalItem) jt; it) {
+			log("%u %u", idx, jdx);
+			if(jdx == 0) {
+				ret.pushBack(format("ItemSet %u: ", jt[0].number));
+			} else {
+				if(jt.getSize() > 0 && jt[0].typ != Type.Error) {
+					ret.pushBack(format("{%s:", 
+						sm.getSymbolName(table[0][jdx][0].number)));
+					log();
+				} else {
+					log();
+					continue inner;
+				}
+				foreach(size_t kdx, FinalItem kt; jt) {
+					if(kt.typ == Type.Accept) {
+						ret.pushBack("$");
+					} else if(kt.typ == Type.Shift) {
+						ret.pushBack(format("s%d,", kt.number));
+					} else if(kt.typ == Type.Reduce) {
+						ret.pushBack(format("r%d,", kt.number));
+					} else if(kt.typ == Type.Goto) {
+						ret.pushBack(format("g%d,", kt.number));
+					} else {
+						//assert(false, typeToString(kt.typ));
+						ret.pushBack(format("e%d,", kt.number));
+					}
+				}
+				ret.popBack();
+				ret.pushBack("},");
+			}
+		}
+		ret.popBack();
+		ret.pushBack("\n");
+	}
+	ret.pushBack("\n");
 	return ret.getString();
 }
 

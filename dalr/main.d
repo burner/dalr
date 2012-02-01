@@ -86,6 +86,7 @@ void main(string[] args) {
 	pm.makeAll(graphfile);
 
 	File finalTable = new File(outputFile, FileMode.OutNew);
+	finalTable.writeString(finalTransitionTableToStringShort(pm, sm));
 	finalTable.writeString(finalTransitionTableToString(pm, sm));
 	finalTable.writeString(sm.toString());
 	finalTable.close();

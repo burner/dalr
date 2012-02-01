@@ -829,6 +829,7 @@ class ProductionManager {
 		this.finalizeItemSet();
 	}
 
+
 	/************************************************************************* 
 	 *  Generic functions for the follow set
 	 *
@@ -1010,7 +1011,8 @@ class ProductionManager {
 		sw.start();
 		while(changed) { // run as long as the follow set change
 			if(cnt % 100 == 0) {
-				log("mapping iterator cnt %d mapping size %d", cnt, followSets.getSize());
+				log("mapping iterator cnt %d mapping size %d", cnt, 
+					followSets.getSize());
 			}
 			cnt++;
 			changed = false;
@@ -1020,16 +1022,18 @@ class ProductionManager {
 				mapping.getMap().begin();
 			
 			for(; mapIt.isValid(); mapIt++) { // for all keys
-				ISRIterator!(int) followIt = followSets.iterator((*mapIt).getKey());
+				ISRIterator!(int) followIt = followSets.iterator((*mapIt).
+					getKey());
 				if(followIt is null) { // no followset present
 					continue;
 				}
 
-				for(; followIt.isValid(); followIt++) { // run over all follow items
-					ISRIterator!(ExtendedItem) setIt = (*mapIt).getData().begin();
+				// run over all follow items
+				for(; followIt.isValid(); followIt++) { 
+					ISRIterator!(ExtendedItem) setIt = (*mapIt).getData().
+						begin();
 					for(; setIt.isValid(); setIt++) { 
 						// insert all items into the follow mapping
-						//changed = changed || followSets.insert(*setIt, *followIt);
 						followSets.insert(*setIt, *followIt);
 					}
 				}
