@@ -211,8 +211,8 @@ class FileReader {
 
 		string tmp = prod.getProdString()[0 .. prec];
 		string precSymbol = prod.getProdString()[prec + 5 .. $];
-		assert(leftAssociation.getSet().contains(trim(precSymbol)) || 
-               rightAssociation.getSet().contains(trim(precSymbol)), 
+		assert(leftAssociation.containsElement(trim(precSymbol)) || 
+               rightAssociation.containsElement(trim(precSymbol)), 
 			   format("precedence symbol %s must was not defined", 
 			   trim(precSymbol)));
 
@@ -440,10 +440,12 @@ class FileReader {
 			ret.pushBack(" := ");
 			ret.pushBack(trim(it.prodString));
 			ret.pushBack('\n');
-			ret.pushBack(" {: ");
-			ret.pushBack(it.action is null ? "" : it.action);
-			ret.pushBack(" :}");
-			ret.pushBack('\n');
+			if(it.action !is null && it.action != "") {
+				ret.pushBack(" {: ");
+				ret.pushBack(it.action is null ? "" : it.action);
+				ret.pushBack(" :}");
+				ret.pushBack('\n');
+			}
 			if(it.getPrecedence() !is null && it.getPrecedence() != "") {
 				ret.pushBack("precedence = ");
 				ret.pushBack(it.getPrecedence);
