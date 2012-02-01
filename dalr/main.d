@@ -87,7 +87,9 @@ void main(string[] args) {
 
 	File finalTable = new File(outputFile, FileMode.OutNew);
 	finalTable.writeString(finalTransitionTableToStringShort(pm, sm));
+	//println(finalTransitionTableToStringShort(pm, sm));
 	finalTable.writeString(finalTransitionTableToString(pm, sm));
+	//println(finalTransitionTableToString(pm, sm));
 	finalTable.writeString(sm.toString());
 	finalTable.close();
 }

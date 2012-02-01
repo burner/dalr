@@ -82,16 +82,16 @@ class ProductionManager {
 	}
 	
 	public void makeAll(string graphFileName) {
-		log();
+		log("makeLRZeroItemSets");
 		this.makeLRZeroItemSets();
-		log();
 		if(graphFileName.length > 0) {
+			log("writeGraph");
 			writeLR0Graph(this.getItemSets(), this.symbolManager, 
 				this.getProductions(), graphFileName, this);
 		}
-		log();
+		log("makeExtendedGrammer");
 		this.makeExtendedGrammer();
-		log();
+		log("makeExtendedFirstSet");
 		//print(extendedGrammerToString(pm, sm));
 		//log();
 		//pm.makeNormalFirstSet();
@@ -103,14 +103,16 @@ class ProductionManager {
 		//pm.makeNormalFollowSet();
 		//println(normalFollowSetToString(pm, sm));
 		//println(extendedGrammerItemsToString(pm, sm));
-		log();
+		log("makeExtendedFollowSetLinear");
 		this.makeExtendedFollowSetLinear();
-		log();
-		this.getTranslationTable();
-		log();
+		log("computeTranslationTable");
+		this.computeTranslationTable();
+		log("computeFinalTable");
 		//println(transitionTableToString(pm, sm));
 		//println(mergedExtendedToString(pm, sm));
 		this.computeFinalTable();
+		log("applyPrecedence");
+		this.applyPrecedence();
 	}
 
 	/************************************************************************* 
@@ -183,6 +185,40 @@ class ProductionManager {
 			}
 		}
 		return ret;
+	}
+
+
+	/************************************************************************* 
+	 *  Apply the precedence rules
+	 *
+	 */
+
+	private bool itemContainsAccept(Deque!(FinalItem) item) {
+		foreach(FinalItem it; item) {
+			if(it.typ == Type.Accept) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void applyPrecedence() {
+		Deque!(Deque!(Deque!(FinalItem))) table = this.getFinalTable();
+
+		foreach(size_t idx, Deque!(Deque!(FinalItem)) row; table) {
+			if(idx == 0) { // ignore the first row
+				continue;
+			}
+
+			foreach(size_t jdx, Deque!(FinalItem) item; row) {
+				if(jdx == 0) { // ignore the itemset
+					continue;
+				} else if(item.getSize() == 1) {
+					continue; // no ambiguity
+				}
+
+			}
+		}
 	}
 	
 

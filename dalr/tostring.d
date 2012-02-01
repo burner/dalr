@@ -128,6 +128,15 @@ public string mergedExtendedToString(ProductionManager pm, SymbolManager sm) {
 	return ret.getString();
 }
 
+private bool allTypsAreError(Deque!(FinalItem) de) {
+	foreach(FinalItem it; de) {
+		if(it.typ != Type.Error) {
+			return false;
+		}
+	}
+	return true;
+}
+
 public string finalTransitionTableToStringShort(ProductionManager pm,
 		SymbolManager sm) {
 
@@ -140,21 +149,18 @@ public string finalTransitionTableToStringShort(ProductionManager pm,
 
 		// run the row, but only print items present
 		inner: foreach(size_t jdx, Deque!(FinalItem) jt; it) {
-			log("%u %u", idx, jdx);
 			if(jdx == 0) {
 				ret.pushBack(format("ItemSet %u: ", jt[0].number));
 			} else {
-				if(jt.getSize() > 0 && jt[0].typ != Type.Error) {
+				if(jt.getSize() > 0 && !allTypsAreError(jt)) {
 					ret.pushBack(format("{%s:", 
 						sm.getSymbolName(table[0][jdx][0].number)));
-					log();
 				} else {
-					log();
 					continue inner;
 				}
 				foreach(size_t kdx, FinalItem kt; jt) {
 					if(kt.typ == Type.Accept) {
-						ret.pushBack("$");
+						ret.pushBack("$,");
 					} else if(kt.typ == Type.Shift) {
 						ret.pushBack(format("s%d,", kt.number));
 					} else if(kt.typ == Type.Reduce) {
@@ -163,7 +169,7 @@ public string finalTransitionTableToStringShort(ProductionManager pm,
 						ret.pushBack(format("g%d,", kt.number));
 					} else {
 						//assert(false, typeToString(kt.typ));
-						ret.pushBack(format("e%d,", kt.number));
+						//ret.pushBack(format("e%d,", kt.number));
 					}
 				}
 				ret.popBack();
