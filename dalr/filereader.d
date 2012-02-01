@@ -19,6 +19,7 @@ class Production {
 	private string startSymbol;
 	private string prodString;
 	private string action;
+	private string precedence;
 
 	this(string startSymbol) {
 		this.startSymbol = startSymbol;
@@ -48,6 +49,14 @@ class Production {
 
 	public string getProdString() {
 		return this.prodString;
+	}
+
+	public string getPrecedence() {
+		return this.precedence;
+	}
+
+	public void setPrecedence(string precedence) {
+		this.precedence = precedence;
 	}
 
 	public string getStartSymbol() const {
@@ -178,8 +187,10 @@ class FileReader {
 			//log("%u %u", prodStart, pipe);
 			if(prodStart < cur.length) {
 				cur = this.parseProduction(cur);
+				FileReader.checkAndSetPrecedence(productions.back());
 			} else if(pipe < cur.length) {
 				cur = this.parseProduction(cur, true);
+				FileReader.checkAndSetPrecedence(productions.back());
 			}
 
 			// production code 
@@ -188,6 +199,28 @@ class FileReader {
 				cur = this.parseProductionAction(cur);
 			}
 		}
+	}
+
+	private void checkAndSetPrecedence(Production prod) {
+		size_t prec = findArr!(char)(prod.getProdString, "%prec");
+
+		// check if %prec is in the prod string
+		if(prec == prod.getProdString().length) {
+			return;
+		}
+
+		string tmp = prod.getProdString()[0 .. prec];
+		string precSymbol = prod.getProdString()[prec + 5 .. $];
+		assert(leftAssociation.getSet().contains(trim(precSymbol)) || 
+               rightAssociation.getSet().contains(trim(precSymbol)), 
+			   format("precedence symbol %s must was not defined", 
+			   trim(precSymbol)));
+
+		//log("%s %s", tmp, precSymbol);
+		prod.setProdString(tmp);
+		prod.setPrecedence(trim(precSymbol));
+		assert(prod.getProdString == tmp);
+		assert(prod.getPrecedence() == trim(precSymbol));
 	}
 
 	private void parseAssociation(string cur, int type) {
@@ -411,6 +444,11 @@ class FileReader {
 			ret.pushBack(it.action is null ? "" : it.action);
 			ret.pushBack(" :}");
 			ret.pushBack('\n');
+			if(it.getPrecedence() !is null && it.getPrecedence() != "") {
+				ret.pushBack("precedence = ");
+				ret.pushBack(it.getPrecedence);
+				ret.pushBack('\n');
+			}
 			ret.pushBack('\n');
 		}
 		return ret.getString();

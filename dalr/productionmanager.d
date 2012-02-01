@@ -562,10 +562,11 @@ class ProductionManager {
 							theRow[idx].pushBack(FinalItem(Type.Reduce, 
 								conv!(size_t,int)(*rt)));
 							if(theRow[idx].getSize() > 1) {
-								log("ambiguity cnt %d", ambiguityCnt++);
+								/*log("ambiguity cnt %d", ambiguityCnt++);
 								log("%s %u %u", 
 									this.symbolManager.getSymbolName(
 									tt[0].number) , *rt, idx+1);
+								*/
 							}
 						}
 

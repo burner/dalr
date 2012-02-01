@@ -38,6 +38,10 @@ void main(string[] args) {
 	arg.setOption("-g", "--graph", "specify the filename for the lr0 graph." ~
 		" if non is set no graph will be printed", graphfile);
 
+	bool printProductions = false;
+	arg.setOption("-p", "--productions", 
+		"if set the parsed productions are printed." , printProductions, true);
+
 	// create all facilities
 	FileReader fr = new FileReader(inputFile);
 	fr.parse();
@@ -56,18 +60,19 @@ void main(string[] args) {
 
 	sm.checkIfPrecedenceIsCorrect(left, right, non);
 
-	foreach(int idx, string it; left) {
+	/*foreach(int idx, string it; left) {
 		log("%d -> %s", idx, it);
 	}
 
 	foreach(int idx, string it; right) {
 		log("%d -> %s", idx, it);
-	}
+	}*/
+	log("%s", fr.productionToString());
 
-	ISRIterator!(string) jt = non.begin();
+	/*ISRIterator!(string) jt = non.begin();
 	for(; jt.isValid(); jt++) {
 		log("nonassociation %s", *jt);
-	}
+	}*/
 
 	// for all productions in the filereader. 
 	// add them to the productionsmanager
