@@ -40,7 +40,12 @@ void main(string[] args) {
 
 	bool printProductions = false;
 	arg.setOption("-p", "--productions", 
-		"if set the parsed productions are printed." , printProductions, true);
+		"if set the parsed productions are printed." , printProductions);
+
+	bool printPrecedence = false;
+	arg.setOption("-c", "--printprecedence", 
+		"if passed the precedence of the terminals is printed ", 
+		printPrecedence, true);
 
 	// create all facilities
 	FileReader fr = new FileReader(inputFile);
@@ -60,13 +65,15 @@ void main(string[] args) {
 
 	sm.checkIfPrecedenceIsCorrect(left, right, non);
 
-	/*foreach(int idx, string it; left) {
-		log("%d -> %s", idx, it);
-	}
+	if(printPrecedence) {
+		foreach(int idx, string it; left) {
+			log("%d -> %s", idx, it);
+		}
 
-	foreach(int idx, string it; right) {
-		log("%d -> %s", idx, it);
-	}*/
+		foreach(int idx, string it; right) {
+			log("%d -> %s", idx, it);
+		}
+	}
 	log("%s", fr.productionToString());
 
 	/*ISRIterator!(string) jt = non.begin();
@@ -80,7 +87,9 @@ void main(string[] args) {
 			it++) {
 		actions.insert(pm.insertProduction(
 			gp.processProduction((*it).getProduction())), *it);
-		//log("%s", (*it).getProduction());
+		if(printProductions) {
+			log("%s", (*it).getProduction());
+		}
 	}
 
 	pm.makeAll(graphfile);

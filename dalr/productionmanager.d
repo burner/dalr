@@ -216,7 +216,6 @@ class ProductionManager {
 				} else if(item.getSize() == 1) {
 					continue; // no ambiguity
 				}
-
 			}
 		}
 	}

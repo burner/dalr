@@ -98,6 +98,16 @@ public class SymbolManager {
 		return true;
 	}
 
+	public int getPrecedenece(string symbol) {
+		bool kind = this.getKind(symbol);
+		if(kind) {
+			throw new Exception(format(
+				"%s:%u precedence are only allow for terminals %s is a " ~
+				"non-terminal", __FILE__, __LINE__, symbol));
+		}
+
+	}
+
 	public int insertSymbol(string sym, bool kind) {
 		MapItem!(string, Symbol) item = this.stringSymbols.find(sym);	
 		if(item !is null) {
