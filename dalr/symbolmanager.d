@@ -50,6 +50,7 @@ public class Symbol {
 public class SymbolManager {
 	private Map!(int,Symbol) intSymbols;
 	private Map!(string,Symbol) stringSymbols;
+	private Map!(int,Pair!(bool,int)) precedence;
 
 	private int nextSymbolNumber;
 
@@ -69,6 +70,9 @@ public class SymbolManager {
 
 	}
 
+	/** If this function hasn't been called operator precedence checks are
+	 *  not possible.
+	 */
 	public bool checkIfPrecedenceIsCorrect(MapSet!(int,string) left,
 			MapSet!(int,string) right, Set!(string) nonAsso) {
 		Set!(string) lSet = left.getSet();	
@@ -82,13 +86,20 @@ public class SymbolManager {
 		assert(nonAsso.notIntersecting(rSet));
 		assert(nonAsso.notIntersecting(lSet));
 
-		// check if all items are terminal symbols
-		foreach(string it; lSet) {
+		this.precedence = new Map!(int,Pair!(bool,int))();
+
+		// check if all items are terminal symbols and fill
+		// the precedence mapping
+		foreach(int idx, string it; left) {
 			assert(!this.getKind(it));
+			this.precedence.insert(this.getSymbolId(it), 
+				Pair!(bool,int)(false, idx));
 		}
 
-		foreach(string it; rSet) {
+		foreach(int idx, string it; right) {
 			assert(!this.getKind(it));
+			this.precedence.insert(this.getSymbolId(it), 
+				Pair!(bool,int)(true, idx));
 		}
 
 		foreach(string it; nonAsso) {
@@ -98,14 +109,17 @@ public class SymbolManager {
 		return true;
 	}
 
-	public int getPrecedenece(string symbol) {
+	public Pair!(bool,int) getPrecedence(int symbol) {
 		bool kind = this.getKind(symbol);
 		if(kind) {
 			throw new Exception(format(
 				"%s:%u precedence are only allow for terminals %s is a " ~
 				"non-terminal", __FILE__, __LINE__, symbol));
+		} else if(this.precedence is null) {
+			throw new Exception("before getPrecedence is available " ~
+				"checkIfPrecedenceIsCorrect has to be called");	
 		}
-
+		return this.precedence.find(symbol).getData();
 	}
 
 	public int insertSymbol(string sym, bool kind) {
