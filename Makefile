@@ -32,12 +32,13 @@ fine: $(OBJS) $(DALROBJS)
 	../libhurt/libhurt.a -gc -ofDalr
 
 dalr.main.o: dalr/main.d dalr/productionmanager.d dalr/dotfilewriter.d \
-dalr/symbolmanager.d dalr/grammerparser.d dalr/tostring.d Makefile
+dalr/symbolmanager.d dalr/grammerparser.d dalr/filereader.d \
+dalr/tostring.d Makefile
 	dmd $(CFLAGS) -c dalr/main.d -ofdalr.main.o
 
 dalr.productionmanager.o: dalr/productionmanager.d dalr/item.d dalr/itemset.d \
 dalr/symbolmanager.d dalr/finalitem.d dalr/extendeditem.d dalr/grammerparser.d \
-dalr/mergedreduction.d Makefile
+dalr/mergedreduction.d dalr/filereader.d Makefile
 	dmd $(CFLAGS) -c dalr/productionmanager.d -ofdalr.productionmanager.o
 
 dalr.item.o: dalr/item.d Makefile

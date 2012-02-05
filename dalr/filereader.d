@@ -187,10 +187,10 @@ class FileReader {
 			//log("%u %u", prodStart, pipe);
 			if(prodStart < cur.length) {
 				cur = this.parseProduction(cur);
-				FileReader.checkAndSetPrecedence(productions.back());
+				this.checkAndSetPrecedence!("%prec")(productions.back());
 			} else if(pipe < cur.length) {
 				cur = this.parseProduction(cur, true);
-				FileReader.checkAndSetPrecedence(productions.back());
+				this.checkAndSetPrecedence!("%prec")(productions.back());
 			}
 
 			// production code 
@@ -201,26 +201,34 @@ class FileReader {
 		}
 	}
 
-	private void checkAndSetPrecedence(Production prod) {
-		size_t prec = findArr!(char)(prod.getProdString, "%prec");
+	private void checkAndSetPrecedence(string type)(Production prod) 
+			if(type == "%prec" || type == "%glr") {
+		size_t prec = findArr!(char)(prod.getProdString, type);
 
-		// check if %prec is in the prod string
+		// check if type is in the prod string
 		if(prec == prod.getProdString().length) {
 			return;
 		}
 
 		string tmp = prod.getProdString()[0 .. prec];
-		string precSymbol = prod.getProdString()[prec + 5 .. $];
-		assert(leftAssociation.containsElement(trim(precSymbol)) || 
-               rightAssociation.containsElement(trim(precSymbol)), 
-			   format("precedence symbol %s must was not defined", 
-			   trim(precSymbol)));
+		string precSymbol = prod.getProdString()[prec + type.length .. $];
+		static if(type == "%prec") {
+			assert(leftAssociation.containsElement(trim(precSymbol)) || 
+				   rightAssociation.containsElement(trim(precSymbol)), 
+				   format("precedence symbol %s must was not defined", 
+				   trim(precSymbol)));
+		}
 
 		//log("%s %s", tmp, precSymbol);
-		prod.setProdString(tmp);
-		prod.setPrecedence(trim(precSymbol));
-		assert(prod.getProdString == tmp);
-		assert(prod.getPrecedence() == trim(precSymbol));
+		static if(type == "%prec") {
+			prod.setProdString(tmp);
+			prod.setPrecedence(trim(precSymbol));
+			assert(prod.getProdString == tmp);
+			assert(prod.getPrecedence() == trim(precSymbol));
+		} else {
+			prod.setProdString("glr");
+			prod.setPrecedence("glr");
+		}
 	}
 
 	private void parseAssociation(string cur, int type) {

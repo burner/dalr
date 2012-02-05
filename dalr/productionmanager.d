@@ -1,6 +1,8 @@
 module dalr.productionmanager;
 
+import dalr.dotfilewriter;
 import dalr.extendeditem;
+import dalr.filereader;
 import dalr.finalitem;
 import dalr.grammerparser;
 import dalr.item;
@@ -8,7 +10,6 @@ import dalr.itemset;
 import dalr.mergedreduction;
 import dalr.symbolmanager;
 import dalr.tostring;
-import dalr.dotfilewriter;
 
 import hurt.algo.sorting;
 import hurt.container.deque;
@@ -23,10 +24,10 @@ import hurt.io.stdio;
 import hurt.math.mathutil;
 import hurt.string.formatter;
 import hurt.string.stringbuffer;
+import hurt.time.stopwatch;
 import hurt.util.pair;
 import hurt.util.slog;
 import hurt.util.stacktrace;
-import hurt.time.stopwatch;
 
 // -1 is $
 // -2 is epsilon
@@ -68,6 +69,9 @@ class ProductionManager {
 
 	// complete ItemSet cache
 	Trie!(Item,Deque!(Item)) completeItemSetCache;
+
+	// production index -> Production mapping
+	Map!(size_t,Production) prodMapping;
 
 	this() {
 		this.prod = new Deque!(Deque!(int));
@@ -114,6 +118,17 @@ class ProductionManager {
 		log("applyPrecedence");
 		this.applyPrecedence();
 	}
+
+
+	/************************************************************************* 
+	 *  Setter
+	 *
+	 */
+
+	public void setProdMapping(Map!(size_t,Production) prodMapping) {
+		this.prodMapping = prodMapping;
+	}
+
 
 	/************************************************************************* 
 	 *  Getter
@@ -215,6 +230,8 @@ class ProductionManager {
 					continue;
 				} else if(item.getSize() == 1) {
 					continue; // no ambiguity
+				} else { // got a conflict, resolve by precedence
+
 				}
 			}
 		}

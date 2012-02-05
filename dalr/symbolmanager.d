@@ -119,7 +119,12 @@ public class SymbolManager {
 			throw new Exception("before getPrecedence is available " ~
 				"checkIfPrecedenceIsCorrect has to be called");	
 		}
-		return this.precedence.find(symbol).getData();
+		MapItem!(int,Pair!(bool,int)) tmp = this.precedence.find(symbol);
+		if(tmp is null) {
+			return Pair!(bool,int)(false,0);
+		} else {
+			return tmp.getData();
+		}
 	}
 
 	public int insertSymbol(string sym, bool kind) {

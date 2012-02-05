@@ -76,11 +76,6 @@ void main(string[] args) {
 	}
 	log("%s", fr.productionToString());
 
-	/*ISRIterator!(string) jt = non.begin();
-	for(; jt.isValid(); jt++) {
-		log("nonassociation %s", *jt);
-	}*/
-
 	// for all productions in the filereader. 
 	// add them to the productionsmanager
 	for(Iterator!(Production) it = fr.getProductionIterator(); it.isValid(); 
@@ -91,6 +86,10 @@ void main(string[] args) {
 			log("%s", (*it).getProduction());
 		}
 	}
+
+	// pass the ruleIndex Production mapping to the ProductionManager
+	// for conflict resolution
+	pm.setProdMapping(actions);
 
 	pm.makeAll(graphfile);
 
