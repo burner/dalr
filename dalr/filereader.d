@@ -226,7 +226,7 @@ class FileReader {
 			assert(prod.getProdString == tmp);
 			assert(prod.getPrecedence() == trim(precSymbol));
 		} else {
-			prod.setProdString("glr");
+			prod.setProdString(tmp);
 			prod.setPrecedence("glr");
 		}
 	}

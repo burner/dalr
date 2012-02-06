@@ -9,6 +9,7 @@ import hurt.io.stdio;
 import hurt.string.formatter;
 import hurt.string.stringbuffer;
 import hurt.util.pair;
+import hurt.util.slog;
 
 public class Symbol {
 	private string symbolName; // the name of the symbol
@@ -109,7 +110,13 @@ public class SymbolManager {
 		return true;
 	}
 
+	public Pair!(bool,int) getPrecedence(string symbol) {
+		return this.getPrecedence(this.getSymbolId(symbol));
+	}
+
 	public Pair!(bool,int) getPrecedence(int symbol) {
+		assert(this.containsSymbol(symbol), format("symbol %d doesn't exists", 
+			symbol));
 		bool kind = this.getKind(symbol);
 		if(kind) {
 			throw new Exception(format(

@@ -18,6 +18,19 @@ import hurt.io.stream;
 import hurt.util.slog;
 import hurt.util.getopt;
 
+void insertMetaSymbolsIntoSymbolManager(SymbolManager sm, 
+		Iterator!(Production) it) {
+	for(; it.isValid(); it++) {
+		if((*it).getPrecedence() is null ||
+				(*it).getPrecedence() == "") {
+			continue;
+		}
+		if(!sm.containsSymbol((*it).getPrecedence())) {
+			sm.insertSymbol((*it).getPrecedence(), false);
+		}
+	}
+}
+
 void main(string[] args) {
 	Args arg = Args(args);
 	arg.setHelpText("This is a glr/lalr1 parser generator.\n" ~
@@ -65,6 +78,7 @@ void main(string[] args) {
 
 	sm.checkIfPrecedenceIsCorrect(left, right, non);
 
+
 	if(printPrecedence) {
 		foreach(int idx, string it; left) {
 			log("%d -> %s", idx, it);
@@ -86,6 +100,10 @@ void main(string[] args) {
 			log("%s", (*it).getProduction());
 		}
 	}
+	insertMetaSymbolsIntoSymbolManager(sm, fr.getProductionIterator());
+
+	println(sm.toString());
+	println(normalProductionToString(pm, sm));
 
 	// pass the ruleIndex Production mapping to the ProductionManager
 	// for conflict resolution

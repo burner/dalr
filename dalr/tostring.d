@@ -224,7 +224,7 @@ public string finalTransitionTableToString(ProductionManager pm,
 					StringBuffer!(char) sTmp = new StringBuffer!(char)(16);
 					foreach(FinalItem gt; jt) {
 						if(gt.typ == Type.Accept) {
-							sTmp.pushBack("$");
+							sTmp.pushBack("$,");
 						} else if(gt.typ == Type.Shift) {
 							sTmp.pushBack(format("s%d,", gt.number));
 						} else if(gt.typ == Type.Reduce) {

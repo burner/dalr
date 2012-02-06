@@ -1,6 +1,6 @@
 %left - +
 %left * /
-%nonassoc f
+%left f
 %left UMINUS
 
 S := E;

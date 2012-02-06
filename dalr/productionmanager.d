@@ -208,13 +208,75 @@ class ProductionManager {
 	 *
 	 */
 
-	private bool itemContainsAccept(Deque!(FinalItem) item) {
+	private bool itemContains(Type typ)(Deque!(FinalItem) item) {
 		foreach(FinalItem it; item) {
-			if(it.typ == Type.Accept) {
+			if(it.typ == typ) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	/** Returns the precedence of the given item. No matter if it is an
+	 *  shift or reduce.
+	 */
+	private int getPrecedence(FinalItem item) {
+		if(item.typ == Type.Shift) {
+			return this.symbolManager.getPrecedence(item.number).second;	
+		} else if(item.typ == Type.Reduce) {
+			// precedence for rule was defined with %prec
+			MapItem!(size_t,Production) prItem = 
+				this.prodMapping.find(item.number);
+			assert(prItem !is null);
+			Production pr = prItem.getData();
+
+			if(pr.getPrecedence() !is null && pr.getPrecedence() != "") {
+				if(pr.getPrecedence() == "glr") { // glr
+					return int.max;
+				}
+				int prPrec = this.symbolManager.getPrecedence(
+					pr.getPrecedence()).second;
+
+				if(prPrec != 0) {	
+					return prPrec; // a precedence was defined for this rule
+				}
+			}
+
+			// find the last terminal
+			foreach_reverse(size_t idx, int it; this.prod[item.number]) {
+				if(!this.symbolManager.getKind(it)) { // found a terminal
+					return this.symbolManager.getPrecedence(it).second;
+				}
+			}
+			// rule doesn't contain terminal
+			return 0;
+		} else if(item.typ == Type.Error) {
+			return 0;
+		}
+		assert(false, format("getPrecedence for Type %s isn't a valid call",
+			typeToString(item.typ)));
+	}
+
+	/** Returns the FinalItem with the hightest precedence.
+	 *  This is used in the applyPrecedence method get the item not to delete
+	 *  from the Table entry.
+	 */
+	private FinalItem getHighestPrecedence(Deque!(FinalItem) items) {
+		FinalItem ret = FinalItem(Type.Error, int.min);
+		foreach(size_t idx, FinalItem it; items) {
+			if(ret.typ == Type.Error && ret.number == int.min) {
+				ret = it;
+				continue;
+			} else {
+				int prec = this.getPrecedence(it);
+				if(prec == int.max) {
+					continue;
+				} else if(prec > this.getPrecedence(ret)) {
+					ret = it;	
+				}
+			}
+		}
+		return ret;
 	}
 
 	private void applyPrecedence() {
@@ -231,7 +293,30 @@ class ProductionManager {
 				} else if(item.getSize() == 1) {
 					continue; // no ambiguity
 				} else { // got a conflict, resolve by precedence
+					// found the accept symbol
+					if(this.itemContains!(Type.Accept)(item)) { 
+						log("%d", item.getSize());
+						item.removeFalse(delegate(FinalItem toTest) {
+							return toTest.typ == Type.Accept;
+						});
+						assert(item.getSize() == 1);
+						assert(item[0].typ == Type.Accept);
+					} else {
+						FinalItem highPrec = this.getHighestPrecedence(item);
+						int highPrecValue = this.getPrecedence(highPrec);
+						if(highPrec.typ == Type.Error && //double error in item
+								highPrec.number == int.min) {
+							item.popBack();
+							continue;
+						}
 
+						log("%d %s %d", highPrecValue, 
+							typeToString(highPrec.typ), highPrec.number);
+
+						item.removeFalse(delegate(FinalItem toTest) {
+							return this.getPrecedence(toTest) >= highPrecValue;
+						});
+					}
 				}
 			}
 		}
