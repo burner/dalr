@@ -26,6 +26,7 @@ void insertMetaSymbolsIntoSymbolManager(SymbolManager sm,
 			continue;
 		}
 		if(!sm.containsSymbol((*it).getPrecedence())) {
+			log("%s", (*it).getPrecedence());
 			sm.insertSymbol((*it).getPrecedence(), false);
 		}
 	}
@@ -76,10 +77,7 @@ void main(string[] args) {
 	MapSet!(int,string) right = fr.getRightAssociation();
 	Set!(string) non = fr.getNonAssociation();
 
-	sm.checkIfPrecedenceIsCorrect(left, right, non);
-
-
-	if(printPrecedence) {
+	if(printPrecedence) { // needed for debugging the grammer
 		foreach(int idx, string it; left) {
 			log("%d -> %s", idx, it);
 		}
@@ -88,7 +86,6 @@ void main(string[] args) {
 			log("%d -> %s", idx, it);
 		}
 	}
-	log("%s", fr.productionToString());
 
 	// for all productions in the filereader. 
 	// add them to the productionsmanager
@@ -96,13 +93,16 @@ void main(string[] args) {
 			it++) {
 		actions.insert(pm.insertProduction(
 			gp.processProduction((*it).getProduction())), *it);
-		if(printProductions) {
+		if(printProductions) { // needed for debugging the grammer
 			log("%s", (*it).getProduction());
 		}
 	}
+	// operator precedence prolog
 	insertMetaSymbolsIntoSymbolManager(sm, fr.getProductionIterator());
+	sm.checkIfPrecedenceIsCorrect(left, right, non);
 
-	println(sm.toString());
+	println(sm.precedenceToString());
+
 	println(normalProductionToString(pm, sm));
 
 	// pass the ruleIndex Production mapping to the ProductionManager
@@ -117,5 +117,6 @@ void main(string[] args) {
 	finalTable.writeString(finalTransitionTableToString(pm, sm));
 	//println(finalTransitionTableToString(pm, sm));
 	finalTable.writeString(sm.toString());
+	finalTable.writeString(normalProductionToString(pm,sm));
 	finalTable.close();
 }

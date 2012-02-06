@@ -68,7 +68,11 @@ public class SymbolManager {
 		Symbol e = new Symbol("epsilon", -2, false);
 		this.intSymbols.insert(e.getId(), e);
 		this.stringSymbols.insert(e.getSymbolName(), e);
+	}
 
+	public void setPrecedence(string key, int value) {
+		this.precedence.insert(this.getSymbolId(key), 
+			Pair!(bool,int)(false,value));
 	}
 
 	/** If this function hasn't been called operator precedence checks are
@@ -92,12 +96,14 @@ public class SymbolManager {
 		// check if all items are terminal symbols and fill
 		// the precedence mapping
 		foreach(int idx, string it; left) {
+			log("%s %d", it, idx);
 			assert(!this.getKind(it));
 			this.precedence.insert(this.getSymbolId(it), 
 				Pair!(bool,int)(false, idx));
 		}
 
 		foreach(int idx, string it; right) {
+			log("%s %d", it, idx);
 			assert(!this.getKind(it));
 			this.precedence.insert(this.getSymbolId(it), 
 				Pair!(bool,int)(true, idx));
@@ -288,6 +294,15 @@ public class SymbolManager {
 		sb.popBack();
 		sb.pushBack("}");
 		return sb.getString();
+	}
+
+	public string precedenceToString() {
+		StringBuffer!(char) ret = new StringBuffer!(char)(128);
+		foreach(int key, Pair!(bool,int) value; this.precedence) {
+			ret.pushBack(format("{%s:%d}\n", this.getSymbolName(key), 
+				value.second));
+		}
+		return ret.getString();
 	}
 }
 

@@ -232,12 +232,14 @@ class ProductionManager {
 
 			if(pr.getPrecedence() !is null && pr.getPrecedence() != "") {
 				if(pr.getPrecedence() == "glr") { // glr
+					log();
 					return int.max;
 				}
 				int prPrec = this.symbolManager.getPrecedence(
 					pr.getPrecedence()).second;
 
 				if(prPrec != 0) {	
+					log("%d", prPrec);
 					return prPrec; // a precedence was defined for this rule
 				}
 			}
@@ -295,7 +297,6 @@ class ProductionManager {
 				} else { // got a conflict, resolve by precedence
 					// found the accept symbol
 					if(this.itemContains!(Type.Accept)(item)) { 
-						log("%d", item.getSize());
 						item.removeFalse(delegate(FinalItem toTest) {
 							return toTest.typ == Type.Accept;
 						});
@@ -310,8 +311,11 @@ class ProductionManager {
 							continue;
 						}
 
-						log("%d %s %d", highPrecValue, 
-							typeToString(highPrec.typ), highPrec.number);
+						log(false && highPrec.typ == Type.Shift, 
+							"%u %u prec %d %s %s", 
+							idx, jdx, highPrecValue, 
+							typeToString(highPrec.typ), 
+							this.symbolManager.getSymbolName(highPrec.number));
 
 						item.removeFalse(delegate(FinalItem toTest) {
 							return this.getPrecedence(toTest) >= highPrecValue;
