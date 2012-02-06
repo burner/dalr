@@ -116,7 +116,7 @@ class ProductionManager {
 		//println(mergedExtendedToString(pm, sm));
 		this.computeFinalTable();
 		log("applyPrecedence");
-		this.applyPrecedence();
+		//this.applyPrecedence();
 	}
 
 
@@ -239,7 +239,6 @@ class ProductionManager {
 					pr.getPrecedence()).second;
 
 				if(prPrec != 0) {	
-					log("%d", prPrec);
 					return prPrec; // a precedence was defined for this rule
 				}
 			}

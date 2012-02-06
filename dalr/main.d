@@ -118,5 +118,6 @@ void main(string[] args) {
 	//println(finalTransitionTableToString(pm, sm));
 	finalTable.writeString(sm.toString());
 	finalTable.writeString(normalProductionToString(pm,sm));
+	finalTable.writeString(sm.precedenceToString());
 	finalTable.close();
 }
