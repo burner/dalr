@@ -1,12 +1,13 @@
 %left - +
 %left * /
 %left f
+%left UMINUS
 
 S := E;
 E := E * E;
   | E / E;
   | E + E;
   | E - E;
-  | - E;
+  | - E %prec UMINUS;
   | e;
   | f;
