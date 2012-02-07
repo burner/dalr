@@ -1,0 +1,45 @@
+S := ShiftExpression;
+
+ShiftExpression :=
+	AddExpression;
+	| ShiftExpression leftshift AddExpression;
+	| ShiftExpression rightshift AddExpression;
+	| ShiftExpression unsignedrightshift AddExpression;
+
+AddExpression :=
+	MulExpression;
+	| AddExpression plus MulExpression;
+	| AddExpression minus MulExpression;
+	| CatExpression;
+
+CatExpression :=
+	AddExpression tilde MulExpression;
+
+MulExpression :=
+	UnaryExpression;
+	| MulExpression tilde UnaryExpression;
+	| MulExpression div UnaryExpression;
+	| MulExpression modulo UnaryExpression;
+
+UnaryExpression :=
+	PostfixExpression;
+	| and UnaryExpression;
+	| increment UnaryExpression;
+	| decrement UnaryExpression;
+	| star UnaryExpression;
+	| minus UnaryExpression;
+	| plus UnaryExpression;
+	| bang UnaryExpression;
+	| tilde UnaryExpression;
+	| lparen TypeNT rparen dot identifier;
+	| NewExpression;
+	| delete UnaryExpression;
+	| cast lparen TypeNT rparen UnaryExpression;
+
+PostfixExpression :=
+	integer;
+	| float;
+	| dollar;
+	| null;
+	| true;
+	| false;
