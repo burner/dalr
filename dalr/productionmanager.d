@@ -112,11 +112,11 @@ class ProductionManager {
 		log("computeTranslationTable");
 		this.computeTranslationTable();
 		log("computeFinalTable");
-		//println(transitionTableToString(pm, sm));
+		//println(transitionTableToString(this, this.symbolManager));
 		//println(mergedExtendedToString(pm, sm));
 		this.computeFinalTable();
 		log("applyPrecedence");
-		//this.applyPrecedence();
+		this.applyPrecedence();
 	}
 
 
@@ -220,9 +220,12 @@ class ProductionManager {
 	/** Returns the precedence of the given item. No matter if it is an
 	 *  shift or reduce.
 	 */
-	private int getPrecedence(FinalItem item) {
+	private int getPrecedence(FinalItem item, size_t idx) {
 		if(item.typ == Type.Shift) {
-			return this.symbolManager.getPrecedence(item.number).second;	
+			Deque!(Deque!(Deque!(FinalItem))) table = this.getFinalTable();
+			FinalItem shiftSymbol = table[0][idx][0];
+			assert(shiftSymbol.typ == Type.Term);
+			return this.symbolManager.getPrecedence(shiftSymbol.number).second;
 		} else if(item.typ == Type.Reduce) {
 			// precedence for rule was defined with %prec
 			MapItem!(size_t,Production) prItem = 
@@ -262,17 +265,18 @@ class ProductionManager {
 	 *  This is used in the applyPrecedence method get the item not to delete
 	 *  from the Table entry.
 	 */
-	private FinalItem getHighestPrecedence(Deque!(FinalItem) items) {
+	private FinalItem getHighestPrecedence(Deque!(FinalItem) items, 
+			size_t idx) {
 		FinalItem ret = FinalItem(Type.Error, int.min);
 		foreach(size_t idx, FinalItem it; items) {
 			if(ret.typ == Type.Error && ret.number == int.min) {
 				ret = it;
 				continue;
 			} else {
-				int prec = this.getPrecedence(it);
+				int prec = this.getPrecedence(it, idx);
 				if(prec == int.max) {
 					continue;
-				} else if(prec > this.getPrecedence(ret)) {
+				} else if(prec > this.getPrecedence(ret, idx)) {
 					ret = it;	
 				}
 			}
@@ -302,22 +306,30 @@ class ProductionManager {
 						assert(item.getSize() == 1);
 						assert(item[0].typ == Type.Accept);
 					} else {
-						FinalItem highPrec = this.getHighestPrecedence(item);
-						int highPrecValue = this.getPrecedence(highPrec);
+						FinalItem highPrec = 
+							this.getHighestPrecedence(item, jdx);
+						int highPrecValue = this.getPrecedence(highPrec, jdx);
 						if(highPrec.typ == Type.Error && //double error in item
 								highPrec.number == int.min) {
 							item.popBack();
 							continue;
 						}
 
-						log(false && highPrec.typ == Type.Shift, 
+						log(highPrec.typ == Type.Shift, 
 							"%u %u prec %d %s %s", 
 							idx, jdx, highPrecValue, 
 							typeToString(highPrec.typ), 
 							this.symbolManager.getSymbolName(highPrec.number));
 
+						log(highPrec.typ == Type.Reduce, 
+							"%u %u prec %d %s %s", 
+							idx, jdx, highPrecValue, 
+							typeToString(highPrec.typ), 
+							this.getPrecedence(highPrec, jdx));
+
 						item.removeFalse(delegate(FinalItem toTest) {
-							return this.getPrecedence(toTest) >= highPrecValue;
+							return this.getPrecedence(toTest, jdx) >= 
+								highPrecValue;
 						});
 					}
 				}

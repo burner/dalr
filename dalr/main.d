@@ -97,8 +97,10 @@ void main(string[] args) {
 			log("%s", (*it).getProduction());
 		}
 	}
+	println(sm.toString());
+
 	// operator precedence prolog
-	insertMetaSymbolsIntoSymbolManager(sm, fr.getProductionIterator());
+	//insertMetaSymbolsIntoSymbolManager(sm, fr.getProductionIterator());
 	sm.checkIfPrecedenceIsCorrect(left, right, non);
 
 	println(sm.precedenceToString());
@@ -117,6 +119,7 @@ void main(string[] args) {
 	finalTable.writeString(finalTransitionTableToString(pm, sm));
 	//println(finalTransitionTableToString(pm, sm));
 	finalTable.writeString(sm.toString());
+	finalTable.write('\n');
 	finalTable.writeString(normalProductionToString(pm,sm));
 	finalTable.writeString(sm.precedenceToString());
 	finalTable.close();
