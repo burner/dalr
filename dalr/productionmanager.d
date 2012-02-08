@@ -255,7 +255,7 @@ class ProductionManager {
 			// rule doesn't contain terminal
 			return 0;
 		} else if(item.typ == Type.Error) {
-			return 0;
+			return -99;
 		}
 		assert(false, format("getPrecedence for Type %s isn't a valid call",
 			typeToString(item.typ)));
@@ -284,6 +284,22 @@ class ProductionManager {
 		return ret;
 	}
 
+	private static size_t removeAllButOneError(Deque!(FinalItem) de) {
+		bool found = false;
+		size_t remove = 0;
+		for(size_t i = 0; i < de.getSize();) {
+			if(!found && de[i].typ == Type.Error) {
+				found = true;
+			} else if(found && de[i].typ == Type.Error) {
+				remove++;
+				de.remove(i);
+				continue;
+			}
+			i++;
+		}
+		return remove;
+	}
+
 	private void applyPrecedence() {
 		Deque!(Deque!(Deque!(FinalItem))) table = this.getFinalTable();
 
@@ -306,6 +322,7 @@ class ProductionManager {
 						assert(item.getSize() == 1);
 						assert(item[0].typ == Type.Accept);
 					} else {
+						removeAllButOneError(item);
 						FinalItem highPrec = 
 							this.getHighestPrecedence(item, jdx);
 						int highPrecValue = this.getPrecedence(highPrec, jdx);
@@ -315,13 +332,13 @@ class ProductionManager {
 							continue;
 						}
 
-						log(highPrec.typ == Type.Shift, 
+						log(false && highPrec.typ == Type.Shift, 
 							"%u %u prec %d %s %s", 
 							idx, jdx, highPrecValue, 
 							typeToString(highPrec.typ), 
 							this.symbolManager.getSymbolName(highPrec.number));
 
-						log(highPrec.typ == Type.Reduce, 
+						log(false && highPrec.typ == Type.Reduce, 
 							"%u %u prec %d %s %s", 
 							idx, jdx, highPrecValue, 
 							typeToString(highPrec.typ), 
@@ -331,6 +348,35 @@ class ProductionManager {
 							return this.getPrecedence(toTest, jdx) >= 
 								highPrecValue;
 						});
+
+						warn(item.getSize() > 1, 
+							"conflict in itemset %u with lookahead token %s", 
+							table[idx][0][0].number, this.symbolManager.
+							getSymbolName(table[0][jdx][0].number));
+						if(item.getSize() == 2 && item[0].typ == Type.Reduce
+								&& item[1].typ == Type.Reduce) {
+							warn("reduce recduce conflict with rule %d " ~
+								"and rule %d", item[0].number, item[1].number);
+
+						} else if(item.getSize() == 2 &&
+								item[0].typ == Type.Reduce
+								&& item[1].typ == Type.Shift) {
+							warn("shift conflicts with reduction rule %d", 
+								item[0].number);
+						} else if(item.getSize() == 2 &&
+								item[0].typ == Type.Shift
+								&& item[1].typ == Type.Reduce) {
+							warn("shift conflicts with reduction rule %d", 
+								item[1].number);
+						} else if(item.getSize() > 1) {
+							warn("last conflict comprised of more " ~
+								"than two items");
+							foreach(FinalItem gt; item) {
+								warn("type %s number %u", typeToString(gt.typ),
+									gt.number);
+							}
+						}
+
 					}
 				}
 			}
