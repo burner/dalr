@@ -73,16 +73,21 @@ class ProductionManager {
 	// production index -> Production mapping
 	Map!(size_t,Production) prodMapping;
 
+	// glr ?
+	bool glr;
+
 	this() {
 		this.prod = new Deque!(Deque!(int));
 		this.itemSets = new Deque!(ItemSet)();
 		this.followSetCache = new Trie!(Item,Map!(int, ItemSet))();
 		this.completeItemSetCache = new Trie!(Item,Deque!(Item))();
+		this.glr = false;
 	}
 
-	this(SymbolManager symbolManager) {
+	this(SymbolManager symbolManager, bool glr) {
 		this();
 		this.symbolManager = symbolManager;
+		this.glr = glr;
 	}
 	
 	public void makeAll(string graphFileName) {
@@ -322,10 +327,16 @@ class ProductionManager {
 						assert(item.getSize() == 1);
 						assert(item[0].typ == Type.Accept);
 					} else {
+						// sometimes there is more than one error item
 						removeAllButOneError(item);
+
+						// get the item with the hightest precedence
 						FinalItem highPrec = 
 							this.getHighestPrecedence(item, jdx);
+
+						// get the highest precedence
 						int highPrecValue = this.getPrecedence(highPrec, jdx);
+
 						if(highPrec.typ == Type.Error && //double error in item
 								highPrec.number == int.min) {
 							item.popBack();
@@ -344,11 +355,15 @@ class ProductionManager {
 							typeToString(highPrec.typ), 
 							this.getPrecedence(highPrec, jdx));
 
+						// remove all the items that have lower precedence
+						// than that of the highest, there might be more
+						// than one item that fulfills this requirement
 						item.removeFalse(delegate(FinalItem toTest) {
 							return this.getPrecedence(toTest, jdx) >= 
 								highPrecValue;
 						});
 
+						// warn the user about ambiguities
 						warn(item.getSize() > 1, 
 							"conflict in itemset %u with lookahead token %s", 
 							table[idx][0][0].number, this.symbolManager.
@@ -363,12 +378,22 @@ class ProductionManager {
 								&& item[1].typ == Type.Shift) {
 							warn("shift conflicts with reduction rule %d", 
 								item[0].number);
+							// so if we are not creating a glr parser we do as 
+							// yacc does
+							if(!this.glr) {
+								item.popFront();
+							}
 						} else if(item.getSize() == 2 &&
 								item[0].typ == Type.Shift
 								&& item[1].typ == Type.Reduce) {
 							warn("shift conflicts with reduction rule %d", 
 								item[1].number);
-						} else if(item.getSize() > 1) {
+							// so if we are not creating a glr parser we do as 
+							// yacc does
+							if(!this.glr) {
+								item.popBack();
+							}
+						} else if(item.getSize() > 2) {
 							warn("last conflict comprised of more " ~
 								"than two items");
 							foreach(FinalItem gt; item) {
@@ -376,11 +401,20 @@ class ProductionManager {
 									gt.number);
 							}
 						}
-
 					}
 				}
 			}
 		}
+	}
+
+	private bool isThereAValidItem(Deque!(FinalItem) item) {
+		foreach(FinalItem it; item) {
+			if(it.typ == Type.Shift || it.typ == Type.Reduce ||
+					it.typ == Type.Accept || it.typ == Type.Goto) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 
@@ -1767,7 +1801,7 @@ unittest {
 unittest {
 	SymbolManager sm = new SymbolManager();
 	GrammerParser gp = new GrammerParser(sm);
-	ProductionManager pm = new ProductionManager(sm);
+	ProductionManager pm = new ProductionManager(sm, false);
 	pm.insertProduction(gp.processProduction("S := A B C"));
 	pm.insertProduction(gp.processProduction("A :="));
 	pm.insertProduction(gp.processProduction("B :="));
@@ -1787,7 +1821,7 @@ unittest {
 
 	sm = new SymbolManager();
 	gp = new GrammerParser(sm);
-	pm = new ProductionManager(sm);
+	pm = new ProductionManager(sm, false);
 	pm.insertProduction(gp.processProduction("S := A B C"));
 	pm.insertProduction(gp.processProduction("A :="));
 	pm.insertProduction(gp.processProduction("B := a"));
@@ -1809,7 +1843,7 @@ unittest {
 
 	sm = new SymbolManager();
 	gp = new GrammerParser(sm);
-	pm = new ProductionManager(sm);
+	pm = new ProductionManager(sm, false);
 	pm.insertProduction(gp.processProduction("S := A B C"));
 	pm.insertProduction(gp.processProduction("A :="));
 	pm.insertProduction(gp.processProduction("B :="));
@@ -1830,7 +1864,7 @@ unittest {
 	assert(mi.getData().contains(sm.getSymbolId("a")));
 	sm = new SymbolManager();
 	gp = new GrammerParser(sm);
-	pm = new ProductionManager(sm);
+	pm = new ProductionManager(sm, false);
 	pm.insertProduction(gp.processProduction("S := A B C"));
 	pm.insertProduction(gp.processProduction("A :="));
 	pm.insertProduction(gp.processProduction("B :="));

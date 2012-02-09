@@ -29,10 +29,15 @@ abstract class Writer {
 		log();
 		this.file = new File(this.filename, FileMode.OutNew);
 		log();
-		this.file.writeString(format("module %s;\n", modulename));
+		this.writeHeader();
 		log();
 		this.file.write('\n');
 		log();
+	}
+
+	private void writeHeader() {
+		this.file.writeString(format("module %s;\n\n", this.modulename));
+		this.file.writeString("import hurt.util.pair;\n");
 	}
 
 	public void close() {
@@ -43,13 +48,20 @@ abstract class Writer {
 }
 
 final class RuleWriter : Writer {
+	private bool glr;
 	this(string filename, string modulename, 
-			SymbolManager sm, ProductionManager pm) {
+			SymbolManager sm, ProductionManager pm,
+			bool glr) {
 		super(filename, modulename, sm, pm);
+		this.glr = glr;
 	}
 
 	public override void write() {
+		log();
 		this.writeStackItemAndStackItemEnum();
+		log();
+		this.writeTable();
+		log();
 		//this.writeTable();
 		this.file.write('\n');
 	}
@@ -71,14 +83,41 @@ final class RuleWriter : Writer {
 			"public struct StackItem {\n" ~
 				"\tpublic StackType typ;\n" ~
 				"\tpublic ushort number;\n" ~
-			"}");
+			"}\n\n");
 	}
 
 	private void writeTable() {
 		Deque!(Deque!(Deque!(FinalItem))) table = this.pm.getFinalTable();
 		StringBuffer!(char) sb = new StringBuffer!(char)(1024);
-		/*sb.pushBack(format("\timmutable(Range!(
+		if(this.glr) {
+			sb.pushBack(format(
+				"public static immutable(Pair!(int,StackItem[])[][%u]) " ~
+				"table = [\n", table.getSize()-1));
+		} else {
+			sb.pushBack(format(
+				"public static immutable(Pair!(int,StackItem)[%u]) " ~
+				"table = [\n", table.getSize()-1));
+		}
 
+		foreach(size_t idx, Deque!(Deque!(FinalItem)) row; table) {
+			if(idx == 0) { // don't need the items
+				continue;
+			}
+			foreach(size_t jdx, Deque!(FinalItem) jt; row) {
+				if(jdx == 0) { // don't need the itemset number
+					continue;
+				}
+
+
+			}
+
+		}
+		sb.pushBack("]\n");
+			
+		this.file.writeString(sb.getString());
+		sb.clear();
+			
+/*
 		foreach(size_t idx, Deque!(Deque!(FinalItem)) it; table) {
 			if(idx == 0) { // first row contains names
 				continue;

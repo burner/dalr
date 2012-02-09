@@ -69,13 +69,7 @@ void main(string[] args) {
 
 	SymbolManager sm = new SymbolManager();
 	GrammerParser gp = new GrammerParser(sm);
-	ProductionManager pm = new ProductionManager(sm);
-
-	RuleWriter fw = new RuleWriter("filetest.d", "interestingmodulename",
-		sm, pm);
-	fw.write();
-	fw.close();
-	return;
+	ProductionManager pm = new ProductionManager(sm, fr.isGlr());
 
 	// map the actions to the productions
 	Map!(size_t, Production) actions = new Map!(size_t, Production)(
@@ -120,6 +114,11 @@ void main(string[] args) {
 	pm.setProdMapping(actions);
 
 	pm.makeAll(graphfile);
+
+	RuleWriter fw = new RuleWriter("filetest.d", "interestingmodulename",
+		sm, pm, false);
+	fw.write();
+	fw.close();
 
 	File finalTable = new File(outputFile, FileMode.OutNew);
 	finalTable.writeString(finalTransitionTableToStringShort(pm, sm));
