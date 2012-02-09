@@ -8,7 +8,7 @@ CFLAGS=-m64 -unittest -debug -g -I../libhurt/ -wi
 OBJS=dalr.productionmanager.o dalr.item.o dalr.itemset.o \
 dalr.symbolmanager.o dalr.grammerparser.o dalr.dotfilewriter.o \
 dalr.extendeditem.o dalr.finalitem.o dalr.mergedreduction.o dalr.tostring.o \
-dalr.filereader.o
+dalr.filereader.o dalr.filewriter.o
 
 DALROBJS=dalr.main.o
 
@@ -53,6 +53,10 @@ dalr.finalitem.o: dalr/finalitem.d Makefile
 dalr.filereader.o: dalr/filereader.d dalr/grammerparser.d \
 dalr/productionmanager.d dalr/symbolmanager.d Makefile
 	dmd $(CFLAGS) -c dalr/filereader.d -ofdalr.filereader.o
+
+dalr.filewriter.o: dalr/filewriter.d dalr/grammerparser.d \
+dalr/productionmanager.d dalr/symbolmanager.d Makefile
+	dmd $(CFLAGS) -c dalr/filewriter.d -ofdalr.filewriter.o
 
 dalr.extendeditem.o: dalr/extendeditem.d Makefile
 	dmd $(CFLAGS) -c dalr/extendeditem.d -ofdalr.extendeditem.o

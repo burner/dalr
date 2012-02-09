@@ -75,6 +75,7 @@ class FileReader {
 	private Set!(string) nonAssociation;
 	private int associationCnt;
 	private size_t line;
+	private bool glr;
 	
 	// input file
 	private InputStream inFile;
@@ -121,6 +122,11 @@ class FileReader {
 		this.nonAssociation = new Set!(string)();
 		this.associationCnt = 1;
 		this.line = 1;
+		this.glr = false;
+	}
+
+	public bool isGlr() const {
+		return this.glr;
 	}
 
 	public string getNextLine() {
@@ -166,6 +172,14 @@ class FileReader {
 			if(userCodeIdx != -1 && userCodeIdx < comment) {
 				this.parseUserCode(cur);
 				continue;
+			}
+
+			// check if we have to emit a glr parse table
+			// if not shift reduce conflict will be solved in favor
+			// of the shift
+			size_t glr = findArr!(char)(cur, "%glrParser");
+			if(glr != cur.length) {
+				this.glr = true;
 			}
 
 			// check for precedence symbols

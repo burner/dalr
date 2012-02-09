@@ -7,6 +7,7 @@ import dalr.symbolmanager;
 import dalr.finalitem;
 import dalr.tostring;
 import dalr.filereader;
+import dalr.filewriter;
 
 import hurt.container.deque;
 import hurt.container.map;
@@ -18,7 +19,7 @@ import hurt.io.stream;
 import hurt.util.slog;
 import hurt.util.getopt;
 
-void insertMetaSymbolsIntoSymbolManager(SymbolManager sm, 
+deprecated void insertMetaSymbolsIntoSymbolManager(SymbolManager sm, 
 		Iterator!(Production) it) {
 	for(; it.isValid(); it++) {
 		if((*it).getPrecedence() is null ||
@@ -61,6 +62,7 @@ void main(string[] args) {
 		"if passed the precedence of the terminals is printed ", 
 		printPrecedence, true);
 
+
 	// create all facilities
 	FileReader fr = new FileReader(inputFile);
 	fr.parse();
@@ -68,6 +70,12 @@ void main(string[] args) {
 	SymbolManager sm = new SymbolManager();
 	GrammerParser gp = new GrammerParser(sm);
 	ProductionManager pm = new ProductionManager(sm);
+
+	RuleWriter fw = new RuleWriter("filetest.d", "interestingmodulename",
+		sm, pm);
+	fw.write();
+	fw.close();
+	return;
 
 	// map the actions to the productions
 	Map!(size_t, Production) actions = new Map!(size_t, Production)(

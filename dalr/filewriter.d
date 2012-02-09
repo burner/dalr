@@ -1,0 +1,123 @@
+module dalr.filewriter;
+
+import hurt.io.stream;
+import hurt.container.deque;
+import hurt.string.stringbuffer;
+import hurt.string.formatter;
+import hurt.util.slog;
+
+import dalr.finalitem;
+import dalr.productionmanager;
+import dalr.symbolmanager;
+
+abstract class Writer {
+	private string filename;
+	private string modulename;
+	private File file;
+	private SymbolManager sm;
+	private ProductionManager pm;
+
+	this(string filename, string modulename, 
+			SymbolManager sm, ProductionManager pm) {
+		// save the parameter
+		this.filename = filename;
+		this.modulename = modulename;
+		this.sm = sm;
+		this.pm = pm;
+
+		// create the output file
+		log();
+		this.file = new File(this.filename, FileMode.OutNew);
+		log();
+		this.file.writeString(format("module %s;\n", modulename));
+		log();
+		this.file.write('\n');
+		log();
+	}
+
+	public void close() {
+		this.file.close();
+	}
+
+	public void write();
+}
+
+final class RuleWriter : Writer {
+	this(string filename, string modulename, 
+			SymbolManager sm, ProductionManager pm) {
+		super(filename, modulename, sm, pm);
+	}
+
+	public override void write() {
+		this.writeStackItemAndStackItemEnum();
+		//this.writeTable();
+		this.file.write('\n');
+	}
+
+	private void writeStackItemAndStackItemEnum() {
+		// the StackType Enum
+		this.file.writeString(
+			"public enum StackType : byte {\n" ~
+				"\tAccept,\n" ~
+				"\tError,\n" ~
+				"\tReduce,\n" ~
+				"\tShift\n" ~
+			"}\n");
+
+		this.file.write('\n');
+
+		// this is the kind of item that is placed on the stack
+		this.file.writeString(
+			"public struct StackItem {\n" ~
+				"\tpublic StackType typ;\n" ~
+				"\tpublic ushort number;\n" ~
+			"}");
+	}
+
+	private void writeTable() {
+		Deque!(Deque!(Deque!(FinalItem))) table = this.pm.getFinalTable();
+		StringBuffer!(char) sb = new StringBuffer!(char)(1024);
+		/*sb.pushBack(format("\timmutable(Range!(
+
+		foreach(size_t idx, Deque!(Deque!(FinalItem)) it; table) {
+			if(idx == 0) { // first row contains names
+				continue;
+			}
+
+			// run the row, but only print items present
+			inner: foreach(size_t jdx, Deque!(FinalItem) jt; it) {
+				if(jdx == 0) {
+					ret.pushBack(format("ItemSet %u: ", jt[0].number));
+				} else {
+					if(jt.getSize() > 0 && !allTypsAreError(jt)) {
+						ret.pushBack(format("{%s:", 
+							sm.getSymbolName(table[0][jdx][0].number)));
+					} else {
+						continue inner;
+					}
+					foreach(size_t kdx, FinalItem kt; jt) {
+						if(kt.typ == Type.Accept) {
+							ret.pushBack("$,");
+						} else if(kt.typ == Type.Shift) {
+							ret.pushBack(format("s%d,", kt.number));
+						} else if(kt.typ == Type.Reduce) {
+							ret.pushBack(format("r%d,", kt.number));
+						} else if(kt.typ == Type.Goto) {
+							ret.pushBack(format("g%d,", kt.number));
+						} else {
+							//assert(false, typeToString(kt.typ));
+							//ret.pushBack(format("e%d,", kt.number));
+						}
+					}
+					ret.popBack();
+					ret.pushBack("},");
+				}
+			}
+			ret.popBack();
+			ret.pushBack("\n");
+		}
+		ret.pushBack("\n");
+		return ret.getString();
+		*/
+	}
+}
