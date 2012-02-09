@@ -5,6 +5,8 @@ import hurt.container.deque;
 import hurt.string.stringbuffer;
 import hurt.string.formatter;
 import hurt.util.slog;
+import hurt.util.pair;
+import hurt.algo.sorting;
 
 import dalr.finalitem;
 import dalr.productionmanager;
@@ -103,13 +105,22 @@ final class RuleWriter : Writer {
 			if(idx == 0) { // don't need the items
 				continue;
 			}
+			
+			// to sort it for the binary search
+			Deque!(Pair!(int,Deque!(FinalItem))) tmp = 
+				new Deque!(Pair!(int,Deque!(FinalItem)))(row.getSize()); 
+
 			foreach(size_t jdx, Deque!(FinalItem) jt; row) {
 				if(jdx == 0) { // don't need the itemset number
 					continue;
 				}
-
-
+				tmp.pushBack(Pair!(int,Deque!(FinalItem))
+					(table[0][jdx][0].number, jt));
 			}
+			sortDeque(tmp, function(in Pair!(int,Deque!(FinalItem)) a,
+				in Pair!(int,Deque!(FinalItem)) b) {
+					return a.first > b.first;
+				});
 
 		}
 		sb.pushBack("]\n");
