@@ -1,6 +1,7 @@
 module dalr.filewriter;
 
 import hurt.io.stream;
+import hurt.io.stdio;
 import hurt.container.deque;
 import hurt.string.stringbuffer;
 import hurt.string.formatter;
@@ -84,20 +85,46 @@ final class RuleWriter : Writer {
 		this.file.writeString(
 			"public struct StackItem {\n" ~
 				"\tpublic StackType typ;\n" ~
-				"\tpublic ushort number;\n" ~
+				"\tpublic short number;\n" ~
+				"\tprivate byte padding; // align to 32 bit\n" ~
+				"\n\tthis(StackType st, short number) {\n" ~
+				"\t\tthis.typ = st;\n" ~
+				"\t\tthis.number = number;\n" ~
+				"\t}\n" ~
 			"}\n\n");
+	}
+
+	private string finalItemTypToStackTypeString(Type typ) {
+		final switch(typ) {
+			case Type.Accept:
+				return "StackType.Accept";
+			case Type.Error:
+				assert(false, "Type Error not allowed");
+			case Type.Goto:
+				assert(false, "Type Goto not allowed");
+			case Type.ItemSet:
+				assert(false, "Type ItemSet not allowed");
+			case Type.NonTerm:
+				assert(false, "Type NonTerm not allowed");
+			case Type.Reduce:
+				return "StackType.Reduce";
+			case Type.Shift:
+				return "StackType.Shift";
+			case Type.Term:
+				assert(false, "Type Term not allowed");
+		}
 	}
 
 	private void writeTable() {
 		Deque!(Deque!(Deque!(FinalItem))) table = this.pm.getFinalTable();
 		StringBuffer!(char) sb = new StringBuffer!(char)(1024);
 		if(this.glr) {
-			sb.pushBack(format(
-				"public static immutable(Pair!(int,StackItem[][][%u])) " ~
+			this.file.writeString(format(
+				"public static immutable(Pair!(int,StackItem[])[][%u]) " ~
 				"table = [\n", table.getSize()-1));
 		} else {
-			sb.pushBack(format(
-				"public static immutable(Pair!(int,StackItem[][%u])) " ~
+			this.file.writeString(format(
+				"public static immutable(Pair!(int,StackItem)[][%u]) " ~
 				"table = [\n", table.getSize()-1));
 		}
 
@@ -124,63 +151,44 @@ final class RuleWriter : Writer {
 					return a.first > b.first;
 				});
 
-			size_t 
-
 			if(this.glr) {
-				sb.pushBack(\n"[Pair!(int,StackItem)[]\n");
+				//sb.pushBack(\n"[Pair!(int,StackItem)[]\n");
 			} else {
-				sb.pushBack(\n"[\n");
-			}
+				sb.pushBack('[');
+				foreach(Pair!(int,Deque!(FinalItem)) it; tmp) {
+					if(it.second[0].typ == Type.Error ||
+							it.second[0].typ == Type.Goto) {
+						continue;
+					}
+					string tmpS = format("Pair!(int,StackItem)" ~
+						"(%d,StackItem(%s, %u)), ", it.first, 
+						finalItemTypToStackTypeString(it.second[0].typ),
+						it.second[0].number);
 
-			foreach(size_t jdx, Deque!(FinalItem jt), tmp) {
+					if(sb.getSize() + tmpS.length > 80) {
+						this.file.writeString(sb.getString());
+						this.file.writeString("\n");
+						sb.clear();
+						sb.pushBack(tmpS);
+					} else {
+						sb.pushBack(tmpS);
+					}
+				}
+				if(sb.getSize() > 1) {
+					sb.popBack();
+					sb.popBack();
+				}
+				sb.pushBack("],\n\n");
+				this.file.writeString(sb.getString());
+				sb.clear();
 			}
 
 		}
-		sb.pushBack("]\n");
+		this.file.seek(-3, SeekPos.Current);
+		sb.pushBack("];\n");
 			
 		this.file.writeString(sb.getString());
 		sb.clear();
 			
-/*
-		foreach(size_t idx, Deque!(Deque!(FinalItem)) it; table) {
-			if(idx == 0) { // first row contains names
-				continue;
-			}
-
-			// run the row, but only print items present
-			inner: foreach(size_t jdx, Deque!(FinalItem) jt; it) {
-				if(jdx == 0) {
-					ret.pushBack(format("ItemSet %u: ", jt[0].number));
-				} else {
-					if(jt.getSize() > 0 && !allTypsAreError(jt)) {
-						ret.pushBack(format("{%s:", 
-							sm.getSymbolName(table[0][jdx][0].number)));
-					} else {
-						continue inner;
-					}
-					foreach(size_t kdx, FinalItem kt; jt) {
-						if(kt.typ == Type.Accept) {
-							ret.pushBack("$,");
-						} else if(kt.typ == Type.Shift) {
-							ret.pushBack(format("s%d,", kt.number));
-						} else if(kt.typ == Type.Reduce) {
-							ret.pushBack(format("r%d,", kt.number));
-						} else if(kt.typ == Type.Goto) {
-							ret.pushBack(format("g%d,", kt.number));
-						} else {
-							//assert(false, typeToString(kt.typ));
-							//ret.pushBack(format("e%d,", kt.number));
-						}
-					}
-					ret.popBack();
-					ret.pushBack("},");
-				}
-			}
-			ret.popBack();
-			ret.pushBack("\n");
-		}
-		ret.pushBack("\n");
-		return ret.getString();
-		*/
 	}
 }
