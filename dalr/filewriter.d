@@ -93,11 +93,11 @@ final class RuleWriter : Writer {
 		StringBuffer!(char) sb = new StringBuffer!(char)(1024);
 		if(this.glr) {
 			sb.pushBack(format(
-				"public static immutable(Pair!(int,StackItem[])[][%u]) " ~
+				"public static immutable(Pair!(int,StackItem[][][%u])) " ~
 				"table = [\n", table.getSize()-1));
 		} else {
 			sb.pushBack(format(
-				"public static immutable(Pair!(int,StackItem)[%u]) " ~
+				"public static immutable(Pair!(int,StackItem[][%u])) " ~
 				"table = [\n", table.getSize()-1));
 		}
 
@@ -117,10 +117,23 @@ final class RuleWriter : Writer {
 				tmp.pushBack(Pair!(int,Deque!(FinalItem))
 					(table[0][jdx][0].number, jt));
 			}
+
+			// sort it
 			sortDeque(tmp, function(in Pair!(int,Deque!(FinalItem)) a,
 				in Pair!(int,Deque!(FinalItem)) b) {
 					return a.first > b.first;
 				});
+
+			size_t 
+
+			if(this.glr) {
+				sb.pushBack(\n"[Pair!(int,StackItem)[]\n");
+			} else {
+				sb.pushBack(\n"[\n");
+			}
+
+			foreach(size_t jdx, Deque!(FinalItem jt), tmp) {
+			}
 
 		}
 		sb.pushBack("]\n");
