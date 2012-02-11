@@ -64,6 +64,8 @@ final class RuleWriter : Writer {
 		this.writeStackItemAndStackItemEnum();
 		log();
 		this.writeTable();
+		this.file.writeString("\n\n");
+		this.writeGotoTable();
 		log();
 		//this.writeTable();
 		this.file.write('\n');
@@ -76,6 +78,7 @@ final class RuleWriter : Writer {
 				"\tAccept,\n" ~
 				"\tError,\n" ~
 				"\tReduce,\n" ~
+				"\tGoto,\n" ~
 				"\tShift\n" ~
 			"}\n");
 
@@ -101,7 +104,7 @@ final class RuleWriter : Writer {
 			case Type.Error:
 				assert(false, "Type Error not allowed");
 			case Type.Goto:
-				assert(false, "Type Goto not allowed");
+				return "StackType.Goto";
 			case Type.ItemSet:
 				assert(false, "Type ItemSet not allowed");
 			case Type.NonTerm:
@@ -189,6 +192,80 @@ final class RuleWriter : Writer {
 			
 		this.file.writeString(sb.getString());
 		sb.clear();
+	}
+
+	private void writeGotoTable() {
+		Deque!(Deque!(Deque!(FinalItem))) table = this.pm.getFinalTable();
+		StringBuffer!(char) sb = new StringBuffer!(char)(1024);
+		if(this.glr) {
+			this.file.writeString(format(
+				"public static immutable(Pair!(int,StackItem[])[][%u]) " ~
+				"gotoTable = [\n", table.getSize()-1));
+		} else {
+			this.file.writeString(format(
+				"public static immutable(Pair!(int,StackItem)[][%u]) " ~
+				"gotoTable = [\n", table.getSize()-1));
+		}
+
+		foreach(size_t idx, Deque!(Deque!(FinalItem)) row; table) {
+			if(idx == 0) { // don't need the items
+				continue;
+			}
 			
+			// to sort it for the binary search
+			Deque!(Pair!(int,Deque!(FinalItem))) tmp = 
+				new Deque!(Pair!(int,Deque!(FinalItem)))(row.getSize()); 
+
+			foreach(size_t jdx, Deque!(FinalItem) jt; row) {
+				if(jdx == 0) { // don't need the itemset number
+					continue;
+				}
+				tmp.pushBack(Pair!(int,Deque!(FinalItem))
+					(table[0][jdx][0].number, jt));
+			}
+
+			// sort it
+			sortDeque(tmp, function(in Pair!(int,Deque!(FinalItem)) a,
+				in Pair!(int,Deque!(FinalItem)) b) {
+					return a.first > b.first;
+				});
+
+			if(this.glr) {
+				//sb.pushBack(\n"[Pair!(int,StackItem)[]\n");
+			} else {
+				sb.pushBack('[');
+				foreach(Pair!(int,Deque!(FinalItem)) it; tmp) {
+					if(it.second[0].typ != Type.Goto) {
+						continue;
+					}
+					string tmpS = format("Pair!(int,StackItem)" ~
+						"(%d,StackItem(%s, %u)), ", it.first, 
+						finalItemTypToStackTypeString(it.second[0].typ),
+						it.second[0].number);
+
+					if(sb.getSize() + tmpS.length > 80) {
+						this.file.writeString(sb.getString());
+						this.file.writeString("\n");
+						sb.clear();
+						sb.pushBack(tmpS);
+					} else {
+						sb.pushBack(tmpS);
+					}
+				}
+				if(sb.getSize() > 1) {
+					sb.popBack();
+					sb.popBack();
+				}
+				sb.pushBack("],\n\n");
+				this.file.writeString(sb.getString());
+				sb.clear();
+			}
+
+		}
+		this.file.seek(-3, SeekPos.Current);
+		sb.pushBack("];\n");
+			
+		this.file.writeString(sb.getString());
+		sb.clear();
 	}
 }
