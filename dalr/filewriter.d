@@ -1,5 +1,6 @@
 module dalr.filewriter;
 
+import hurt.algo.sorting;
 import hurt.io.stream;
 import hurt.io.stdio;
 import hurt.container.deque;
@@ -29,18 +30,14 @@ abstract class Writer {
 		this.pm = pm;
 
 		// create the output file
-		log();
 		this.file = new File(this.filename, FileMode.OutNew);
-		log();
 		this.writeHeader();
-		log();
+		this.writeIncludes();
 		this.file.write('\n');
-		log();
 	}
 
 	private void writeHeader() {
 		this.file.writeString(format("module %s;\n\n", this.modulename));
-		this.file.writeString("import hurt.util.pair;\n");
 	}
 
 	public void close() {
@@ -48,30 +45,27 @@ abstract class Writer {
 	}
 
 	public void write();
+	protected void writeIncludes();
 }
 
-final class RuleWriter : Writer {
-	private bool glr;
+class LalrWriter : Writer {
+	private string classname;
+
 	this(string filename, string modulename, 
-			SymbolManager sm, ProductionManager pm,
-			bool glr) {
+			SymbolManager sm, ProductionManager pm, string classname) {
 		super(filename, modulename, sm, pm);
-		this.glr = glr;
+		this.classname = classname;
 	}
 
-	public override void write() {
-		log();
-		this.writeStackItemAndStackItemEnum();
-		log();
-		this.writeTable();
-		this.file.writeString("\n\n");
-		this.writeGotoTable();
-		log();
-		//this.writeTable();
-		this.file.write('\n');
-	}
+	private void writeStackItem() {
+		// write the lexer interface
+		this.file.writeString("public interface LexInterface {\n" ~
+			"\tpublic int getNextToken();\n" ~
+			"\tpublic int getCurrentLine();\n" ~
+			"\tpublic int getColumnIndex();\n" ~
+			"\tpublic bool isEOF();\n" ~
+			"}\n\n");
 
-	private void writeStackItemAndStackItemEnum() {
 		// the StackType Enum
 		this.file.writeString(
 			"public enum StackType : byte {\n" ~
@@ -95,6 +89,49 @@ final class RuleWriter : Writer {
 				"\t\tthis.number = number;\n" ~
 				"\t}\n" ~
 			"}\n\n");
+	}
+
+	private void writeClassdefAndDecal() {
+		this.file.writeString(format("final class %s {\n", this.classname));
+		this.file.writeString("\tprivate Deque!(StackItem) stack;\n");
+	}
+
+	protected override void writeIncludes() {
+		string[] imports = ["hurt.util.pair", "hurt.util.slog", 
+				"hurt.container.deque"];
+		sort!(string)(imports, function(in string a, in string b) {
+			return a < b; });
+
+		foreach(string im; imports) {
+			this.file.writeString(format("import %s;\n", im));
+		}
+	}
+
+	public override void write() {
+		this.writeStackItem();
+		this.writeClassdefAndDecal();
+	}
+}
+
+final class RuleWriter : Writer {
+	private bool glr;
+	this(string filename, string modulename, 
+			SymbolManager sm, ProductionManager pm,
+			bool glr) {
+		super(filename, modulename, sm, pm);
+		this.glr = glr;
+	}
+
+	public override void write() {
+		this.writeTable();
+		this.file.writeString("\n\n");
+		this.writeGotoTable();
+		//this.writeTable();
+		this.file.write('\n');
+	}
+
+	protected override void writeIncludes() {
+		this.file.writeString("import hurt.util.pair;\n");
 	}
 
 	private string finalItemTypToStackTypeString(Type typ) {
@@ -151,7 +188,7 @@ final class RuleWriter : Writer {
 			// sort it
 			sortDeque(tmp, function(in Pair!(int,Deque!(FinalItem)) a,
 				in Pair!(int,Deque!(FinalItem)) b) {
-					return a.first > b.first;
+					return a.first < b.first;
 				});
 
 			if(this.glr) {
@@ -227,7 +264,7 @@ final class RuleWriter : Writer {
 			// sort it
 			sortDeque(tmp, function(in Pair!(int,Deque!(FinalItem)) a,
 				in Pair!(int,Deque!(FinalItem)) b) {
-					return a.first > b.first;
+					return a.first < b.first;
 				});
 
 			if(this.glr) {

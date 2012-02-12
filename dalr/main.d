@@ -33,20 +33,39 @@ deprecated void insertMetaSymbolsIntoSymbolManager(SymbolManager sm,
 	}
 }
 
-void main(string[] args) {
+int main(string[] args) {
 	Args arg = Args(args);
 	arg.setHelpText("This is a glr/lalr1 parser generator.\n" ~
 		"It is written in D and generates Parser in D.\n");
 
 	// input file
-	string inputFile = "examplegrammer.dlr";
+	string inputFile = "";
 	arg.setOption("-i", "--input", "specify the grammer file." ~
 		" the defaultfile is examplegrammer.dlr", inputFile);
 
 	// output file
-	string outputFile = "examplegrammer.d";
-	arg.setOption("-o", "--output", "specify the outputfile for the parser." ~
-		" the default is examplegramer.d", outputFile);
+	string outputFile = "";
+	arg.setOption("-r", "--ruleoutput", 
+		"specify the outputfile for parse-table." , outputFile);
+
+	string outputModulename = "";
+	arg.setOption("-rm", "--rulemodule", 
+		"specify the modulename of the outputfile for the parse-table."
+		, outputModulename);
+
+	// driver file
+	string driverFile = "";
+	arg.setOption("-d", "--driveroutput", 
+		"specify the outputfile for driver. this is the actual parser algorithm"
+		, driverFile);
+
+	string driverModulename = "";
+	arg.setOption("-dm", "--drivermodule", "specify the modulename of driver." 
+		, driverModulename);
+
+	string driverClassname = "";
+	arg.setOption("-dc", "--drivername", "specify the class name of driver." 
+		, driverClassname);
 
 	// graph filename
 	string graphfile = "";
@@ -62,6 +81,10 @@ void main(string[] args) {
 		"if passed the precedence of the terminals is printed ", 
 		printPrecedence, true);
 
+	if(inputFile is null || inputFile.length == 0) {
+		printfln("No inputfile defined. An inputfile is required.");
+		return -1;
+	}
 
 	// create all facilities
 	FileReader fr = new FileReader(inputFile);
@@ -103,7 +126,9 @@ void main(string[] args) {
 
 	// operator precedence prolog
 	//insertMetaSymbolsIntoSymbolManager(sm, fr.getProductionIterator());
-	sm.checkIfPrecedenceIsCorrect(left, right, non);
+	debug {
+		sm.checkIfPrecedenceIsCorrect(left, right, non);
+	}
 
 	println(sm.precedenceToString());
 
@@ -115,12 +140,22 @@ void main(string[] args) {
 
 	pm.makeAll(graphfile);
 
-	RuleWriter fw = new RuleWriter("filetest.d", "interestingmodulename",
-		sm, pm, false);
-	fw.write();
-	fw.close();
+	if(outputFile !is null && outputFile.length > 0) {
+		RuleWriter fw = new RuleWriter(outputFile, outputModulename,
+			sm, pm, false);
+		fw.write();
+		fw.close();
+	}
 
-	File finalTable = new File(outputFile, FileMode.OutNew);
+	if(driverFile !is null && driverFile.length > 0) {
+		LalrWriter lw = new LalrWriter(driverFile, driverModulename,
+			sm, pm, driverClassname !is null && driverClassname.length > 0 ?
+			driverClassname : "Lalr");
+		lw.write();
+		lw.close();
+	}
+
+	/*File finalTable = new File(outputFile, FileMode.OutNew);
 	finalTable.writeString(finalTransitionTableToStringShort(pm, sm));
 	//println(finalTransitionTableToStringShort(pm, sm));
 	finalTable.writeString(finalTransitionTableToString(pm, sm));
@@ -129,5 +164,6 @@ void main(string[] args) {
 	finalTable.write('\n');
 	finalTable.writeString(normalProductionToString(pm,sm));
 	finalTable.writeString(sm.precedenceToString());
-	finalTable.close();
+	finalTable.close();*/
+	return 0;
 }
