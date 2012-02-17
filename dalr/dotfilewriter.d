@@ -169,8 +169,8 @@ private MapSet!(ItemSet,ItemSet) minItemSets(Deque!(ItemSet) de,
 			}
 			// are all items of jt contained in it
 			if(isContainedComplete(jt, it)) {
-				log("%d is contained in %d sizes are %u %u", jt.getId(), it.getId(), 
-					jt.getItemCount(), it.getItemCount());
+				log("%d is contained in %d sizes are %u %u", jt.getId(), 
+					it.getId(), jt.getItemCount(), it.getItemCount());
 
 
 				size_t oldSize = it.getItemCount();
@@ -183,7 +183,8 @@ private MapSet!(ItemSet,ItemSet) minItemSets(Deque!(ItemSet) de,
  						followSymbol = pm.getSymbolFromProduction(toRemove);
 					}
 
-					//log("%d toRemoveIdx %d followSymbol", toRemoveIdx, followSymbol);
+					//log("%d toRemoveIdx %d followSymbol", toRemoveIdx, 
+					//followSymbol);
 					// remove the item TODO ignore the assert failure for now
 					if(!it.removeItem(toRemove, followSymbol) && 
 							!removed.contains(toRemove)) {

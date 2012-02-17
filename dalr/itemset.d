@@ -39,6 +39,15 @@ class ItemSet {
 		this.items.pushBack(item);
 	}
 
+	public bool contains(size_t prod, long dotPos) {
+		foreach(Item it; this.items) {
+			if(it.getProd() == prod && it.getDotPosition() == dotPos) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public ItemSet copy() {
 		ItemSet ret = new ItemSet(this.id);	
 		foreach(Item it; this.items) {
@@ -129,7 +138,8 @@ class ItemSet {
 		this.items.remove(idx);
 
 		debug {
-			// test that the remove worked, still not 100% sure if deque is all right
+			// test that the remove worked, still not 100% sure if deque is 
+			// all right
 			idx = this.items.find(item);
 
 			if(idx != this.items.getSize()) {

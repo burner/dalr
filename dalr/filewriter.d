@@ -31,8 +31,6 @@ abstract class Writer {
 
 		// create the output file
 		this.file = new File(this.filename, FileMode.OutNew);
-		this.writeHeader();
-		this.writeIncludes();
 		this.file.write('\n');
 	}
 
@@ -57,7 +55,7 @@ class LalrWriter : Writer {
 		this.classname = classname;
 	}
 
-	private void writeStackItem() {
+	private void writeLexerInterface() {
 		// write the lexer interface
 		this.file.writeString("public interface LexInterface {\n" ~
 			"\tpublic int getNextToken();\n" ~
@@ -65,50 +63,19 @@ class LalrWriter : Writer {
 			"\tpublic int getColumnIndex();\n" ~
 			"\tpublic bool isEOF();\n" ~
 			"}\n\n");
-
-		// the StackType Enum
-		this.file.writeString(
-			"public enum StackType : byte {\n" ~
-				"\tAccept,\n" ~
-				"\tError,\n" ~
-				"\tReduce,\n" ~
-				"\tGoto,\n" ~
-				"\tShift\n" ~
-			"}\n");
-
-		this.file.write('\n');
-
-		// this is the kind of item that is placed on the stack
-		this.file.writeString(
-			"public struct StackItem {\n" ~
-				"\tpublic StackType typ;\n" ~
-				"\tpublic short number;\n" ~
-				"\tprivate byte padding; // align to 32 bit\n" ~
-				"\n\tthis(StackType st, short number) {\n" ~
-				"\t\tthis.typ = st;\n" ~
-				"\t\tthis.number = number;\n" ~
-				"\t}\n" ~
-			"}\n\n");
 	}
 
 	private void writeClassdefAndDecal() {
 		this.file.writeString(format("final class %s {\n", this.classname));
-		this.file.writeString("\tprivate Deque!(StackItem) stack;\n");
 	}
 
 	protected override void writeIncludes() {
-		string[] imports = ["hurt.util.pair", "hurt.util.slog", 
-				"hurt.container.deque"];
-		sort!(string)(imports, function(in string a, in string b) {
-			return a < b; });
-
-		foreach(string im; imports) {
-			this.file.writeString(format("import %s;\n", im));
-		}
+		this.file.writeString("import hurt.util.pair;\n");
 	}
 
 	public override void write() {
-		this.writeStackItem();
+		this.writeHeader();
+		this.writeLexerInterface();
 		this.writeClassdefAndDecal();
 	}
 }

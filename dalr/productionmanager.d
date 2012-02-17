@@ -169,12 +169,19 @@ class ProductionManager {
 
 	public void finalizeItemSet() {
 		Iterator!(ItemSet) it = this.itemSets.begin();
-		for(size_t idx = 0; it.isValid(); it++, idx++) {
-			if((*it).getId() == -1) {
-				(*it).setId(conv!(size_t,long)(idx));
+		size_t idx = 1;
+		for(; it.isValid(); it++) {
+			if((*it).contains(0,1)) {
+				(*it).setId(0);
+			} else if((*it).getId() == -1) {
+				(*it).setId(conv!(size_t,long)(idx++));
 			}
 			assert((*it).getId() != -1);
 		}
+		sortDeque!(ItemSet)(this.itemSets, 
+			function(in ItemSet a, in ItemSet b) {
+				return a.getId() < b.getId(); });
+			
 	}
 
 	public Deque!(ItemSet) getItemSets() {

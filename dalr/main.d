@@ -19,20 +19,6 @@ import hurt.io.stream;
 import hurt.util.slog;
 import hurt.util.getopt;
 
-deprecated void insertMetaSymbolsIntoSymbolManager(SymbolManager sm, 
-		Iterator!(Production) it) {
-	for(; it.isValid(); it++) {
-		if((*it).getPrecedence() is null ||
-				(*it).getPrecedence() == "") {
-			continue;
-		}
-		if(!sm.containsSymbol((*it).getPrecedence())) {
-			log("%s", (*it).getPrecedence());
-			sm.insertSymbol((*it).getPrecedence(), false);
-		}
-	}
-}
-
 int main(string[] args) {
 	Args arg = Args(args);
 	arg.setHelpText("This is a glr/lalr1 parser generator.\n" ~
@@ -132,13 +118,14 @@ int main(string[] args) {
 
 	println(sm.precedenceToString());
 
-	println(normalProductionToString(pm, sm));
-
 	// pass the ruleIndex Production mapping to the ProductionManager
 	// for conflict resolution
 	pm.setProdMapping(actions);
 
 	pm.makeAll(graphfile);
+
+	//println(extendedGrammerToString(pm, sm));
+	println(itemsetsToString(pm, sm));
 
 	if(outputFile !is null && outputFile.length > 0) {
 		RuleWriter fw = new RuleWriter(outputFile, outputModulename,
@@ -155,15 +142,5 @@ int main(string[] args) {
 		lw.close();
 	}
 
-	/*File finalTable = new File(outputFile, FileMode.OutNew);
-	finalTable.writeString(finalTransitionTableToStringShort(pm, sm));
-	//println(finalTransitionTableToStringShort(pm, sm));
-	finalTable.writeString(finalTransitionTableToString(pm, sm));
-	//println(finalTransitionTableToString(pm, sm));
-	finalTable.writeString(sm.toString());
-	finalTable.write('\n');
-	finalTable.writeString(normalProductionToString(pm,sm));
-	finalTable.writeString(sm.precedenceToString());
-	finalTable.close();*/
 	return 0;
 }
