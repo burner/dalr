@@ -1,0 +1,22 @@
+S := AddExpression;
+
+AddExpression :=
+	MulExpression;
+	| AddExpression plus MulExpression;
+	| AddExpression minus MulExpression;
+
+MulExpression :=
+	UnaryExpression;
+	| MulExpression div UnaryExpression;
+	| MulExpression modulo UnaryExpression;
+
+UnaryExpression :=
+	PostfixExpression;
+	| increment UnaryExpression;
+	| decrement UnaryExpression;
+	| minus UnaryExpression;
+	| plus UnaryExpression;
+
+PostfixExpression :=
+	integer;
+	| float;

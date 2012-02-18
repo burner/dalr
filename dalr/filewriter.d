@@ -4,6 +4,8 @@ import hurt.algo.sorting;
 import hurt.io.stream;
 import hurt.io.stdio;
 import hurt.container.deque;
+import hurt.container.map;
+import hurt.conv.conv;
 import hurt.string.stringbuffer;
 import hurt.string.formatter;
 import hurt.util.slog;
@@ -31,7 +33,6 @@ abstract class Writer {
 
 		// create the output file
 		this.file = new File(this.filename, FileMode.OutNew);
-		this.file.write('\n');
 	}
 
 	private void writeHeader() {
@@ -90,33 +91,74 @@ final class RuleWriter : Writer {
 	}
 
 	public override void write() {
+		this.writeHeader();	
+		this.writeIncludes();	
+		this.file.writeString(tableType);
+		this.file.write('\n');
+		this.writeTermIds();
+		this.file.write('\n');
 		this.writeTable();
 		this.file.writeString("\n\n");
 		this.writeGotoTable();
-		//this.writeTable();
 		this.file.write('\n');
 	}
 
-	protected override void writeIncludes() {
-		this.file.writeString("import hurt.util.pair;\n");
+	private static string keyWorker(string str) {
+		return str == "$" ? "dollar" : str;
 	}
 
-	private string finalItemTypToStackTypeString(Type typ) {
+	private void writeTermIds() {
+		Map!(string,Symbol) stringSymbols = this.sm.getStringSymbols();
+		Map!(string,Symbol) stringTerm = new Map!(string,Symbol)();
+
+		foreach(string key, Symbol value; stringSymbols) {
+			if(!value.whatKind()) {
+				stringTerm.insert(keyWorker(key), value);
+			}
+		}
+
+		assert(stringTerm.getSize() > 0);
+
+		foreach(string key, Symbol value; stringTerm) {
+			this.file.writeString("public static immutable int term");
+			this.file.writeString(key);
+			this.file.writeString(" = ");
+			this.file.writeString(conv!(int,string)(value.getId()));
+			this.file.writeString(";\n");
+		}
+	}
+
+	protected override void writeIncludes() {
+		string[] imports = ["hurt.util.pair",
+			"hurt.string.stringbuffer", "hurt.conv.conv"];
+		sort!(string)(imports, function(in string a, in string b) {
+			return a < b;});
+
+		foreach(string it; imports) {
+			this.file.writeString("import ");
+			this.file.writeString(it);
+			this.file.write(';');
+			this.file.write('\n');
+		}
+		this.file.write('\n');
+	}
+
+	private string finalItemTypToTableTypeString(Type typ) {
 		final switch(typ) {
 			case Type.Accept:
-				return "StackType.Accept";
+				return "TableType.Accept";
 			case Type.Error:
 				assert(false, "Type Error not allowed");
 			case Type.Goto:
-				return "StackType.Goto";
+				return "TableType.Goto";
 			case Type.ItemSet:
 				assert(false, "Type ItemSet not allowed");
 			case Type.NonTerm:
 				assert(false, "Type NonTerm not allowed");
 			case Type.Reduce:
-				return "StackType.Reduce";
+				return "TableType.Reduce";
 			case Type.Shift:
-				return "StackType.Shift";
+				return "TableType.Shift";
 			case Type.Term:
 				assert(false, "Type Term not allowed");
 		}
@@ -127,11 +169,11 @@ final class RuleWriter : Writer {
 		StringBuffer!(char) sb = new StringBuffer!(char)(1024);
 		if(this.glr) {
 			this.file.writeString(format(
-				"public static immutable(Pair!(int,StackItem[])[][%u]) " ~
+				"public static immutable(Pair!(int,TableItem[])[][%u]) " ~
 				"table = [\n", table.getSize()-1));
 		} else {
 			this.file.writeString(format(
-				"public static immutable(Pair!(int,StackItem)[][%u]) " ~
+				"public static immutable(Pair!(int,TableItem)[][%u]) " ~
 				"table = [\n", table.getSize()-1));
 		}
 
@@ -159,7 +201,7 @@ final class RuleWriter : Writer {
 				});
 
 			if(this.glr) {
-				//sb.pushBack(\n"[Pair!(int,StackItem)[]\n");
+				//sb.pushBack(\n"[Pair!(int,TableItem)[]\n");
 			} else {
 				sb.pushBack('[');
 				foreach(Pair!(int,Deque!(FinalItem)) it; tmp) {
@@ -167,9 +209,9 @@ final class RuleWriter : Writer {
 							it.second[0].typ == Type.Goto) {
 						continue;
 					}
-					string tmpS = format("Pair!(int,StackItem)" ~
-						"(%d,StackItem(%s, %u)), ", it.first, 
-						finalItemTypToStackTypeString(it.second[0].typ),
+					string tmpS = format("Pair!(int,TableItem)" ~
+						"(%d,TableItem(%s, %u)), ", it.first, 
+						finalItemTypToTableTypeString(it.second[0].typ),
 						it.second[0].number);
 
 					if(sb.getSize() + tmpS.length > 80) {
@@ -203,11 +245,11 @@ final class RuleWriter : Writer {
 		StringBuffer!(char) sb = new StringBuffer!(char)(1024);
 		if(this.glr) {
 			this.file.writeString(format(
-				"public static immutable(Pair!(int,StackItem[])[][%u]) " ~
+				"public static immutable(Pair!(int,TableItem[])[][%u]) " ~
 				"gotoTable = [\n", table.getSize()-1));
 		} else {
 			this.file.writeString(format(
-				"public static immutable(Pair!(int,StackItem)[][%u]) " ~
+				"public static immutable(Pair!(int,TableItem)[][%u]) " ~
 				"gotoTable = [\n", table.getSize()-1));
 		}
 
@@ -235,16 +277,16 @@ final class RuleWriter : Writer {
 				});
 
 			if(this.glr) {
-				//sb.pushBack(\n"[Pair!(int,StackItem)[]\n");
+				//sb.pushBack(\n"[Pair!(int,TableItem)[]\n");
 			} else {
 				sb.pushBack('[');
 				foreach(Pair!(int,Deque!(FinalItem)) it; tmp) {
 					if(it.second[0].typ != Type.Goto) {
 						continue;
 					}
-					string tmpS = format("Pair!(int,StackItem)" ~
-						"(%d,StackItem(%s, %u)), ", it.first, 
-						finalItemTypToStackTypeString(it.second[0].typ),
+					string tmpS = format("Pair!(int,TableItem)" ~
+						"(%d,TableItem(%s, %u)), ", it.first, 
+						finalItemTypToTableTypeString(it.second[0].typ),
 						it.second[0].number);
 
 					if(sb.getSize() + tmpS.length > 80) {
@@ -273,3 +315,50 @@ final class RuleWriter : Writer {
 		sb.clear();
 	}
 }
+
+private static immutable(string) tableType =
+`public enum TableType : byte {
+	Accept,
+	Error,
+	Reduce,
+	Goto,
+	Shift
+}
+
+public struct TableItem {
+	public TableType typ;
+	public short number;
+	private byte padding; // align to 32 bit
+
+	this(TableType st, short number) {
+		this.typ = st;
+		this.number = number;
+	}
+
+	public string toString() const {
+		scope StringBuffer!(char) ret = new StringBuffer!(char)(16);
+		
+		final switch(this.typ) {
+			case TableType.Accept:
+				ret.pushBack("Accept:");
+				break;
+			case TableType.Error:
+				ret.pushBack("Error:");
+				break;
+			case TableType.Reduce:
+				ret.pushBack("Reduce:");
+				break;
+			case TableType.Goto:
+				ret.pushBack("Goto:");
+				break;
+			case TableType.Shift:
+				ret.pushBack("Shift:");
+				break;
+		}
+
+		ret.pushBack(conv!(short,string)(this.number));
+
+		return ret.getString();
+	}
+}
+`;

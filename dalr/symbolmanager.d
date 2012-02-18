@@ -13,7 +13,7 @@ import hurt.util.slog;
 
 public class Symbol {
 	private string symbolName; // the name of the symbol
-	// symbols are handled as int, so there here is the mapping
+	// symbols are handled as int, so there is the mapping
 	private int id; 
 	// terminal(false) or non-terminal(true)
 	private bool kind; 
@@ -271,6 +271,10 @@ public class SymbolManager {
 		} else {
 			return f.getData();
 		}
+	}
+
+	public Map!(string,Symbol) getStringSymbols() {
+		return this.stringSymbols;
 	}
 
 	public size_t getSize() const {
