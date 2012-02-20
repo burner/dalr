@@ -170,11 +170,11 @@ final class RuleWriter : Writer {
 		if(this.glr) {
 			this.file.writeString(format(
 				"public static immutable(Pair!(int,TableItem[])[][%u]) " ~
-				"table = [\n", table.getSize()-1));
+				"parseTable = [\n", table.getSize()-1));
 		} else {
 			this.file.writeString(format(
 				"public static immutable(Pair!(int,TableItem)[][%u]) " ~
-				"table = [\n", table.getSize()-1));
+				"parseTable = [\n", table.getSize()-1));
 		}
 
 		foreach(size_t idx, Deque!(Deque!(FinalItem)) row; table) {
