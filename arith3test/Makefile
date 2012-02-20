@@ -9,7 +9,7 @@ all: $(GEN) $(OBJS) Makefile
 parsetable.d: arith3.dlr Makefile
 	../Dalr -i arith3.dlr -r parsetable.d -rm parsetable
 
-lextable.d: arith.dex Makefile
+lextable.d: arith3.dlr arith.dex Makefile
 	../../dex/fsm -i arith.dex -n lextable.d -nm lextable
 
 lextable.o: lextable.d Makefile

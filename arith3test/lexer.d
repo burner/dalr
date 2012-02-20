@@ -168,10 +168,10 @@ class Lexer {
 	public void run() {
 		stateType currentState = 0;
 		stateType nextState = -1;
-		this.saveLocation();
+		this.loc = Location(this.filename, this.getCurrentLineCount(),
+			1);
 		while(!this.isEmpty()) {
 			dchar nextChar = this.getNextChar();
-			log("%c", nextChar);
 			nextState = this.getNextState(nextChar, currentState);
 			if(nextState != -1) { // simplie a next state
 				currentState = nextState;

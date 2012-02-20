@@ -112,11 +112,11 @@ public static immutable(string) acceptAction =
 		}
 		break;
 	case 8: {
- this.deque.pushBack(Token(this.getLoc(), terminteger, this.getCurrentLex())); 
+ this.deque.pushBack(Token(this.getLoc(), terminteger, this.lexText.getString())); 
 		}
 		break;
 	case 9: {
- this.deque.pushBack(Token(this.getLoc(), terminteger, this.getCurrentLex())); 
+ this.deque.pushBack(Token(this.getLoc(), termfloat, this.lexText.getString())); 
 		}
 		break;
 	case 10: {

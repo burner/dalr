@@ -109,28 +109,36 @@ final class RuleWriter : Writer {
 
 	private void writeTermIds() {
 		Map!(string,Symbol) stringSymbols = this.sm.getStringSymbols();
-		Map!(string,Symbol) stringTerm = new Map!(string,Symbol)();
 
 		foreach(string key, Symbol value; stringSymbols) {
-			if(!value.whatKind()) {
-				stringTerm.insert(keyWorker(key), value);
-			}
-		}
-
-		assert(stringTerm.getSize() > 0);
-
-		foreach(string key, Symbol value; stringTerm) {
 			this.file.writeString("public static immutable int term");
-			this.file.writeString(key);
+			this.file.writeString(keyWorker(key));
 			this.file.writeString(" = ");
 			this.file.writeString(conv!(int,string)(value.getId()));
 			this.file.writeString(";\n");
 		}
+		this.file.writeString(";\n");
+		this.writeTermIdToStringFunction(stringSymbols);
+	}
+
+	private void writeTermIdToStringFunction(Map!(string,Symbol) sym) {
+		this.file.writeString("string idToString(int sym) {\n");
+		this.file.writeString("\tswitch(sym) {\n");
+		foreach(string key, Symbol value; sym) {
+			this.file.writeString(format("\t\tcase %d:\n", value.getId()));
+			this.file.writeString(format("\t\t\treturn \"%s\";\n", 
+				keyWorker(key)));
+		}
+		this.file.writeString("\t\tdefault:\n");
+		this.file.writeString("\t\t\tassert(false, " ~
+			"format(\"no symbol for %d present\", sym));\n");
+		this.file.writeString("\t}\n}\n");
 	}
 
 	protected override void writeIncludes() {
 		string[] imports = ["hurt.util.pair",
-			"hurt.string.stringbuffer", "hurt.conv.conv"];
+			"hurt.string.stringbuffer", "hurt.string.formatter",
+			"hurt.conv.conv"];
 		sort!(string)(imports, function(in string a, in string b) {
 			return a < b;});
 

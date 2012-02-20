@@ -5,6 +5,6 @@
 "*" {: this.deque.pushBack(Token(this.getLoc(), termstar)); :}
 "%" {: this.deque.pushBack(Token(this.getLoc(), termmodulo)); :}
 "\+" {: this.deque.pushBack(Token(this.getLoc(), termplus)); :}
-"[:digit:]+" {: this.deque.pushBack(Token(this.getLoc(), terminteger, this.getCurrentLex())); :}
-"[:digit:]+.[:digit:]+" {: this.deque.pushBack(Token(this.getLoc(), terminteger, this.getCurrentLex())); :}
+"[:digit:]+" {: this.deque.pushBack(Token(this.getLoc(), terminteger, this.lexText.getString())); :}
+"[:digit:]+.[:digit:]+" {: this.deque.pushBack(Token(this.getLoc(), termfloat, this.lexText.getString())); :}
 "[ \\t\\n]*" {: :}

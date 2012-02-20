@@ -2,7 +2,11 @@ module token;
 
 import hurt.string.stringbuffer;
 import hurt.string.formatter;
+import hurt.util.slog;
+import hurt.conv.conv;
+
 import lextable;
+import parsetable;
 
 struct Token {
 	Location loc;
@@ -17,8 +21,15 @@ struct Token {
 
 	string toString() const {
 		scope StringBuffer!(char) ret = new StringBuffer!(char)(128);	
-		ret.pushBack(format("%s:%d.%d ", loc.getFile(), loc.getRow(), loc.getColumn()));
-		ret.pushBack(format("%d %s", type, value));
+
+		// the location
+		ret.pushBack(format("%s:%d.%d ", loc.getFile(), loc.getRow(), 
+			loc.getColumn()));
+		
+		// the payload
+		ret.pushBack(format("%s %s", idToString(type), 
+			conv!(dstring,string)(value)));
+
 		return ret.getString();
 	}
 }
