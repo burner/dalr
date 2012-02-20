@@ -28,5 +28,7 @@ parsetable.o: parsetable.d Makefile
 	dmd -c $(DFLAGS) parsetable.d
 
 clean:
+	rm lextable.d
+	rm parsetable.d
 	rm *.o
 	rm arith3
