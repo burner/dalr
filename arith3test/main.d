@@ -1,9 +1,9 @@
 import hurt.io.stdio;
 import hurt.util.slog;
 
-//import lexer;
+import lexer;
 
 void main() {
-	//Lexer l = new Lexer("examplearith.dpp");
-	//l.run();
+	Lexer l = new Lexer("examplearith.dpp");
+	l.run();
 }
