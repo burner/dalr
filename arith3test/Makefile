@@ -1,9 +1,15 @@
-OBJS=main.o token.o lexer.o lextable.o parsetable.o
+OBJS=parsetable.d lextable.d main.o token.o lexer.o parsetable.o lextable.o
 
 DFLAGS=-c -unittest -I../../libhurt -m64 -gc -debug
 
 all: $(OBJS) Makefile
-	dmd $(OBJS) -ofarith3 ../../libhurt/libhurt.a -m64 -unittest -gc -debug
+	dmd $(OBJS) -ofarith3 ../../libhurt/libhurt.a $(DFLAGS)
+
+parsetable.d: arith3.dlr Makefile
+	../Dalr -i arith3.dlr -r parsetable.d -rm parsetable
+
+lextable.d: arith.dex Makefile
+	../../dex/fsm -i arith.dex -n lextable.d -nm lextable
 
 lextable.o: lextable.d Makefile
 	dmd $(DFLAGS) lextable.d

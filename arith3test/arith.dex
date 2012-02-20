@@ -1,0 +1,10 @@
+"\+\+" {: this.deque.pushBack(Token(this.getLoc(), termdecrement)); :}
+"--" {: this.deque.pushBack(Token(this.getLoc(), termincrement)); :}
+"/" {: this.deque.pushBack(Token(this.getLoc(), termdiv)); :}
+"-" {: this.deque.pushBack(Token(this.getLoc(), termminus)); :}
+"*" {: this.deque.pushBack(Token(this.getLoc(), termstar)); :}
+"%" {: this.deque.pushBack(Token(this.getLoc(), termmodulo)); :}
+"\+" {: this.deque.pushBack(Token(this.getLoc(), termplus)); :}
+"[:digit:]+" {: this.deque.pushBack(Token(this.getLoc(), terminteger, this.getCurrentLex())); :}
+"[:digit:]+.[:digit:]+" {: this.deque.pushBack(Token(this.getLoc(), terminteger, this.getCurrentLex())); :}
+"[ \\t\\n]*" {: :}
