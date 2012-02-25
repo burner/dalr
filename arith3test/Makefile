@@ -3,10 +3,12 @@ GEN=parsetable.d lextable.d
 
 DFLAGS=-unittest -I../../libhurt -m64 -gc -debug
 
-run: all
+all: build
+
+run: build
 	./dmcd
 
-all: $(GEN) $(OBJS) Makefile
+build: $(GEN) $(OBJS) Makefile
 	sh IncreBuildId.sh
 	dmd $(OBJS) buildinfo.d -ofdmcd -L../../libhurt/libhurt.a $(DFLAGS)
 

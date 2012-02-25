@@ -14,7 +14,7 @@ void main() {
 		println(it.toString());
 	}*/
 
-	Parser p = new Parser(new Lexer("examplearith.dpp", false, 1));
+	Parser p = new Parser(new Lexer("examplearith.dpp", true, 100));
 
 	p.run();
 }
