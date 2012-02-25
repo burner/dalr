@@ -1,5 +1,8 @@
 module lexer;
 
+import core.sync.semaphore;
+import core.thread;
+
 import hurt.algo.binaryrangesearch;
 import hurt.container.map;
 import hurt.container.stack;
@@ -18,7 +21,7 @@ import lextable;
 import parsetable;
 import token;
 
-class Lexer {
+class Lexer : Thread {
 	private string filename;
 	private hurt.io.stream.BufferedFile file;
 
@@ -30,18 +33,28 @@ class Lexer {
 	private immutable dchar eol = '\n';
 	private immutable dchar eof = '\0';
 
-	public Deque!(Token) deque;
+	// to exchange stuff
+	__gshared private Deque!(Token) deque;
+	__gshared Semaphore mutex;
+	__gshared Semaphore empty;
+	__gshared uint count;
 
 	private Location loc;
 
 	// false means single run, true means step be step
 	private bool kind;
 
-	this(string filename, bool kind = false) {
+	this(string filename, bool kind = false, uint count = 10) {
+		super(&run);
 		this.filename = filename;
 		this.lineNumber = 0;
 		this.inputChar = new Stack!(dchar)();
+
+		// the exchange stuff
 		this.deque = new Deque!(Token)(128);
+		this.mutex = new Semaphore(1);
+		this.empty = new Semaphore(0);
+		this.count = count;
 
 		if(!exists(this.filename)) {
 			throw new Exception(__FILE__ ~ ":" ~ conv!(int,string)(__LINE__) ~
@@ -53,7 +66,10 @@ class Lexer {
 		this.lexText = new StringBuffer!(dchar)(128);
 		this.getNextLine();
 
-		this.kind = false;
+		this.kind = kind;
+		if(this.kind) {
+			this.start();
+		}
 	}
 
 	~this() {
@@ -142,13 +158,15 @@ class Lexer {
 		}
 	}
 
-	public void acceptingAction(stateType acceptingState) {
+	public Token acceptingAction(stateType acceptingState) {
 		switch(acceptingState) {
 				mixin(acceptAction);
 			default:
 				assert(false, format("no action for %d defined",
 					acceptingState));
 		}
+		assert(false, format("%d %s", acceptingState, 
+			this.lexText.getString()));
 	}
 
 	public Location getLoc() {
@@ -165,6 +183,57 @@ class Lexer {
 		return false;
 	}
 
+	public void getToken(Deque!(Token) toSaveIn) {
+		if(this.kind) {
+			this.mutex.wait();
+			if(this.deque.isEmpty()) {
+				this.mutex.notify();
+				this.empty.wait();
+				this.mutex.wait();
+			} 
+			while(!this.deque.isEmpty()) {
+				toSaveIn.pushBack(this.deque.popFront());	
+			}
+			this.mutex.notify();
+		} else {
+			this.run();
+			while(!this.deque.isEmpty()) {
+				toSaveIn.pushBack(this.deque.popFront());	
+			}
+			return;
+		}
+	}
+
+	private bool pushBack(Token token, bool last = false) {
+		// only if multithreaded
+		if(this.kind) {
+			this.mutex.wait();
+
+			// save the token
+			//log("%d %s", token.getTyp(), token.getValue());
+			this.deque.pushBack(token);
+
+			// over the count or last token
+			if(this.deque.getSize() > this.count || last) {
+				this.mutex.notify();
+				this.empty.notify();
+				return false;
+			}
+
+			// unlock the buffer deque
+			this.mutex.notify();
+			return false;
+		} else { // not multithreaded
+			//log("%d %s", token.getTyp(), token.getValue());
+			this.deque.pushBack(token); // save the token
+			if(this.deque.getSize() > this.count || last) {
+				return true; // max count or last
+			} else {
+				return false; // not yet done
+			}
+		}
+	}
+
 	public void run() {
 		stateType currentState = 0;
 		stateType nextState = -1;
@@ -179,10 +248,11 @@ class Lexer {
 			// accepting state
 			} else if(nextState == -1) { 
 				stateType accept = isAcceptingState(currentState);
+				Token save;
 				if(accept != -1) {
 					//log("%2d accept number %d", currentState, accept);
 					inputChar.push(nextChar);
-					this.acceptingAction(accept);
+					save = this.acceptingAction(accept);
 					this.lexText.clear();
 					currentState = 0;
 					this.saveLocation();
@@ -198,25 +268,28 @@ class Lexer {
 							nextState, nextChar));
 					}
 				}
-				if(this.kind) { // single step
+				if(this.pushBack(save, false)) { // single step
 					return;
 				}
 			}
 		}
+		//log();
 
 		// we are done but there their might be a state left
 		if(currentState == 0) {
 			//ok I guess
-			return;
+			this.pushBack(Token(this.getLoc(), termdollar), true);
 		} else if(isAcceptingState(currentState)) {
-			this.acceptingAction(currentState);
+			Token save = this.acceptingAction(currentState);
 			this.lexText.clear();
-			return;
+			this.pushBack(save);
+			this.pushBack(Token(this.getLoc(), termdollar), true);
 		} else {
 			//hm not so cool
 			assert(false, format("no more input when in state %d", 
 				currentState));
 		}
 		this.file.close();
+		return;
 	}
 }

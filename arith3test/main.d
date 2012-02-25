@@ -4,12 +4,17 @@ import hurt.container.deque;
 
 import lexer;
 import token;
+import parser;
 
 void main() {
-	Lexer l = new Lexer("examplearith.dpp");
+	/*Lexer l = new Lexer("examplearith.dpp");
 	l.run();
 	Deque!(Token) token = l.deque;
 	foreach(Token it; token) {
 		println(it.toString());
-	}
+	}*/
+
+	Parser p = new Parser(new Lexer("examplearith.dpp", false, 1));
+
+	p.run();
 }
