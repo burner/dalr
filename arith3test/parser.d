@@ -31,7 +31,9 @@ class Parser {
 	}
 
 	private TableItem getAction(Token input) {
-		auto retError = Pair!(int,TableItem)(int.min, TableItem(false));
+		auto retError = Pair!(int,TableItem)(int.min, 
+			TableItem(TableType.Error, short.min));
+
 		auto toSearch = Pair!(int,TableItem)(input.getTyp(), TableItem(false));
 		auto row = parseTable[this.parseStack.back()];
 		bool found;
