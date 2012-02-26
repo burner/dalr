@@ -51,13 +51,14 @@ class Parser {
 	}
 
 	public void parse() {
-		Token token = this.getNextToken();
+		Token input = this.getNextToken();
 		// we start at state (zero null none 0)
 		this.parseStack.pushBack(0);
 
 		TableItem action;
 		
-		while(true) {
+		while( (action = this.getAction(input)) != 
+				TableItem(TableType.Accept, termdollar)) {
 
 
 		}
