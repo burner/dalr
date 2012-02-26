@@ -9,5 +9,5 @@ import parser;
 void main() {
 	Parser p = new Parser(new Lexer("examplearith.dpp", true, 100));
 
-	p.run();
+	p.parse();
 }

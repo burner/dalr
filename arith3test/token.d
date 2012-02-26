@@ -11,13 +11,17 @@ import parsetable;
 struct Token {
 	private Location loc;
 	// if this is -3 treeIdx gives you the index of the ast node
-	private int type; 
+	private int typ; 
 	private dstring value;
 	private size_t treeIdx; // the index of the ast node in the ast array
 
-	this(Location loc, int type, dstring value = "") {
+	this(int typ) {
+		this.typ = typ;
+	}
+
+	this(Location loc, int typ, dstring value = "") {
 		this.loc = loc;
-		this.type = type;
+		this.typ = typ;
 		this.value = value;
 		this.treeIdx = size_t.max;
 	}
@@ -30,14 +34,14 @@ struct Token {
 			loc.getColumn()));
 		
 		// the payload
-		ret.pushBack(format("%s %s", idToString(type), 
+		ret.pushBack(format("%s %s", idToString(typ), 
 			conv!(dstring,string)(value)));
 
 		return ret.getString();
 	}
 
 	public int getTyp() const {
-		return this.type;
+		return this.typ;
 	}
 
 	public const(dstring) getValue() const {

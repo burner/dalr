@@ -117,7 +117,7 @@ final class RuleWriter : Writer {
 			this.file.writeString(conv!(int,string)(value.getId()));
 			this.file.writeString(";\n");
 		}
-		this.file.writeString(";\n");
+		this.file.write('\n');
 		this.writeTermIdToStringFunction(stringSymbols);
 	}
 
