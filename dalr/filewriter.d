@@ -149,6 +149,7 @@ final class RuleWriter : Writer {
 			this.file.write('\n');
 		}
 		this.file.write('\n');
+		this.file.write('\n');
 	}
 
 	private string finalItemTypToTableTypeString(Type typ) {
@@ -324,12 +325,14 @@ final class RuleWriter : Writer {
 	}
 }
 
+
 private static immutable(string) tableType =
 `public enum TableType : byte {
 	Accept,
 	Error,
 	Reduce,
 	Goto,
+	Search,
 	Shift
 }
 
@@ -337,6 +340,11 @@ public struct TableItem {
 	public TableType typ;
 	public short number;
 	private byte padding; // align to 32 bit
+
+	this(bool b) {
+		this.typ = TableType.Search;
+		this.number = -1;
+	}
 
 	this(TableType st, short number) {
 		this.typ = st;
