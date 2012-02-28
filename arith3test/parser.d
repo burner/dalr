@@ -59,10 +59,15 @@ class Parser {
 		while(true) { 
 			auto input = this.getNextToken();
 			action = this.getAction(input); 
+			if(action.getTyp() == TableType.Shift) {
+				this.parseStack.pushBack(action.getNumber());
+			} else {
+			}
 			//(action = this.getAction(input) ) != 
 			//	TableItem(TableType.Accept, termdollar)) {
 			//input = this.getNextToken();
-			log("%s %s", input.toString(), action.toString());
+			log("%s %s stackTop %d", input.toString(), action.toString(),
+				this.parseStack.back());
 			if(input.getTyp() == -99) {
 				continue;
 			} else if(input.getTyp() == termdollar) {

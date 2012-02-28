@@ -353,6 +353,15 @@ public struct TableItem {
 		this.number = number;
 	}
 
+	TableType getTyp() const {
+		return this.typ;
+	}
+
+	short getNumber() const {
+		return this.number;
+	}
+
+
 	public string toString() const {
 		scope StringBuffer!(char) ret = new StringBuffer!(char)(16);
 		
