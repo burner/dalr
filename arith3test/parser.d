@@ -1,10 +1,10 @@
 module parser;
 
 import hurt.algo.binaryrangesearch;
-import hurt.io.stdio;
 import hurt.container.deque;
-import hurt.util.slog;
+import hurt.io.stdio;
 import hurt.util.pair;
+import hurt.util.slog;
 
 import parsetable;
 import lexer;
@@ -32,7 +32,7 @@ class Parser {
 
 	private TableItem getAction(Token input) {
 		auto retError = Pair!(int,TableItem)(int.min, 
-			TableItem(TableType.Error, short.min));
+			TableItem(TableType.Error, 0));
 
 		auto toSearch = Pair!(int,TableItem)(input.getTyp(), TableItem(false));
 		auto row = parseTable[this.parseStack.back()];
@@ -51,16 +51,23 @@ class Parser {
 	}
 
 	public void parse() {
-		Token input = this.getNextToken();
 		// we start at state (zero null none 0)
 		this.parseStack.pushBack(0);
 
 		TableItem action;
 		
-		while( (action = this.getAction(input)) != 
-				TableItem(TableType.Accept, termdollar)) {
-
-
+		while(true) { 
+			auto input = this.getNextToken();
+			action = this.getAction(input); 
+			//(action = this.getAction(input) ) != 
+			//	TableItem(TableType.Accept, termdollar)) {
+			//input = this.getNextToken();
+			log("%s %s", input.toString(), action.toString());
+			if(input.getTyp() == -99) {
+				continue;
+			} else if(input.getTyp() == termdollar) {
+				break;
+			}
 		}
 	}
 

@@ -129,6 +129,8 @@ final class RuleWriter : Writer {
 			this.file.writeString(format("\t\t\treturn \"%s\";\n", 
 				keyWorker(key)));
 		}
+		this.file.writeString("\t\tcase -99:\n");
+		this.file.writeString("\t\t\treturn \"whitespace\";\n");
 		this.file.writeString("\t\tdefault:\n");
 		this.file.writeString("\t\t\tassert(false, " ~
 			"format(\"no symbol for %d present\", sym));\n");
