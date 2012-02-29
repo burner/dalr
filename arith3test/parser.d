@@ -30,7 +30,7 @@ class Parser {
 		return this.tokenBuffer.popFront();
 	}
 
-	private TableItem getAction(Token input) {
+	private TableItem getAction(const Token input) const {
 		auto retError = Pair!(int,TableItem)(int.min, 
 			TableItem(TableType.Error, 0));
 
@@ -50,28 +50,45 @@ class Parser {
 		return ret.second;
 	}
 
+	private short getGoto(const Token input) const {
+		auto retError = Pair!(int,TableItem)(int.min, 
+			TableItem(TableType.Error, 0));
+
+		auto toSearch = Pair!(int,TableItem)(input.getTyp(), TableItem(false));
+		auto row = gotoTable[this.parseStack.back()];
+		bool found;
+		size_t foundIdx;
+
+		auto ret = binarySearch!(Pair!(int,TableItem))
+			(row, toSearch, retError, row.length, found, foundIdx,
+			function(Pair!(int,TableItem) a, Pair!(int,TableItem) b) {
+				return a.first > b.first;
+			}, 
+			function(Pair!(int,TableItem) a, Pair!(int,TableItem) b) {
+				return a.first == b.first; });
+
+		return ret.second.getNumber();
+	}
+
 	public void parse() {
 		// we start at state (zero null none 0)
 		this.parseStack.pushBack(0);
 
 		TableItem action;
+		auto input = this.getNextToken();
 		
 		while(true) { 
-			auto input = this.getNextToken();
 			action = this.getAction(input); 
-			if(action.getTyp() == TableType.Shift) {
-				this.parseStack.pushBack(action.getNumber());
-			} else {
-			}
-			//(action = this.getAction(input) ) != 
-			//	TableItem(TableType.Accept, termdollar)) {
-			//input = this.getNextToken();
-			log("%s %s stackTop %d", input.toString(), action.toString(),
-				this.parseStack.back());
-			if(input.getTyp() == -99) {
-				continue;
-			} else if(input.getTyp() == termdollar) {
+			if(action.getTyp() == TableType.Accept) {
 				break;
+			} else if(action.getTyp() == TableType.Error) {
+				assert(false, "ERROR");
+			} else if(action.getTyp() == TableType.Shift) {
+				this.parseStack.pushBack(action.getNumber());
+				input = this.getNextToken();
+			} else if(action.getTyp() == TableType.Reduce) {
+				// do action
+				// pop RHS of Production
 			}
 		}
 	}

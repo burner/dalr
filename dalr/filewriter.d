@@ -83,6 +83,7 @@ class LalrWriter : Writer {
 
 final class RuleWriter : Writer {
 	private bool glr;
+
 	this(string filename, string modulename, 
 			SymbolManager sm, ProductionManager pm,
 			bool glr) {
@@ -100,6 +101,7 @@ final class RuleWriter : Writer {
 		this.writeTable();
 		this.file.writeString("\n\n");
 		this.writeGotoTable();
+		this.writeRules();
 		this.file.write('\n');
 	}
 
@@ -325,6 +327,27 @@ final class RuleWriter : Writer {
 		this.file.writeString(sb.getString());
 		sb.clear();
 	}
+
+	private void writeRules() {
+		this.file.writeString(format("public static immutable(immutable(" ~
+			"immutable(int)[])[%d]) rules = [", 
+			this.pm.getProductions().getSize()));
+
+		StringBuffer!(char) tmp = new StringBuffer!(char)(128);
+		foreach(size_t idx, Deque!(int) it; this.pm.getProductions) {
+			tmp.clear();
+			tmp.pushBack("[");
+			foreach(int jt; it) {
+				this.file.writeString(format("%d,", jt));
+			}
+			if(it.getSize() > 0) {
+				tmp.popBack();
+			}
+			this.file.writeString(tmp.getString());
+		}
+		this.file.writeString("];\n\n");
+	}
+
 }
 
 
