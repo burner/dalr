@@ -42,7 +42,7 @@ class Parser {
 		auto retError = Pair!(int,TableItem)(int.min, 
 			TableItem(TableType.Error, 0));
 
-		log("%d %d", this.parseStack.back(), input.getTyp());
+		//log("%d %d", this.parseStack.back(), input.getTyp());
 
 		auto toSearch = Pair!(int,TableItem)(input.getTyp(), TableItem(false));
 		auto row = parseTable[this.parseStack.back()];
@@ -81,6 +81,7 @@ class Parser {
 	}
 
 	private void printStack() const {
+		printf("parse stack: ");
 		foreach(const int it; this.parseStack) {
 			printf("%d ", it);
 		}
@@ -97,19 +98,20 @@ class Parser {
 		while(true) { 
 			this.printStack();
 			action = this.getAction(input); 
-			log("%s", action.toString());
+			//log("%s", action.toString());
 			if(action.getTyp() == TableType.Accept) {
-				log();
+				//log();
+				this.parseStack.popBack(rules[0].length-1);
 				break;
 			} else if(action.getTyp() == TableType.Error) {
-				log();
+				//log();
 				assert(false, "ERROR");
 			} else if(action.getTyp() == TableType.Shift) {
-				log();
+				//log();
 				this.parseStack.pushBack(action.getNumber());
 				input = this.getToken();
 			} else if(action.getTyp() == TableType.Reduce) {
-				log();
+				//log();
 				// do action
 				// pop RHS of Production
 				this.parseStack.popBack(rules[action.getNumber].length-1);
