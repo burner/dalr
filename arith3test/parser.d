@@ -70,6 +70,13 @@ class Parser {
 		return ret.second.getNumber();
 	}
 
+	private void printStack() const {
+		foreach(const int it; this.parseStack) {
+			printf("%d ", it);
+		}
+		println();
+	}
+
 	public void parse() {
 		// we start at state (zero null none 0)
 		this.parseStack.pushBack(0);
@@ -78,6 +85,7 @@ class Parser {
 		auto input = this.getNextToken();
 		
 		while(true) { 
+			this.printStack();
 			action = this.getAction(input); 
 			if(action.getTyp() == TableType.Accept) {
 				break;
