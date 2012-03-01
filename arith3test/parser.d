@@ -30,9 +30,19 @@ class Parser {
 		return this.tokenBuffer.popFront();
 	}
 
+	private Token getToken() {
+		Token t = this.getNextToken();
+		while(t.getTyp() == -99) {
+			t = this.getNextToken();
+		}
+		return t;
+	}
+
 	private TableItem getAction(const Token input) const {
 		auto retError = Pair!(int,TableItem)(int.min, 
 			TableItem(TableType.Error, 0));
+
+		log("%d %d", this.parseStack.back(), input.getTyp());
 
 		auto toSearch = Pair!(int,TableItem)(input.getTyp(), TableItem(false));
 		auto row = parseTable[this.parseStack.back()];
@@ -82,19 +92,24 @@ class Parser {
 		this.parseStack.pushBack(0);
 
 		TableItem action;
-		auto input = this.getNextToken();
+		auto input = this.getToken();
 		
 		while(true) { 
 			this.printStack();
 			action = this.getAction(input); 
+			log("%s", action.toString());
 			if(action.getTyp() == TableType.Accept) {
+				log();
 				break;
 			} else if(action.getTyp() == TableType.Error) {
+				log();
 				assert(false, "ERROR");
 			} else if(action.getTyp() == TableType.Shift) {
+				log();
 				this.parseStack.pushBack(action.getNumber());
-				input = this.getNextToken();
+				input = this.getToken();
 			} else if(action.getTyp() == TableType.Reduce) {
+				log();
 				// do action
 				// pop RHS of Production
 				this.parseStack.popBack(rules[action.getNumber].length-1);
@@ -102,6 +117,8 @@ class Parser {
 					this.getGoto(rules[action.getNumber][0]));
 			}
 		}
+		this.printStack();
+		log();
 	}
 
 	public void run() {
