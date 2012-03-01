@@ -1,5 +1,5 @@
-"\+\+" {:  return Token(this.getLoc(), termdecrement); :}
-"--" {: return Token(this.getLoc(), termincrement); :}
+"\+\+" {:  return Token(this.getLoc(), termincrement); :}
+"--" {: return Token(this.getLoc(), termdecrement); :}
 "/" {: return Token(this.getLoc(), termdiv); :}
 "-" {: return Token(this.getLoc(), termminus); :}
 "*" {: return Token(this.getLoc(), termstar); :}
@@ -7,4 +7,4 @@
 "\+" {: return Token(this.getLoc(), termplus); :}
 "[:digit:]+" {: return Token(this.getLoc(), terminteger, this.lexText.getString()); :}
 "[:digit:]+.[:digit:]+" {: return Token(this.getLoc(), termfloat, this.lexText.getString()); :}
-"[ \\t\\n]*" {: return Token(this.getLoc(), -99); :}
+"[ \\t\\n]+" {: return Token(this.getLoc(), -99); :}

@@ -41,7 +41,7 @@ class Lexer : Thread {
 
 	private Location loc;
 
-	// false means single run, true means step be step
+	// true means single run, false means step be step
 	private bool kind;
 
 	this(string filename, bool kind = false, uint count = 10) {
@@ -185,18 +185,21 @@ class Lexer : Thread {
 
 	public void getToken(Deque!(Token) toSaveIn) {
 		if(this.kind) {
-			this.mutex.wait();
-			if(this.deque.isEmpty()) {
+			while(true) {
+				this.mutex.wait();
+				if(!this.deque.isEmpty()) {
+					break;
+				}
 				this.mutex.notify();
 				this.empty.wait();
-				this.mutex.wait();
 			} 
 			while(!this.deque.isEmpty()) {
 				toSaveIn.pushBack(this.deque.popFront());	
 			}
 			this.mutex.notify();
-		} else {
+		} else { // single threaded
 			this.run();
+			//log("%u", this.deque.getSize());
 			while(!this.deque.isEmpty()) {
 				toSaveIn.pushBack(this.deque.popFront());	
 			}
@@ -280,7 +283,7 @@ class Lexer : Thread {
 			//ok I guess
 			this.pushBack(Token(this.getLoc(), termdollar), true);
 		} else if(isAcceptingState(currentState)) {
-			Token save = this.acceptingAction(currentState);
+			Token save = this.acceptingAction(isAcceptingState(currentState));
 			this.lexText.clear();
 			this.pushBack(save);
 			this.pushBack(Token(this.getLoc(), termdollar), true);

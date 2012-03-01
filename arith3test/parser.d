@@ -21,18 +21,29 @@ class Parser {
 		this.tokenBuffer = new Deque!(Token)(64);
 		this.parseStack = new Deque!(int)(128);
 	} 
-
-	private Token getNextToken() {
+	/** do not call this direct unless you want whitespace token
+	 */
+	private Token getNextToken() { 
+		//log();
 		if(this.tokenBuffer.isEmpty()) {
+			//log();
 			this.lexer.getToken(this.tokenBuffer);
-		}
-		assert(!this.tokenBuffer.isEmpty(), "the buffer should not be empty");
+		} 
+		/*if(this.tokenBuffer.isEmpty()) {
+			//log("the buffer should not be empty");
+			return Token(termdollar);
+		} else {*/
+		assert(!this.tokenBuffer.isEmpty());
+
 		return this.tokenBuffer.popFront();
+		//}
 	}
 
 	private Token getToken() {
+		//log();
 		Token t = this.getNextToken();
 		while(t.getTyp() == -99) {
+			//log();
 			t = this.getNextToken();
 		}
 		return t;
@@ -88,6 +99,12 @@ class Parser {
 		println();
 	}
 
+	private void reportError(const Token input) const {
+		printfln("%?1!1s in state %?1!1d on input %?1!1s", "ERROR", 
+			this.parseStack.back(), input.toString());
+		this.printStack();
+	}
+
 	public void parse() {
 		// we start at state (zero null none 0)
 		this.parseStack.pushBack(0);
@@ -105,6 +122,7 @@ class Parser {
 				break;
 			} else if(action.getTyp() == TableType.Error) {
 				//log();
+				this.reportError(input);
 				assert(false, "ERROR");
 			} else if(action.getTyp() == TableType.Shift) {
 				//log();
@@ -125,11 +143,11 @@ class Parser {
 
 	public void run() {
 		outer: while(true) {
-			auto it = this.getNextToken();
+			auto it = this.getToken();
 			if(it.getTyp() == -99) {
 				continue;
 			}
-			log("%s %d", it.toString(), it.getTyp());
+			//log("%s %d", it.toString(), it.getTyp());
 			if(it.getTyp() == termdollar) {
 				break outer;
 			}
