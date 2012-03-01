@@ -50,11 +50,11 @@ class Parser {
 		return ret.second;
 	}
 
-	private short getGoto(const Token input) const {
+	private short getGoto(const int input) const {
 		auto retError = Pair!(int,TableItem)(int.min, 
 			TableItem(TableType.Error, 0));
 
-		auto toSearch = Pair!(int,TableItem)(input.getTyp(), TableItem(false));
+		auto toSearch = Pair!(int,TableItem)(input, TableItem(false));
 		auto row = gotoTable[this.parseStack.back()];
 		bool found;
 		size_t foundIdx;
@@ -89,6 +89,9 @@ class Parser {
 			} else if(action.getTyp() == TableType.Reduce) {
 				// do action
 				// pop RHS of Production
+				this.parseStack.popBack(rules[action.getNumber].length-1);
+				this.parseStack.pushBack(
+					this.getGoto(rules[action.getNumber][0]));
 			}
 		}
 	}

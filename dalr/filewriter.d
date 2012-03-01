@@ -101,6 +101,7 @@ final class RuleWriter : Writer {
 		this.writeTable();
 		this.file.writeString("\n\n");
 		this.writeGotoTable();
+		this.file.writeString("\n");
 		this.writeRules();
 		this.file.write('\n');
 	}
@@ -190,6 +191,7 @@ final class RuleWriter : Writer {
 				"parseTable = [\n", table.getSize()-1));
 		}
 
+		size_t reduceCnt = 0;
 		foreach(size_t idx, Deque!(Deque!(FinalItem)) row; table) {
 			if(idx == 0) { // don't need the items
 				continue;
@@ -222,6 +224,7 @@ final class RuleWriter : Writer {
 							it.second[0].typ == Type.Goto) {
 						continue;
 					}
+					reduceCnt++;
 					string tmpS = format("Pair!(int,TableItem)" ~
 						"(%d,TableItem(%s, %u)), ", it.first, 
 						finalItemTypToTableTypeString(it.second[0].typ),
@@ -251,6 +254,11 @@ final class RuleWriter : Writer {
 			
 		this.file.writeString(sb.getString());
 		sb.clear();
+
+		log("table size %d, reduceCnt %d, min %f", 
+			table.getSize() * table[0].getSize(),
+			reduceCnt, (cast(double)reduceCnt) / 
+				(cast(double)(table.getSize() * table[0].getSize())));
 	}
 
 	private void writeGotoTable() {
@@ -330,21 +338,23 @@ final class RuleWriter : Writer {
 
 	private void writeRules() {
 		this.file.writeString(format("public static immutable(immutable(" ~
-			"immutable(int)[])[%d]) rules = [", 
+			"immutable(int)[])[%d]) rules = [\n", 
 			this.pm.getProductions().getSize()));
 
 		StringBuffer!(char) tmp = new StringBuffer!(char)(128);
 		foreach(size_t idx, Deque!(int) it; this.pm.getProductions) {
 			tmp.clear();
-			tmp.pushBack("[");
+			tmp.pushBack(format("/* rule #%u */ [", idx));
 			foreach(int jt; it) {
-				this.file.writeString(format("%d,", jt));
+				tmp.pushBack(format("%d,", jt));
 			}
 			if(it.getSize() > 0) {
 				tmp.popBack();
 			}
 			this.file.writeString(tmp.getString());
+			this.file.writeString("],\n");
 		}
+		this.file.seek(-2, SeekPos.Current);
 		this.file.writeString("];\n\n");
 	}
 
