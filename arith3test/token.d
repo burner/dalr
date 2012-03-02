@@ -19,6 +19,11 @@ struct Token {
 		this.typ = typ;
 	}
 
+	this(int typ, dstring value) {
+		this(typ);
+		this.value = value;
+	}
+
 	this(Location loc, int typ, dstring value = "") {
 		this.loc = loc;
 		this.typ = typ;

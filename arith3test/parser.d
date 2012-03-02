@@ -152,8 +152,10 @@ class Parser {
 					this.getGoto(rules[action.getNumber()][0]));
 
 				// tmp token stack stuff
-				this.tokenStack.popBack(rules[action.getNumber()].length-1);
-				this.tokenStack.pushBack(Token(rules[action.getNumber()][0]));
+				this.tokenStack.popBack(rules[action.getNumber()].length-2);
+				Token tmp = this.tokenStack.popBack();
+				this.tokenStack.pushBack(Token(rules[action.getNumber()][0], 
+					tmp.getValue()));
 			}
 		}
 		this.printStack();
