@@ -40,6 +40,15 @@ struct Token {
 		return ret.getString();
 	}
 
+	string toStringShort() const {
+		if(value is null || value == "") {
+			return format("[%s]", idToString(typ));
+		} else {
+			return format("[%s %s]", idToString(typ), 
+				conv!(dstring,string)(value));
+		}
+	}
+
 	public int getTyp() const {
 		return this.typ;
 	}

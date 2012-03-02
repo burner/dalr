@@ -15,11 +15,13 @@ class Parser {
 	private Lexer lexer;
 	private Deque!(Token) tokenBuffer;
 	private Deque!(int) parseStack;
+	private Deque!(Token) tokenStack;
 
 	public this(Lexer lexer) {
 		this.lexer = lexer;	
 		this.tokenBuffer = new Deque!(Token)(64);
 		this.parseStack = new Deque!(int)(128);
+		this.tokenStack = new Deque!(Token)(128);
 	} 
 	/** do not call this direct unless you want whitespace token
 	 */
@@ -93,8 +95,16 @@ class Parser {
 
 	private void printStack() const {
 		printf("parse stack: ");
-		foreach(const int it; this.parseStack) {
+		foreach(it; this.parseStack) {
 			printf("%d ", it);
+		}
+		println();
+	}
+
+	private void printTokenStack() const {
+		printf("token stack: ");
+		foreach(it; this.tokenStack) {
+			printf("%s ", it.toStringShort());
 		}
 		println();
 	}
@@ -111,9 +121,12 @@ class Parser {
 
 		TableItem action;
 		auto input = this.getToken();
+		this.tokenStack.pushBack(input);
+		//log("%s", input.toString());
 		
 		while(true) { 
 			this.printStack();
+			this.printTokenStack();
 			action = this.getAction(input); 
 			//log("%s", action.toString());
 			if(action.getTyp() == TableType.Accept) {
@@ -128,16 +141,23 @@ class Parser {
 				//log();
 				this.parseStack.pushBack(action.getNumber());
 				input = this.getToken();
+				this.tokenStack.pushBack(input);
+				//log("%s", input.toString());
 			} else if(action.getTyp() == TableType.Reduce) {
 				//log();
 				// do action
 				// pop RHS of Production
-				this.parseStack.popBack(rules[action.getNumber].length-1);
+				this.parseStack.popBack(rules[action.getNumber()].length-1);
 				this.parseStack.pushBack(
-					this.getGoto(rules[action.getNumber][0]));
+					this.getGoto(rules[action.getNumber()][0]));
+
+				// tmp token stack stuff
+				this.tokenStack.popBack(rules[action.getNumber()].length-1);
+				this.tokenStack.pushBack(Token(rules[action.getNumber()][0]));
 			}
 		}
 		this.printStack();
+		this.printTokenStack();
 		log();
 	}
 
