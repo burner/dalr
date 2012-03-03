@@ -43,6 +43,10 @@ class Production {
 		this.action = inAction;
 	}
 
+	public string getAction() {
+		return this.action;
+	}
+
 	public string getProduction() {
 		return trim(this.startSymbol) ~ " := " ~ trim(this.prodString);
 	}

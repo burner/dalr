@@ -125,7 +125,10 @@ int main(string[] args) {
 	pm.makeAll(graphfile);
 
 	//println(extendedGrammerToString(pm, sm));
-	println(itemsetsToString(pm, sm));
+	//println(itemsetsToString(pm, sm));
+	File tranTable = new File("tranTable", FileMode.OutNew);
+	tranTable.writeString(finalTransitionTableToString(pm, sm));
+	tranTable.close();
 
 	if(outputFile !is null && outputFile.length > 0) {
 		RuleWriter fw = new RuleWriter(outputFile, outputModulename,

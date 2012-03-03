@@ -5,6 +5,7 @@ import hurt.container.deque;
 import hurt.io.stdio;
 import hurt.util.pair;
 import hurt.util.slog;
+import hurt.string.formatter;
 
 import parsetable;
 import lexer;
@@ -26,26 +27,17 @@ class Parser {
 	/** do not call this direct unless you want whitespace token
 	 */
 	private Token getNextToken() { 
-		//log();
 		if(this.tokenBuffer.isEmpty()) {
-			//log();
 			this.lexer.getToken(this.tokenBuffer);
 		} 
-		/*if(this.tokenBuffer.isEmpty()) {
-			//log("the buffer should not be empty");
-			return Token(termdollar);
-		} else {*/
 		assert(!this.tokenBuffer.isEmpty());
 
 		return this.tokenBuffer.popFront();
-		//}
 	}
 
 	private Token getToken() {
-		//log();
 		Token t = this.getNextToken();
 		while(t.getTyp() == -99) {
-			//log();
 			t = this.getNextToken();
 		}
 		return t;
@@ -93,6 +85,17 @@ class Parser {
 		return ret.second.getNumber();
 	}
 
+	private void runAction(short actionNum) {
+		Token ret;
+		switch(actionNum) {
+			mixin(actionString);
+			default:
+				assert(false, format("no action for %d defined", actionNum));
+		}
+		this.tokenStack.popBack(rules[actionNum].length-1);
+		this.tokenStack.pushBack(ret);
+	}
+
 	private void printStack() const {
 		printf("parse stack: ");
 		foreach(it; this.parseStack) {
@@ -121,7 +124,7 @@ class Parser {
 
 		TableItem action;
 		auto input = this.getToken();
-		this.tokenStack.pushBack(input);
+		//this.tokenStack.pushBack(input);
 		//log("%s", input.toString());
 		
 		while(true) { 
@@ -130,8 +133,9 @@ class Parser {
 			action = this.getAction(input); 
 			//log("%s", action.toString());
 			if(action.getTyp() == TableType.Accept) {
-				//log();
-				this.parseStack.popBack(rules[0].length-1);
+				//log("%s %s", action.toString(), input.toString());
+				this.runAction(action.getNumber());
+				this.parseStack.popBack(rules[action.getNumber()].length-1);
 				break;
 			} else if(action.getTyp() == TableType.Error) {
 				//log();
@@ -152,15 +156,12 @@ class Parser {
 					this.getGoto(rules[action.getNumber()][0]));
 
 				// tmp token stack stuff
-				this.tokenStack.popBack(rules[action.getNumber()].length-2);
-				Token tmp = this.tokenStack.popBack();
-				this.tokenStack.pushBack(Token(rules[action.getNumber()][0], 
-					tmp.getValue()));
+				this.runAction(action.getNumber());
 			}
 		}
+		log();
 		this.printStack();
 		this.printTokenStack();
-		log();
 	}
 
 	public void run() {

@@ -140,6 +140,10 @@ class ProductionManager {
 	 *
 	 */
 
+	public Map!(size_t,Production) getProdMapping() {
+		return this.prodMapping;
+	}
+
 	public Map!(int,Set!(int)) getFirstNormal() {
 		return this.firstNormal;
 	}

@@ -13,6 +13,7 @@ import hurt.util.pair;
 import hurt.algo.sorting;
 
 import dalr.finalitem;
+import dalr.filereader;
 import dalr.productionmanager;
 import dalr.symbolmanager;
 
@@ -103,7 +104,19 @@ final class RuleWriter : Writer {
 		this.writeGotoTable();
 		this.file.writeString("\n");
 		this.writeRules();
-		this.file.write('\n');
+		this.writeActions();
+	}
+
+	private void writeActions() {
+		this.file.writeString("public static immutable(string) " ~
+			"actionString = `");
+		foreach(size_t key, Production pr; pm.getProdMapping()) {
+			this.file.writeString(format("\tcase %u:\n" ~
+				"\t\t%s\n\t\tbreak;\n", key, pr.getAction() is null || 
+				pr.getAction() == "" ?  "ret = Token(rules[actionNum][0]);" :
+				pr.getAction()));
+		}
+		this.file.writeString("`;\n");
 	}
 
 	private static string keyWorker(string str) {
@@ -225,10 +238,17 @@ final class RuleWriter : Writer {
 						continue;
 					}
 					reduceCnt++;
-					string tmpS = format("Pair!(int,TableItem)" ~
-						"(%d,TableItem(%s, %u)), ", it.first, 
-						finalItemTypToTableTypeString(it.second[0].typ),
-						it.second[0].number);
+					string tmpS;
+					if(it.second[0].typ == Type.Accept) { // Accept means rule 0
+						tmpS = format("Pair!(int,TableItem)" ~
+							"(%d,TableItem(%s, %u)), ", it.first, 
+							finalItemTypToTableTypeString(it.second[0].typ), 0);
+					} else {
+						tmpS = format("Pair!(int,TableItem)" ~
+							"(%d,TableItem(%s, %u)), ", it.first, 
+							finalItemTypToTableTypeString(it.second[0].typ),
+							it.second[0].number);
+					}
 
 					if(sb.getSize() + tmpS.length > 80) {
 						this.file.writeString(sb.getString());
