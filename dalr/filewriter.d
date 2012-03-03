@@ -113,7 +113,9 @@ final class RuleWriter : Writer {
 		foreach(size_t key, Production pr; pm.getProdMapping()) {
 			this.file.writeString(format("\tcase %u:\n" ~
 				"\t\t%s\n\t\tbreak;\n", key, pr.getAction() is null || 
-				pr.getAction() == "" ?  "ret = Token(rules[actionNum][0]);" :
+				//pr.getAction() == "" ?  "ret = Token(rules[actionNum][0]);" :
+				pr.getAction() == "" ?  
+				"ret = this.tokenStack[-(rules[actionNum].length-1)];" :
 				pr.getAction()));
 		}
 		this.file.writeString("`;\n");

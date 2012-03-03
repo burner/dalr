@@ -7,9 +7,10 @@ import hurt.util.pair;
 import hurt.util.slog;
 import hurt.string.formatter;
 
-import parsetable;
+import ast;
 import lexer;
 import lextable;
+import parsetable;
 import token;
 
 class Parser {
@@ -17,13 +18,20 @@ class Parser {
 	private Deque!(Token) tokenBuffer;
 	private Deque!(int) parseStack;
 	private Deque!(Token) tokenStack;
+	private AST ast;
 
 	public this(Lexer lexer) {
 		this.lexer = lexer;	
 		this.tokenBuffer = new Deque!(Token)(64);
 		this.parseStack = new Deque!(int)(128);
 		this.tokenStack = new Deque!(Token)(128);
+		this.ast = new AST();
 	} 
+
+	AST getAST() {
+		return this.ast;
+	}
+
 	/** do not call this direct unless you want whitespace token
 	 */
 	private Token getNextToken() { 
@@ -92,6 +100,7 @@ class Parser {
 			default:
 				assert(false, format("no action for %d defined", actionNum));
 		}
+		//log("%s", ret.toString());
 		this.tokenStack.popBack(rules[actionNum].length-1);
 		this.tokenStack.pushBack(ret);
 	}
@@ -123,7 +132,7 @@ class Parser {
 		this.parseStack.pushBack(0);
 
 		TableItem action;
-		auto input = this.getToken();
+		Token input = this.getToken();
 		//this.tokenStack.pushBack(input);
 		//log("%s", input.toString());
 		
@@ -134,21 +143,21 @@ class Parser {
 			//log("%s", action.toString());
 			if(action.getTyp() == TableType.Accept) {
 				//log("%s %s", action.toString(), input.toString());
-				this.runAction(action.getNumber());
 				this.parseStack.popBack(rules[action.getNumber()].length-1);
+				this.runAction(action.getNumber());
 				break;
 			} else if(action.getTyp() == TableType.Error) {
 				//log();
 				this.reportError(input);
 				assert(false, "ERROR");
 			} else if(action.getTyp() == TableType.Shift) {
+				log("%s", input.toString());
 				//log();
 				this.parseStack.pushBack(action.getNumber());
-				input = this.getToken();
 				this.tokenStack.pushBack(input);
-				//log("%s", input.toString());
+				input = this.getToken();
 			} else if(action.getTyp() == TableType.Reduce) {
-				//log();
+				log();
 				// do action
 				// pop RHS of Production
 				this.parseStack.popBack(rules[action.getNumber()].length-1);
@@ -162,6 +171,7 @@ class Parser {
 		log();
 		this.printStack();
 		this.printTokenStack();
+		log("%s", this.ast.toString());
 	}
 
 	public void run() {

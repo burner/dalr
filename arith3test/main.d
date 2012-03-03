@@ -22,6 +22,7 @@ void main(string[] args) {
 	Parser p = new Parser(new Lexer("examplearith.dpp", lpMulti, 10));
 
 	p.parse();
+	p.getAST().toGraph("test1.dot");
 	//p.run();
 	printfln("lexing and parsing took %f seconds", sw.stop());
 }

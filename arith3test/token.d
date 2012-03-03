@@ -31,6 +31,12 @@ struct Token {
 		this.treeIdx = size_t.max;
 	}
 
+	this(Location loc, int typ, size_t treeIdx) {
+		this.loc = loc;
+		this.typ = typ;
+		this.treeIdx = treeIdx;
+	}
+
 	string toString() const {
 		scope StringBuffer!(char) ret = new StringBuffer!(char)(128);	
 
@@ -60,5 +66,13 @@ struct Token {
 
 	public const(dstring) getValue() const {
 		return this.value;
+	}
+
+	public Location getLoc() const {
+		return this.loc;
+	}
+
+	public size_t getTreeIdx() const {
+		return this.treeIdx;
 	}
 }

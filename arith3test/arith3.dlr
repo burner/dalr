@@ -2,23 +2,96 @@ S := AddExpression;
 
 AddExpression :=
 	MulExpression;
-	| AddExpression plus MulExpression;
-	| AddExpression minus MulExpression;
+	| AddExpression plus MulExpression; {:
+		Token mulExpr = this.tokenStack[-1];
+		Token op = this.tokenStack[-2];
+		Token addExpr = this.tokenStack[-3];
+		size_t opPos = this.ast.insert(op, termplus);
+		size_t pos = this.ast.insert(termAddExpression);
+		this.ast.append(addExpr.getTreeIdx());
+		this.ast.append(opPos);
+		this.ast.append(mulExpr.getTreeIdx()); :}
+
+	| AddExpression minus MulExpression; {:
+		Token mulExpr = this.tokenStack[-1];
+		Token op = this.tokenStack[-2];
+		Token addExpr = this.tokenStack[-3];
+		size_t opPos = this.ast.insert(op, termminus);
+		size_t pos = this.ast.insert(termAddExpression);
+		this.ast.append(addExpr.getTreeIdx());
+		this.ast.append(opPos);
+		this.ast.append(mulExpr.getTreeIdx()); :}
 
 MulExpression :=
 	UnaryExpression;
-	| MulExpression star UnaryExpression;
-	| MulExpression div UnaryExpression;
-	| MulExpression modulo UnaryExpression;
+	| MulExpression star UnaryExpression; {:
+		Token unExpr = this.tokenStack[-1];
+		Token op = this.tokenStack[-2];
+		Token mulExpr = this.tokenStack[-3];
+		size_t opPos = this.ast.insert(op, termstar);
+		size_t pos = this.ast.insert(termMulExpression);
+		this.ast.append(mulExpr.getTreeIdx());
+		this.ast.append(opPos);
+		this.ast.append(unExpr.getTreeIdx()); :}
+
+	| MulExpression div UnaryExpression; {:
+		Token unExpr = this.tokenStack[-1];
+		Token op = this.tokenStack[-2];
+		Token mulExpr = this.tokenStack[-3];
+		size_t opPos = this.ast.insert(op, termdiv);
+		size_t pos = this.ast.insert(termMulExpression);
+		this.ast.append(mulExpr.getTreeIdx());
+		this.ast.append(opPos);
+		this.ast.append(unExpr.getTreeIdx()); :}
+
+	| MulExpression modulo UnaryExpression; {:
+		Token unExpr = this.tokenStack[-1];
+		Token op = this.tokenStack[-2];
+		Token mulExpr = this.tokenStack[-3];
+		size_t opPos = this.ast.insert(op, termmodulo);
+		size_t pos = this.ast.insert(termMulExpression);
+		this.ast.append(mulExpr.getTreeIdx());
+		this.ast.append(opPos);
+		this.ast.append(unExpr.getTreeIdx()); :}
 
 UnaryExpression :=
 	PostfixExpression;
-	| increment UnaryExpression;
-	| decrement UnaryExpression;
-	| minus UnaryExpression;
-	| plus UnaryExpression;
-	| star UnaryExpression;
+	| increment UnaryExpression; {:Token op = this.tokenStack[-2];
+		Token unExpr = this.tokenStack[-1];
+		size_t opPos = this.ast.insert(op, termincrement);
+		size_t pos = this.ast.insert(termUnaryExpression);
+		this.ast.append(opPos);
+		this.ast.append(unExpr.getTreeIdx()); :}
+	| decrement UnaryExpression; {:Token op = this.tokenStack[-2];
+		Token unExpr = this.tokenStack[-1];
+		size_t opPos = this.ast.insert(op, termdecrement);
+		size_t pos = this.ast.insert(termUnaryExpression);
+		this.ast.append(opPos);
+		this.ast.append(unExpr.getTreeIdx()); :}
+	| minus UnaryExpression; {:Token op = this.tokenStack[-2];
+		Token unExpr = this.tokenStack[-1];
+		size_t opPos = this.ast.insert(op, termminus);
+		size_t pos = this.ast.insert(termUnaryExpression);
+		this.ast.append(opPos);
+		this.ast.append(unExpr.getTreeIdx()); :}
+	| plus UnaryExpression; {:Token op = this.tokenStack[-2];
+		Token unExpr = this.tokenStack[-1];
+		size_t opPos = this.ast.insert(op, termplus);
+		size_t pos = this.ast.insert(termUnaryExpression);
+		this.ast.append(opPos);
+		this.ast.append(unExpr.getTreeIdx()); :}
+	| star UnaryExpression; {:Token op = this.tokenStack[-2];
+		Token unExpr = this.tokenStack[-1];
+		size_t opPos = this.ast.insert(op, termstar);
+		size_t pos = this.ast.insert(termUnaryExpression);
+		this.ast.append(opPos);
+		this.ast.append(unExpr.getTreeIdx()); :}
 
 PostfixExpression :=
-	integer;
-	| float;
+	integer; {:Token t = this.tokenStack.back();
+		size_t pos = this.ast.insert(t, termPostfixExpression);
+		ret = Token(t.getLoc(), termPostfixExpression, pos); :}
+
+	| float; {:Token t = this.tokenStack.back();
+		size_t pos = this.ast.insert(t, termPostfixExpression);
+		ret = Token(t.getLoc(), termPostfixExpression, pos); :}
