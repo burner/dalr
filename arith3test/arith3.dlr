@@ -6,21 +6,19 @@ AddExpression :=
 		Token mulExpr = this.tokenStack[-1];
 		Token op = this.tokenStack[-2];
 		Token addExpr = this.tokenStack[-3];
-		size_t opPos = this.ast.insert(op, termplus);
-		size_t pos = this.ast.insert(termAddExpression);
+		size_t pos = this.ast.insert(op, termAddExpression);
 		this.ast.append(addExpr.getTreeIdx());
-		this.ast.append(opPos);
-		this.ast.append(mulExpr.getTreeIdx()); :}
+		this.ast.append(mulExpr.getTreeIdx());
+		ret = Token(mulExpr.getLoc(), termAddExpression, pos); :}
 
 	| AddExpression minus MulExpression; {:
 		Token mulExpr = this.tokenStack[-1];
 		Token op = this.tokenStack[-2];
 		Token addExpr = this.tokenStack[-3];
-		size_t opPos = this.ast.insert(op, termminus);
-		size_t pos = this.ast.insert(termAddExpression);
+		size_t pos = this.ast.insert(op, termAddExpression);
 		this.ast.append(addExpr.getTreeIdx());
-		this.ast.append(opPos);
-		this.ast.append(mulExpr.getTreeIdx()); :}
+		this.ast.append(mulExpr.getTreeIdx());
+		ret = Token(mulExpr.getLoc(), termAddExpression, pos); :}
 
 MulExpression :=
 	UnaryExpression;
@@ -28,64 +26,60 @@ MulExpression :=
 		Token unExpr = this.tokenStack[-1];
 		Token op = this.tokenStack[-2];
 		Token mulExpr = this.tokenStack[-3];
-		size_t opPos = this.ast.insert(op, termstar);
-		size_t pos = this.ast.insert(termMulExpression);
+		size_t pos = this.ast.insert(op, termMulExpression);
 		this.ast.append(mulExpr.getTreeIdx());
-		this.ast.append(opPos);
-		this.ast.append(unExpr.getTreeIdx()); :}
+		this.ast.append(unExpr.getTreeIdx());
+		ret = Token(mulExpr.getLoc(), termMulExpression, pos); :}
 
 	| MulExpression div UnaryExpression; {:
 		Token unExpr = this.tokenStack[-1];
 		Token op = this.tokenStack[-2];
 		Token mulExpr = this.tokenStack[-3];
-		size_t opPos = this.ast.insert(op, termdiv);
-		size_t pos = this.ast.insert(termMulExpression);
+		size_t pos = this.ast.insert(op, termMulExpression);
 		this.ast.append(mulExpr.getTreeIdx());
-		this.ast.append(opPos);
-		this.ast.append(unExpr.getTreeIdx()); :}
+		this.ast.append(unExpr.getTreeIdx());
+		ret = Token(mulExpr.getLoc(), termMulExpression, pos); :}
 
 	| MulExpression modulo UnaryExpression; {:
 		Token unExpr = this.tokenStack[-1];
 		Token op = this.tokenStack[-2];
 		Token mulExpr = this.tokenStack[-3];
-		size_t opPos = this.ast.insert(op, termmodulo);
-		size_t pos = this.ast.insert(termMulExpression);
+		size_t pos = this.ast.insert(op, termMulExpression);
 		this.ast.append(mulExpr.getTreeIdx());
-		this.ast.append(opPos);
-		this.ast.append(unExpr.getTreeIdx()); :}
+		this.ast.append(unExpr.getTreeIdx());
+		ret = Token(mulExpr.getLoc(), termMulExpression, pos); :}
 
 UnaryExpression :=
 	PostfixExpression;
 	| increment UnaryExpression; {:Token op = this.tokenStack[-2];
 		Token unExpr = this.tokenStack[-1];
-		size_t opPos = this.ast.insert(op, termincrement);
-		size_t pos = this.ast.insert(termUnaryExpression);
-		this.ast.append(opPos);
-		this.ast.append(unExpr.getTreeIdx()); :}
+		size_t pos = this.ast.insert(op, termUnaryExpression);
+		this.ast.append(unExpr.getTreeIdx()); 
+		ret = Token(op.getLoc(), termUnaryExpression, pos); :}
+
 	| decrement UnaryExpression; {:Token op = this.tokenStack[-2];
 		Token unExpr = this.tokenStack[-1];
-		size_t opPos = this.ast.insert(op, termdecrement);
-		size_t pos = this.ast.insert(termUnaryExpression);
-		this.ast.append(opPos);
-		this.ast.append(unExpr.getTreeIdx()); :}
+		size_t pos = this.ast.insert(op, termUnaryExpression);
+		this.ast.append(unExpr.getTreeIdx()); 
+		ret = Token(op.getLoc(), termUnaryExpression, pos); :}
+
 	| minus UnaryExpression; {:Token op = this.tokenStack[-2];
 		Token unExpr = this.tokenStack[-1];
-		size_t opPos = this.ast.insert(op, termminus);
-		size_t pos = this.ast.insert(termUnaryExpression);
-		this.ast.append(opPos);
-		this.ast.append(unExpr.getTreeIdx()); :}
+		size_t pos = this.ast.insert(op, termUnaryExpression);
+		this.ast.append(unExpr.getTreeIdx()); 
+		ret = Token(op.getLoc(), termUnaryExpression, pos); :}
+
 	| plus UnaryExpression; {:Token op = this.tokenStack[-2];
 		Token unExpr = this.tokenStack[-1];
-		size_t opPos = this.ast.insert(op, termplus);
-		size_t pos = this.ast.insert(termUnaryExpression);
-		this.ast.append(opPos);
-		this.ast.append(unExpr.getTreeIdx()); :}
+		size_t pos = this.ast.insert(op, termUnaryExpression);
+		this.ast.append(unExpr.getTreeIdx()); 
+		ret = Token(op.getLoc(), termUnaryExpression, pos); :}
+
 	| star UnaryExpression; {:Token op = this.tokenStack[-2];
 		Token unExpr = this.tokenStack[-1];
-		size_t opPos = this.ast.insert(op, termstar);
-		size_t pos = this.ast.insert(termUnaryExpression);
-		this.ast.append(opPos);
-		this.ast.append(unExpr.getTreeIdx()); :}
+		size_t pos = this.ast.insert(op, termUnaryExpression);
+		this.ast.append(unExpr.getTreeIdx()); 
+		ret = Token(op.getLoc(), termUnaryExpression, pos); :}
 
 PostfixExpression :=
 	integer; {:Token t = this.tokenStack.back();

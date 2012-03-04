@@ -139,6 +139,7 @@ class Parser {
 		while(true) { 
 			this.printStack();
 			this.printTokenStack();
+			println(this.ast.toString());
 			action = this.getAction(input); 
 			//log("%s", action.toString());
 			if(action.getTyp() == TableType.Accept) {
@@ -171,7 +172,7 @@ class Parser {
 		log();
 		this.printStack();
 		this.printTokenStack();
-		log("%s", this.ast.toString());
+		//log("%s", this.ast.toString());
 	}
 
 	public void run() {

@@ -14,9 +14,11 @@ struct Token {
 	private int typ; 
 	private dstring value;
 	private size_t treeIdx; // the index of the ast node in the ast array
+	private bool treeIdxPlaced;
 
 	this(int typ) {
 		this.typ = typ;
+		this.treeIdxPlaced = false;
 	}
 
 	this(int typ, dstring value) {
@@ -28,13 +30,14 @@ struct Token {
 		this.loc = loc;
 		this.typ = typ;
 		this.value = value;
-		this.treeIdx = size_t.max;
+		this.treeIdx = 0;
 	}
 
 	this(Location loc, int typ, size_t treeIdx) {
 		this.loc = loc;
 		this.typ = typ;
 		this.treeIdx = treeIdx;
+		this.treeIdxPlaced = true;
 	}
 
 	string toString() const {
@@ -52,11 +55,20 @@ struct Token {
 	}
 
 	string toStringShort() const {
-		if(value is null || value == "") {
-			return format("[%s]", idToString(typ));
+		if(this.treeIdxPlaced) {
+			if(value is null || value == "") {
+				return format("[%s ti %u]", idToString(typ), this.treeIdx);
+			} else {
+				return format("[%s v %s ti %u]", idToString(typ), 
+					conv!(dstring,string)(value), this.treeIdx);
+			}
 		} else {
-			return format("[%s %s]", idToString(typ), 
-				conv!(dstring,string)(value));
+			if(value is null || value == "") {
+				return format("[%s]", idToString(typ));
+			} else {
+				return format("[%s v %s]", idToString(typ), 
+					conv!(dstring,string)(value));
+			}
 		}
 	}
 

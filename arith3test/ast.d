@@ -8,6 +8,8 @@ import hurt.io.stream;
 import token;
 import parsetable;
 
+import std.stdio;
+
 struct ASTNode {
 	private Token token;
 	private int typ;
@@ -48,6 +50,10 @@ struct ASTNode {
 		ret.pushBack(" ]");
 		return ret.getString();
 	}
+
+	public int getTyp() const {
+		return this.typ;
+	}
 }
 
 class AST {
@@ -82,13 +88,16 @@ class AST {
 	}
 
 	public void toGraph(string filename) const {
-		File graph = new File(filename, FileMode.OutNew);
+		hurt.io.stream.File graph = 
+			new hurt.io.stream.File(filename, FileMode.OutNew);
 		graph.writeString("digraph g {\n");
 		graph.writeString("graph [fontsize=30 labelloc=\"t\" label=\"\" ");
 		graph.writeString("splines=true overlap=false];\n");
 		graph.writeString("ratio = auto;\n");
 		for(size_t idx = 0; idx < this.tree.getSize(); idx++) {
+			writeln(this.tree[idx].toString());
 			graph.writeString(format("\"state%u\" [label = \"%s\"];\n", idx,
+				//idToString(this.tree[idx].getTyp())));
 				this.tree[idx].toString()));
 		}
 		graph.writeString("\n");
