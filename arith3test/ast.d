@@ -13,10 +13,12 @@ import std.stdio;
 struct ASTNode {
 	private Token token;
 	private int typ;
+	private bool dummyToken;
 	private Deque!(size_t) childs;
 
 	this(immutable(int) typ) {
 		this.typ = typ;
+		this.dummyToken = false;
 		this.childs = new Deque!(size_t)(16);
 	}
 
@@ -25,12 +27,44 @@ struct ASTNode {
 		this.token = token;
 	}
 
+	this(Token token, int typ, bool dummyToken) {
+		this(token, typ);
+		this.dummyToken = dummyToken;
+	}
+
 	public void insert(size_t idx) {
 		this.childs.pushBack(idx);
 	}
 
 	const(Deque!(size_t)) getChilds() const {
 		return this.childs;
+	}
+
+	public string toAST() const {
+		auto ret = new StringBuffer!(char)(128);
+		ret.pushBack("<table border=\"0\" cellborder=\"0\" cellpadding=\"3\" ");
+		ret.pushBack("bgcolor=\"white\">\n");
+		ret.pushBack("<tr>\n");
+		ret.pushBack("\t<td bgcolor=\"black\" align=\"center\" colspan=\"2\">");
+		ret.pushBack("<font color=\"white\">");
+		ret.pushBack(idToString(this.typ));
+		ret.pushBack("</font></td>\n</tr>\n");
+		if(!this.dummyToken) {
+			ret.pushBack(format("<tr><td align=\"left\">Token</td><td " ~
+				"align=\"right\">%s</td></tr>\n",
+				idToString(this.token.getTyp())));
+			if(!this.token.getLoc().isDummyLoc()) {
+				ret.pushBack(format("<tr><td align=\"left\">Loc</td><td " ~
+				"align=\"right\">%s</td></tr>\n",
+					this.token.getLoc().toString()));
+			}
+			if(this.token.getValue() !is null && this.token.getValue() != "") {
+				ret.pushBack(format("<tr><td align=\"left\">Value</td><td " ~
+				"align=\"right\">%s</td></tr>\n", this.token.getValue()));
+			}
+		}
+		ret.pushBack("</table>");
+		return ret.getString();
 	}
 
 	public string toString() const {
@@ -64,6 +98,11 @@ class AST {
 	}
 
 	// insert a new token to the tree
+	public size_t insert(Token token, int typ, bool dummyToken) { 
+		this.tree.pushBack(ASTNode(token, typ, dummyToken));
+		return this.tree.getSize()-1;
+	}
+
 	public size_t insert(Token token, int typ) { 
 		this.tree.pushBack(ASTNode(token, typ));
 		return this.tree.getSize()-1;
@@ -96,9 +135,10 @@ class AST {
 		graph.writeString("ratio = auto;\n");
 		for(size_t idx = 0; idx < this.tree.getSize(); idx++) {
 			writeln(this.tree[idx].toString());
-			graph.writeString(format("\"state%u\" [label = \"%s\"];\n", idx,
-				//idToString(this.tree[idx].getTyp())));
-				this.tree[idx].toString()));
+			graph.writeString(format("\"state%u\" [style = \"filled\" " ~
+				"penwidth = 1 fillcolor = \"white\" fontname = " ~
+				"\"Courier New\" shape = \"Mrecord\" label =<%s>];\n", idx,
+				this.tree[idx].toAST()));
 		}
 		graph.writeString("\n");
 

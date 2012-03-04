@@ -150,8 +150,8 @@ private MapSet!(ItemSet,ItemSet) minItemSets(Deque!(ItemSet) de,
 		foreach(size_t idx, ItemSet it; de) {
 			if(idx > 0) {
 				assert(it.getItemCount() <= de[idx-1].getItemCount(),
-					format("idx-1 size %d idx size %d", de[idx-1].getItemCount(),
-					de[idx].getItemCount()));
+					format("idx-1 size %d idx size %d", 
+					de[idx-1].getItemCount(), de[idx].getItemCount()));
 			}
 		}
 	}
