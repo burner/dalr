@@ -19,7 +19,7 @@ void main(string[] args) {
 
 	StopWatch sw;
 	sw.start();
-	Parser p = new Parser(new Lexer("short.dpp", lpMulti, 10));
+	Parser p = new Parser(new Lexer("examplearith.dpp", lpMulti, 10));
 
 	p.parse();
 	p.getAST().toGraph("test1.dot");

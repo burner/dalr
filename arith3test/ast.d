@@ -137,7 +137,7 @@ class AST {
 			writeln(this.tree[idx].toString());
 			graph.writeString(format("\"state%u\" [style = \"filled\" " ~
 				"penwidth = 1 fillcolor = \"white\" fontname = " ~
-				"\"Courier New\" shape = \"Mrecord\" label =<%s>];\n", idx,
+				"\"Courier\" shape = \"Mrecord\" label =<%s>];\n", idx,
 				this.tree[idx].toAST()));
 		}
 		graph.writeString("\n");
