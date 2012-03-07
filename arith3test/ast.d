@@ -4,6 +4,7 @@ import hurt.container.deque;
 import hurt.string.stringbuffer;
 import hurt.string.formatter;
 import hurt.io.stream;
+import hurt.util.pair;
 
 import token;
 import parsetable;
@@ -14,29 +15,34 @@ struct ASTNode {
 	private Token token;
 	private int typ;
 	private bool dummyToken;
-	private Deque!(size_t) childs;
+	private Pair!(size_t,ubyte) childs;
 
-	this(immutable(int) typ) {
+	public this(immutable(int) typ, size_t childPos) {
 		this.typ = typ;
 		this.dummyToken = false;
-		this.childs = new Deque!(size_t)(16);
+		//this.childs = new Deque!(size_t)(16);
+		this.initChilds(childPos);
 	}
 
-	this(Token token, int typ) {
-		this(typ);
+	public this(Token token, int typ, size_t childPos) {
+		this(typ, childPos);
 		this.token = token;
 	}
 
-	this(Token token, int typ, bool dummyToken) {
-		this(token, typ);
+	public this(Token token, int typ, bool dummyToken, size_t childPos) {
+		this(token, typ, childPos);
 		this.dummyToken = dummyToken;
 	}
 
-	public void insert(size_t idx) {
-		this.childs.pushBack(idx);
+	private void initChilds(size_t childPos) {
+		this.childs = Pair!(size_t,ubyte)(childPos,0);
 	}
 
-	const(Deque!(size_t)) getChilds() const {
+	public void insert() {
+		this.childs.second++;
+	}
+
+	public Pair!(size_t,ubyte) getChilds() const {
 		return this.childs;
 	}
 
@@ -69,18 +75,9 @@ struct ASTNode {
 
 	public string toString() const {
 		StringBuffer!(char) ret = new StringBuffer!(char)(128);
-		ret.pushBack(format("[%s (%s) {", idToString(this.typ),
+		ret.pushBack(format("[%s (%s)", idToString(this.typ),
 			this.token.toString()));
 
-		foreach(it; this.childs) {
-			ret.pushBack(format("%u,", it));
-		}
-		ret.popBack();
-		if(this.childs.getSize() == 0) {
-			ret.popBack();
-		} else {
-			ret.pushBack("}");
-		}
 		ret.pushBack(" ]");
 		return ret.getString();
 	}
@@ -92,36 +89,43 @@ struct ASTNode {
 
 class AST {
 	private Deque!(ASTNode) tree;
+	private Deque!(size_t) childs;
 
-	this() {
+	public this() {
 		this.tree = new Deque!(ASTNode)(128);
+		this.childs = new Deque!(size_t)(128);
 	}
 
 	// insert a new token to the tree
 	public size_t insert(Token token, int typ, bool dummyToken) { 
-		this.tree.pushBack(ASTNode(token, typ, dummyToken));
+		this.tree.pushBack(ASTNode(token, typ, dummyToken, this.childs.getSize()));
 		return this.tree.getSize()-1;
 	}
 
 	public size_t insert(Token token, int typ) { 
-		this.tree.pushBack(ASTNode(token, typ));
+		this.tree.pushBack(ASTNode(token, typ, this.childs.getSize()));
 		return this.tree.getSize()-1;
 	}
 
 	public size_t insert(immutable(int) typ) {
-		this.tree.pushBack(ASTNode(typ));
+		this.tree.pushBack(ASTNode(typ, this.childs.getSize()));
 		return this.tree.getSize()-1;
 	}
 
 	public void append(size_t idx) { // link nodes to node
 		assert(!this.tree.isEmpty());
-		this.tree.backRef().insert(idx);
+		this.childs.pushBack(idx);
+		this.tree.backRef().insert();
 	}
 
 	public string toString() const {
 		StringBuffer!(char) ret = new StringBuffer!(char)(256);
 		foreach(it; this.tree) {
 			ret.pushBack(format("%s ", it.toString()));
+		}
+		ret.pushBack("\n");
+		foreach(it; this.childs) {
+			ret.pushBack(format("%d ", it));
 		}
 		return ret.getString();
 	}
@@ -143,10 +147,10 @@ class AST {
 		graph.writeString("\n");
 
 		for(size_t idx = 0; idx < this.tree.getSize(); idx++) {
-			const(Deque!(size_t)) childs = this.tree[idx].getChilds();
-			for(size_t jdx = 0; jdx < childs.getSize(); jdx++) {
+			Pair!(size_t,ubyte) child = this.tree[idx].getChilds();
+			for(ubyte jdx = 0; jdx < child.second; jdx++) {
 				graph.writeString(format("state%u -> state%u;\n", idx, 
-					childs[jdx]));
+					this.childs[child.first + jdx]));
 			}
 		}
 		graph.writeString("\n");
