@@ -9,7 +9,6 @@ import hurt.string.formatter;
 
 import ast;
 import lexer;
-import lextable;
 import parsetable;
 import token;
 

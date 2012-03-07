@@ -67,6 +67,15 @@ int main(string[] args) {
 		"if passed the precedence of the terminals is printed ", 
 		printPrecedence, true);
 
+	if(driverFile !is null && driverFile.length > 0) {
+		LalrWriter lw = new LalrWriter(driverFile, driverModulename,
+			null, null, driverClassname !is null && driverClassname.length > 0 ?
+			driverClassname : "Lalr");
+		lw.write();
+		lw.close();
+	}
+
+
 	if(inputFile is null || inputFile.length == 0) {
 		printfln("No inputfile defined. An inputfile is required.");
 		return -1;
@@ -135,14 +144,6 @@ int main(string[] args) {
 			sm, pm, false);
 		fw.write();
 		fw.close();
-	}
-
-	if(driverFile !is null && driverFile.length > 0) {
-		LalrWriter lw = new LalrWriter(driverFile, driverModulename,
-			sm, pm, driverClassname !is null && driverClassname.length > 0 ?
-			driverClassname : "Lalr");
-		lw.write();
-		lw.close();
 	}
 
 	return 0;
