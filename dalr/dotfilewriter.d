@@ -73,6 +73,35 @@ private string itemsetToHTML(ItemSet iSet, Deque!(Deque!(int)) prod,
 	return ret.getString();
 }
 
+private string makeTransitions(ItemSet iSet, SymbolManager sm, 
+		Set!(ItemSet) exists) {
+	StringBuffer!(char) ret = new StringBuffer!(char)(1000);
+	ISRIterator!(MapItem!(int,ItemSet)) it = iSet.getFollowSet().begin();
+	for(; it.isValid(); it++) {
+		if(!exists.contains((*it).getData())) {
+			continue;
+		}
+		ret.pushBack("state");
+		ret.pushBack(conv!(long,string)(iSet.getId()));
+		ret.pushBack(" -> "); 
+		ret.pushBack("state");
+		ret.pushBack(conv!(long,string)((*it).getData().getId()));
+		ret.pushBack(" [ ");
+		if(sm.getKind((*it).getKey())) {
+			ret.pushBack("penwidth = 5 fontsize = 28 fontcolor = ");
+			ret.pushBack("\"black\" label = \"");
+			ret.pushBack(sm.getSymbolName((*it).getKey()));
+			ret.pushBack("\"];\n");
+		} else {
+			ret.pushBack("penwidth = 1 fontsize = 20 fontcolor = \"grey28\"");
+			ret.pushBack(" label = \"'");
+			ret.pushBack(sm.getSymbolName((*it).getKey()));
+			ret.pushBack("'\"];\n");
+		}
+	}
+	return ret.getString();
+}
+
 private string makeTransitions(ItemSet iSet, SymbolManager sm) {
 	StringBuffer!(char) ret = new StringBuffer!(char)(1000);
 	ISRIterator!(MapItem!(int,ItemSet)) it = iSet.getFollowSet().begin();
@@ -206,6 +235,61 @@ private MapSet!(ItemSet,ItemSet) minItemSets(Deque!(ItemSet) de,
 	}
 
 	return ret;
+}
+
+public void writeLR0GraphAround(Deque!(ItemSet) de, SymbolManager sm, 
+		Deque!(Deque!(int)) prod, string filename, ProductionManager pm, 
+		int around) {
+	hurt.io.stream.File file = new hurt.io.stream.File(filename ~ ".dot", 
+		FileMode.OutNew);
+
+	ItemSet a = null;
+	foreach(it; de) {
+		if(it.getId() == around) {
+			a = it;
+			break;
+		}
+	}
+	assert(a !is null);
+
+	Deque!(ItemSet) conn = new Deque!(ItemSet)(de.getSize());
+	conn.pushBack(a);
+
+	for(auto it = a.getFollowSet().begin(); it.isValid(); it++) {
+		conn.pushBack((*it).getData());	
+	}
+	foreach(it; de) {
+		if(it.goesToId(around)) {
+			conn.pushBack(it);
+		}
+	}
+
+	Set!(ItemSet) processed = new Set!(ItemSet)(ISRType.HashTable);
+	StringBuffer!(char) sb = new StringBuffer!(char)(1000);
+	file.writeString("digraph g {\n");
+	file.writeString("graph [fontsize=30 labelloc=\"t\" label=\"\" ");
+	file.writeString("splines=true overlap=false rankdir = \"LR\"];\n");
+	file.writeString("ratio = auto;\n");
+	foreach(size_t idx, ItemSet iSet; conn) {
+		file.writeString("\"state");
+		file.writeString(conv!(long,string)(iSet.getId()));
+		file.writeString("\" ");
+		file.writeString("[ style = \"filled\" penwidth = 1 fillcolor = ");
+		file.writeString("\"white\"");
+		file.writeString(" fontname = \"Courier New\" shape = \"Mrecord\" ");
+		file.writeString("label =<");
+		file.writeString(itemsetToHTML(iSet, prod, sm));
+		file.writeString("> ];\n");
+		processed.insert(iSet);
+	}
+	ISRIterator!(ItemSet) iSet = processed.begin();
+	for(; iSet.isValid(); iSet++) {
+		file.writeString(makeTransitions(*iSet, sm, processed));
+	}
+
+	file.writeString("}\n");
+	file.close();
+	system("dot -T png " ~ filename ~ ".dot > " ~ filename ~ ".png &disown");
 }
 
 public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm, 

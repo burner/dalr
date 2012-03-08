@@ -245,7 +245,7 @@ final class RuleWriter : Writer {
 					sb.popBack();
 					sb.popBack();
 				}
-				sb.pushBack("],\n\n");
+				sb.pushBack(format("] /* itemset %u */,\n\n", idx-1));
 				this.file.writeString(sb.getString());
 				sb.clear();
 			}

@@ -53,6 +53,7 @@ int main(string[] args) {
 	arg.setOption("-dc", "--drivername", "specify the class name of driver." 
 		, driverClassname);
 
+
 	// graph filename
 	string graphfile = "";
 	arg.setOption("-g", "--graph", "specify the filename for the lr0 graph." ~
@@ -65,7 +66,16 @@ int main(string[] args) {
 	bool printPrecedence = false;
 	arg.setOption("-c", "--printprecedence", 
 		"if passed the precedence of the terminals is printed ", 
-		printPrecedence, true);
+		printPrecedence);
+
+	int printAround = -1;
+	arg.setOption("-a", "--printaround", 
+		"If a grammer has ambiguites it might make sense to print the lr set"
+		~ " around that itemset. If you pass an int after this option " ~
+		" a graph will be created", 
+		printAround, true);
+
+	
 
 	if(driverFile !is null && driverFile.length > 0) {
 		LalrWriter lw = new LalrWriter(driverFile, driverModulename,
@@ -117,7 +127,7 @@ int main(string[] args) {
 			log("%s", (*it).getProduction());
 		}
 	}
-	println(sm.toString());
+	//println(sm.toString());
 
 	// operator precedence prolog
 	//insertMetaSymbolsIntoSymbolManager(sm, fr.getProductionIterator());
@@ -125,13 +135,13 @@ int main(string[] args) {
 		sm.checkIfPrecedenceIsCorrect(left, right, non);
 	}
 
-	println(sm.precedenceToString());
+	//println(sm.precedenceToString());
 
 	// pass the ruleIndex Production mapping to the ProductionManager
 	// for conflict resolution
 	pm.setProdMapping(actions);
 
-	pm.makeAll(graphfile);
+	pm.makeAll(graphfile, printAround);
 
 	//println(extendedGrammerToString(pm, sm));
 	//println(itemsetsToString(pm, sm));

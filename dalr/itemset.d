@@ -193,6 +193,16 @@ class ItemSet {
 		return this.id;
 	}
 
+	public bool goesToId(long to) {
+		auto it = this.followSets.begin();
+		for(; it.isValid(); it++) {
+			if((*it).getData().getId() == to) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public size_t howManyDoubles() {
 		size_t cnt = 0;
 		Set!(ItemSet) found = new Set!(ItemSet)(ISRType.HashTable);

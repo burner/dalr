@@ -90,13 +90,17 @@ class ProductionManager {
 		this.glr = glr;
 	}
 	
-	public void makeAll(string graphFileName) {
+	public void makeAll(string graphFileName, int printAround) {
 		log("makeLRZeroItemSets");
 		this.makeLRZeroItemSets();
-		if(graphFileName.length > 0) {
+		if(graphFileName.length > 0 && printAround == -1) {
 			log("writeGraph");
 			writeLR0Graph(this.getItemSets(), this.symbolManager, 
 				this.getProductions(), graphFileName, this);
+		} else if(graphFileName.length > 0 && printAround != -1) {
+			log("writeGraph around %d", printAround);
+			writeLR0GraphAround(this.getItemSets(), this.symbolManager, 
+				this.getProductions(), graphFileName, this, printAround);
 		}
 		log("makeExtendedGrammer");
 		this.makeExtendedGrammer();
@@ -376,9 +380,10 @@ class ProductionManager {
 
 						// warn the user about ambiguities
 						warn(item.getSize() > 1, 
-							"conflict in itemset %u with lookahead token %s", 
-							table[idx][0][0].number, this.symbolManager.
-							getSymbolName(table[0][jdx][0].number));
+							"conflict in itemset %u with lookahead token "
+							~ "%s", table[idx][0][0].number, 
+							this.symbolManager.getSymbolName(table[0][jdx][0].
+							number));
 						if(item.getSize() == 2 && item[0].typ == Type.Reduce
 								&& item[1].typ == Type.Reduce) {
 							warn("reduce recduce conflict with rule %d " ~
@@ -1216,7 +1221,7 @@ class ProductionManager {
 
 		foreach(size_t idx, Deque!(ExtendedItem) it; this.extGrammerComplex) {
 			if(idx % 100 == 0) {
-				log("%u from %u", idx, this.extGrammerComplex.getSize());
+				//log("%u from %u", idx, this.extGrammerComplex.getSize());
 			}
 			foreach(size_t jdx, ExtendedItem jt; it) {
 				// nothing for the first two
