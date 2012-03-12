@@ -1,21 +1,7 @@
-%%
-userCode
+S := A;
 
-%%
+A := if B then A; 
+	| if B then A else A;
+	| a ;
 
-%% another user code %%
-
-S :=
-	A;
-
-A :=
-	if B then A; {: on reduction :}
-	| if B then A else A; {: on reduction 2 
-	
-		:}
-	| a
-
-	;
-
-B := bool
-;
+B := bool ;
