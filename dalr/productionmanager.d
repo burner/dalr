@@ -743,7 +743,8 @@ class ProductionManager {
 			}
 			ret.pushBack(tmp2);
 		}
-		debug { // make sure the itemset numbers are sorted
+		log();
+		/*debug { // make sure the itemset numbers are sorted
 			foreach(size_t idx, Deque!(Deque!(FinalItem)) it; ret) {
 				if(idx > 2) {
 					if(it.front().front().typ == Type.ItemSet) {
@@ -765,12 +766,13 @@ class ProductionManager {
 				}
 
 			}
-		}
+		}*/
 
 		// make the reduce stuff into the table
 		this.reduceExtGrammerFollow();
 
 		int ambiguityCnt = 0;
+		log();
 
 		// run over all merged reductions
 		// the key is the row
@@ -822,7 +824,7 @@ class ProductionManager {
 				}
 			}
 		}
-		debug {
+		/*debug {
 			if(ret.getSize() > 1) {
 				assert(ret[0].getSize() == ret[1].getSize(),
 					format("%u %u", ret[0].getSize(), ret[1].getSize()));
@@ -854,7 +856,7 @@ class ProductionManager {
 					}
 				}
 			}
-		}
+		}*/
 
 		return ret;
 	}

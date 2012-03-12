@@ -68,6 +68,11 @@ int main(string[] args) {
 		"if passed the precedence of the terminals is printed ", 
 		printPrecedence);
 
+	bool glr = false;
+	arg.setOption("-a", "--glr", 
+		"if passed the glr parsetable will be emitted", 
+		glr);
+
 	int printAround = -1;
 	arg.setOption("-a", "--printaround", 
 		"If a grammer has ambiguites it might make sense to print the lr set"
@@ -151,7 +156,7 @@ int main(string[] args) {
 
 	if(outputFile !is null && outputFile.length > 0) {
 		RuleWriter fw = new RuleWriter(outputFile, outputModulename,
-			sm, pm, false);
+			sm, pm, glr);
 		fw.write();
 		fw.close();
 	}
