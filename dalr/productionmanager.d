@@ -73,24 +73,19 @@ class ProductionManager {
 	// production index -> Production mapping
 	Map!(size_t,Production) prodMapping;
 
-	// glr ?
-	bool glr;
-
 	this() {
 		this.prod = new Deque!(Deque!(int));
 		this.itemSets = new Deque!(ItemSet)();
 		this.followSetCache = new Trie!(Item,Map!(int, ItemSet))();
 		this.completeItemSetCache = new Trie!(Item,Deque!(Item))();
-		this.glr = false;
 	}
 
 	this(SymbolManager symbolManager, bool glr) {
 		this();
 		this.symbolManager = symbolManager;
-		this.glr = glr;
 	}
 	
-	public void makeAll(string graphFileName, int printAround) {
+	public void makeAll(string graphFileName, int printAround, bool glr) {
 		log("makeLRZeroItemSets");
 		this.makeLRZeroItemSets();
 		if(graphFileName.length > 0 && printAround == -1) {
@@ -125,7 +120,7 @@ class ProductionManager {
 		//println(mergedExtendedToString(pm, sm));
 		this.computeFinalTable();
 		log("applyPrecedence");
-		this.applyPrecedence();
+		this.applyPrecedence(glr);
 	}
 
 
@@ -320,7 +315,7 @@ class ProductionManager {
 		return remove;
 	}
 
-	private void applyPrecedence() {
+	private void applyPrecedence(bool glr) {
 		Deque!(Deque!(Deque!(FinalItem))) table = this.getFinalTable();
 
 		foreach(size_t idx, Deque!(Deque!(FinalItem)) row; table) {
@@ -373,42 +368,56 @@ class ProductionManager {
 						// remove all the items that have lower precedence
 						// than that of the highest, there might be more
 						// than one item that fulfills this requirement
-						item.removeFalse(delegate(FinalItem toTest) {
-							return this.getPrecedence(toTest, jdx) >= 
-								highPrecValue;
-						});
+						if(!glr) {
+							item.removeFalse(delegate(FinalItem toTest) {
+								return this.getPrecedence(toTest, jdx) >= 
+									highPrecValue;
+							});
+						}
 
 						// warn the user about ambiguities
-						warn(item.getSize() > 1, 
+						/*warn(item.getSize() > 1, 
 							"conflict in itemset %u with lookahead token "
 							~ "%s", table[idx][0][0].number, 
 							this.symbolManager.getSymbolName(table[0][jdx][0].
-							number));
+							number));*/
 						if(item.getSize() == 2 && item[0].typ == Type.Reduce
 								&& item[1].typ == Type.Reduce) {
+							warn("conflict in itemset %u with lookahead token "
+							~ "%s", table[idx][0][0].number, 
+							this.symbolManager.getSymbolName(table[0][jdx][0].
+							number));
 							warn("reduce recduce conflict with rule %d " ~
 								"and rule %d", item[0].number, item[1].number);
 
 						} else if(item.getSize() == 2 &&
 								item[0].typ == Type.Reduce
 								&& item[1].typ == Type.Shift) {
+							warn("conflict in itemset %u with lookahead token "
+							~ "%s", table[idx][0][0].number, 
+							this.symbolManager.getSymbolName(table[0][jdx][0].
+							number));
 							warn("shift conflicts with reduction rule %d", 
 								item[0].number);
 							// so if we are not creating a glr parser we do as 
 							// yacc does
-							if(!this.glr) {
+							/*if(!this.glr) {
 								item.popFront();
-							}
+							}*/
 						} else if(item.getSize() == 2 &&
 								item[0].typ == Type.Shift
 								&& item[1].typ == Type.Reduce) {
+							warn("conflict in itemset %u with lookahead token "
+							~ "%s", table[idx][0][0].number, 
+							this.symbolManager.getSymbolName(table[0][jdx][0].
+							number));
 							warn("shift conflicts with reduction rule %d", 
 								item[1].number);
 							// so if we are not creating a glr parser we do as 
 							// yacc does
-							if(!this.glr) {
+							/*if(!this.glr) {
 								item.popBack();
-							}
+							}*/
 						} else if(item.getSize() > 2) {
 							warn("last conflict comprised of more " ~
 								"than two items");
@@ -746,7 +755,6 @@ class ProductionManager {
 			}
 			ret.pushBack(tmp2);
 		}
-		log();
 		debug { // make sure the itemset numbers are sorted
 			foreach(size_t idx, Deque!(Deque!(FinalItem)) it; ret) {
 				if(idx > 2) {
@@ -775,14 +783,13 @@ class ProductionManager {
 		this.reduceExtGrammerFollow();
 
 		int ambiguityCnt = 0;
-		log();
 
 		// run over all merged reductions
 		// the key is the row
 		ISRIterator!(MapItem!(size_t, MergedReduction)) it = 
 			this.mergedExtended.begin();
 		for(size_t tid = 0; it.isValid(); it++, tid++) {
-			log("%u from %u", tid, this.mergedExtended.getSize());
+			//log("%u from %u", tid, this.mergedExtended.getSize());
 			// the row
 			assert((*it).getKey() == (*it).getData().getFinalSet());
 			//Deque!(Deque!(FinalItem)) theRow = ret[(*it).getKey()];
@@ -799,46 +806,32 @@ class ProductionManager {
 			}
 			assert(found == 1, format("found %d %d", found, (*it).getKey()));
 			assert(theRow !is null);
-			log();
 
 			MapItem!(size_t, MergedReduction) mItem = (*it);
-			log();
 			assert(mItem !is null);
-			log();
 			MergedReduction mr = mItem.getData();
-			log();
 			assert(mr !is null);
-			log();
 			//Map!(int, Set!(size_t)) follow = (*it).getData().getFollowMap();
 			Map!(int, Set!(size_t)) follow = mr.getFollowMap();
 			assert(follow !is null);
-			log();
 			foreach(size_t idx, Deque!(FinalItem) tt; tmp) {
-				log("%u row size %u", idx, theRow.getSize());
+				//log("%u row size %u", idx, theRow.getSize());
 				assert(tt !is null);
 				assert(theRow !is null);
 				assert(tt.getSize() == 1);
 				if(tt[0].typ == Type.Term) {
-					log();
 					// get the follow set
 					MapItem!(int,Set!(size_t)) s = follow.find(tt[0].number);
 					if(s is null) {
-						log();
 						continue;
 					} else {
-						log();
 						// if the follow set exists add all items to the deque 
 						// entry
 						assert(s !is null);
-						log();
 						Set!(size_t) rtSet = s.getData();
-						log();
 						assert(rtSet !is null);
-						log();
 						ISRIterator!(size_t) rt = rtSet.begin();
-						log();
 						for(; rt.isValid(); rt++) {
-							log();
 							theRow[idx].pushBack(FinalItem(Type.Reduce, 
 								conv!(size_t,int)(*rt)));
 							if(theRow[idx].getSize() > 1) {
@@ -849,14 +842,11 @@ class ProductionManager {
 								*/
 							}
 						}
-						log();
 					}
 				}
-				log();
 			}
 		}
 
-		log();
 
 		debug {
 			if(ret.getSize() > 1) {

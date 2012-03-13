@@ -146,7 +146,7 @@ int main(string[] args) {
 	// for conflict resolution
 	pm.setProdMapping(actions);
 
-	pm.makeAll(graphfile, printAround);
+	pm.makeAll(graphfile, printAround, glr);
 
 	//println(extendedGrammerToString(pm, sm));
 	//println(itemsetsToString(pm, sm));

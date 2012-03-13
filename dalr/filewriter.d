@@ -81,12 +81,14 @@ final class RuleWriter : Writer {
 		this.file.write('\n');
 		if(!this.glr) {
 			this.writeTable();
+			this.file.writeString("\n");
+			this.writeGotoTable();
 		} else {
 			this.writeGlrTable();
+			this.file.writeString("\n");
+			this.writeGotoGlrTable();
 		}
 		this.file.writeString("\n\n");
-		this.writeGotoTable();
-		this.file.writeString("\n");
 		this.writeRules();
 		this.writeActions();
 	}
@@ -183,7 +185,9 @@ final class RuleWriter : Writer {
 		StringBuffer!(char) arrTmp = new StringBuffer!(char)(1024);
 		sb.pushBack("alias Pair!(int,TableItem[]) TitP;\n\n");
 		sb.pushBack("alias TableItem Tit;\n\n");
-		sb.pushBack("public static immutable(immutable(immutable(immutable(TitP)[])[])[]) = \n");
+		sb.pushBack("public static " ~
+			" immutable(immutable(immutable(TitP)[])[]) " ~
+			"parseTable = \n");
 		sb.pushBack("[\n");
 		foreach(size_t jdx, Deque!(Deque!(FinalItem)) row; table) {
 			if(jdx == 0) {
@@ -238,7 +242,8 @@ final class RuleWriter : Writer {
 					arrTmp.pushBack(',');
 				}
 				while(arrTmp.getSize() > 0 && 
-						(arrTmp.peekBack() == '\n' || arrTmp.peekBack() == ',')) {
+						(arrTmp.peekBack() == '\n' || 
+						arrTmp.peekBack() == ',')) {
 					arrTmp.popBack();
 				}
 				arrTmp.pushBack(']');
@@ -252,14 +257,101 @@ final class RuleWriter : Writer {
 					(sb.peekBack() == '\n' || sb.peekBack() == ',')) {
 				sb.popBack();
 			}
-			sb.pushBack("] /* itemset %d */ ,\n\n", jdx+1);
+			sb.pushBack("] /* itemset %d */ ,\n\n", jdx-1);
 		}
 		while(sb.getSize() > 0 && 
 				(sb.peekBack() == '\n' || sb.peekBack() == ',')) {
 			sb.popBack();
 		}
-		sb.pushBack("];\n\n");
+		sb.pushBack("];\n");
 		this.file.writeString(sb.getString());
+	}
+
+	private void writeGotoGlrTable() {
+		Deque!(Deque!(Deque!(FinalItem))) table = this.pm.getFinalTable();
+		StringBuffer!(char) sb = new StringBuffer!(char)(1024);
+		StringBuffer!(char) arrTmp = new StringBuffer!(char)(1024);
+		this.file.writeString(format(
+			"public static immutable(immutable(Pair!(int,TableItem[]))[])[%u])"
+			~ "gotoTable = [\n", table.getSize()-1));
+
+		foreach(size_t idx, Deque!(Deque!(FinalItem)) row; table) {
+			if(idx == 0) { // don't need the items
+				continue;
+			}
+			
+			// to sort it for the binary search
+			Deque!(Pair!(int,Deque!(FinalItem))) tmp = 
+				new Deque!(Pair!(int,Deque!(FinalItem)))(row.getSize()); 
+
+			foreach(size_t jdx, Deque!(FinalItem) jt; row) {
+				if(jdx == 0) { // don't need the itemset number
+					continue;
+				}
+				tmp.pushBack(Pair!(int,Deque!(FinalItem))
+					(table[0][jdx][0].number, jt));
+			}
+
+			// sort it
+			sortDeque(tmp, function(in Pair!(int,Deque!(FinalItem)) a,
+				in Pair!(int,Deque!(FinalItem)) b) {
+					return a.first < b.first;
+				});
+
+			sb.pushBack('[');
+			foreach(Pair!(int,Deque!(FinalItem)) it; tmp) {
+				size_t cnt = it.second.count(delegate(FinalItem it) {
+					return it.typ != Type.Goto; });
+
+				if(cnt == it.second.getSize()) {
+					continue;
+				}
+
+				sb.pushBack("TitP(%d,", it.first);
+				arrTmp.clear();
+				arrTmp.pushBack('[');
+				foreach(FinalItem jt; it.second) {
+					if(jt.typ != Type.Goto) {
+						continue;
+					}
+					string tmpS;
+					if(jt.typ == Type.Goto) {
+						tmpS = format("Tit(%s, %u)",
+							finalItemTypToTableTypeString(jt.typ), jt.number);
+					} 
+
+					if(arrTmp.getSize() % 80 + tmpS.length > 80) {
+						arrTmp.pushBack('\n');
+					}
+					arrTmp.pushBack(tmpS);
+					arrTmp.pushBack(',');
+				}
+				while(arrTmp.getSize() > 0 && 
+						(arrTmp.peekBack() == '\n' || 
+						arrTmp.peekBack() == ',')) {
+					arrTmp.popBack();
+				}
+				arrTmp.pushBack(']');
+				sb.pushBack(arrTmp.getString());
+				sb.pushBack("),");
+				if(sb.getSize() % 80 + sb.getSize() > 80) {
+					sb.pushBack('\n');
+				}
+			}
+			while(sb.getSize() > 0 && 
+					(sb.peekBack() == '\n' || sb.peekBack() == ',')) {
+				sb.popBack();
+			}
+			sb.pushBack("] /* itemset %d */ ,\n\n",idx-1);
+		}
+		while(sb.getSize() > 0 && 
+				(sb.peekBack() == '\n' || sb.peekBack() == ',')) {
+			sb.popBack();
+		}
+		sb.pushBack("];\n");
+			
+		this.file.writeString(sb.getString());
+		sb.clear();
 	}
 
 	private void writeTable() {
@@ -380,37 +472,32 @@ final class RuleWriter : Writer {
 					return a.first < b.first;
 				});
 
-			if(this.glr) {
-				//sb.pushBack(\n"[Pair!(int,TableItem)[]\n");
-			} else {
-				sb.pushBack('[');
-				foreach(Pair!(int,Deque!(FinalItem)) it; tmp) {
-					if(it.second[0].typ != Type.Goto) {
-						continue;
-					}
-					string tmpS = format("Pair!(int,TableItem)" ~
-						"(%d,TableItem(%s, %u)), ", it.first, 
-						finalItemTypToTableTypeString(it.second[0].typ),
-						it.second[0].number);
+			sb.pushBack('[');
+			foreach(Pair!(int,Deque!(FinalItem)) it; tmp) {
+				if(it.second[0].typ != Type.Goto) {
+					continue;
+				}
+				string tmpS = format("Pair!(int,TableItem)" ~
+					"(%d,TableItem(%s, %u)), ", it.first, 
+					finalItemTypToTableTypeString(it.second[0].typ),
+					it.second[0].number);
 
-					if(sb.getSize() + tmpS.length > 80) {
-						this.file.writeString(sb.getString());
-						this.file.writeString("\n");
-						sb.clear();
-						sb.pushBack(tmpS);
-					} else {
-						sb.pushBack(tmpS);
-					}
+				if(sb.getSize() + tmpS.length > 80) {
+					this.file.writeString(sb.getString());
+					this.file.writeString("\n");
+					sb.clear();
+					sb.pushBack(tmpS);
+				} else {
+					sb.pushBack(tmpS);
 				}
-				if(sb.getSize() > 1) {
-					sb.popBack();
-					sb.popBack();
-				}
-				sb.pushBack("],\n\n");
-				this.file.writeString(sb.getString());
-				sb.clear();
 			}
-
+			if(sb.getSize() > 1) {
+				sb.popBack();
+				sb.popBack();
+			}
+			sb.pushBack("],\n\n");
+			this.file.writeString(sb.getString());
+			sb.clear();
 		}
 		this.file.seek(-3, SeekPos.Current);
 		sb.pushBack("];\n");
