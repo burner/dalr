@@ -640,6 +640,9 @@ class ProductionManager {
 					tmp.insert(*mt, theRule, lt);
 				}
 			}
+
+			assert(tmp.getFollowMap() !is null);
+			assert(tmp.getExtFollowMap() !is null);
 		}
 
 		this.mergedExtended = mr;
@@ -744,7 +747,7 @@ class ProductionManager {
 			ret.pushBack(tmp2);
 		}
 		log();
-		/*debug { // make sure the itemset numbers are sorted
+		debug { // make sure the itemset numbers are sorted
 			foreach(size_t idx, Deque!(Deque!(FinalItem)) it; ret) {
 				if(idx > 2) {
 					if(it.front().front().typ == Type.ItemSet) {
@@ -766,7 +769,7 @@ class ProductionManager {
 				}
 
 			}
-		}*/
+		}
 
 		// make the reduce stuff into the table
 		this.reduceExtGrammerFollow();
@@ -778,7 +781,8 @@ class ProductionManager {
 		// the key is the row
 		ISRIterator!(MapItem!(size_t, MergedReduction)) it = 
 			this.mergedExtended.begin();
-		for(; it.isValid(); it++) {
+		for(size_t tid = 0; it.isValid(); it++, tid++) {
+			log("%u from %u", tid, this.mergedExtended.getSize());
 			// the row
 			assert((*it).getKey() == (*it).getData().getFinalSet());
 			//Deque!(Deque!(FinalItem)) theRow = ret[(*it).getKey()];
@@ -795,20 +799,46 @@ class ProductionManager {
 			}
 			assert(found == 1, format("found %d %d", found, (*it).getKey()));
 			assert(theRow !is null);
+			log();
 
-			Map!(int, Set!(size_t)) follow = (*it).getData().getFollowMap();
+			MapItem!(size_t, MergedReduction) mItem = (*it);
+			log();
+			assert(mItem !is null);
+			log();
+			MergedReduction mr = mItem.getData();
+			log();
+			assert(mr !is null);
+			log();
+			//Map!(int, Set!(size_t)) follow = (*it).getData().getFollowMap();
+			Map!(int, Set!(size_t)) follow = mr.getFollowMap();
+			assert(follow !is null);
+			log();
 			foreach(size_t idx, Deque!(FinalItem) tt; tmp) {
+				log("%u row size %u", idx, theRow.getSize());
+				assert(tt !is null);
+				assert(theRow !is null);
 				assert(tt.getSize() == 1);
 				if(tt[0].typ == Type.Term) {
+					log();
 					// get the follow set
 					MapItem!(int,Set!(size_t)) s = follow.find(tt[0].number);
 					if(s is null) {
+						log();
 						continue;
 					} else {
+						log();
 						// if the follow set exists add all items to the deque 
 						// entry
-						ISRIterator!(size_t) rt = s.getData().begin();
+						assert(s !is null);
+						log();
+						Set!(size_t) rtSet = s.getData();
+						log();
+						assert(rtSet !is null);
+						log();
+						ISRIterator!(size_t) rt = rtSet.begin();
+						log();
 						for(; rt.isValid(); rt++) {
+							log();
 							theRow[idx].pushBack(FinalItem(Type.Reduce, 
 								conv!(size_t,int)(*rt)));
 							if(theRow[idx].getSize() > 1) {
@@ -819,12 +849,16 @@ class ProductionManager {
 								*/
 							}
 						}
-
+						log();
 					}
 				}
+				log();
 			}
 		}
-		/*debug {
+
+		log();
+
+		debug {
 			if(ret.getSize() > 1) {
 				assert(ret[0].getSize() == ret[1].getSize(),
 					format("%u %u", ret[0].getSize(), ret[1].getSize()));
@@ -856,7 +890,7 @@ class ProductionManager {
 					}
 				}
 			}
-		}*/
+		}
 
 		return ret;
 	}
