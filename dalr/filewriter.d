@@ -310,10 +310,12 @@ final class RuleWriter : Writer {
 				sb.pushBack("TitP(%d,", it.first);
 				arrTmp.clear();
 				arrTmp.pushBack('[');
+				size_t gotoCnt = 0;
 				foreach(FinalItem jt; it.second) {
 					if(jt.typ != Type.Goto) {
 						continue;
 					}
+					gotoCnt++;
 					string tmpS;
 					if(jt.typ == Type.Goto) {
 						tmpS = format("Tit(%s, %u)",
@@ -326,6 +328,7 @@ final class RuleWriter : Writer {
 					arrTmp.pushBack(tmpS);
 					arrTmp.pushBack(',');
 				}
+				warn(gotoCnt > 1, "more than one goto in itemset %u", idx-1);
 				while(arrTmp.getSize() > 0 && 
 						(arrTmp.peekBack() == '\n' || 
 						arrTmp.peekBack() == ',')) {
