@@ -85,9 +85,11 @@ class ProductionManager {
 		this.symbolManager = symbolManager;
 	}
 	
-	public void makeAll(string graphFileName, int printAround, bool glr) {
+	public bool makeAll(string graphFileName, int printAround, bool glr) {
 		log("makeLRZeroItemSets");
+		StopWatch lrzero;
 		this.makeLRZeroItemSets();
+		log("\btoke %f", lrzero.stop());
 		if(graphFileName.length > 0 && printAround == -1) {
 			log("writeGraph");
 			writeLR0Graph(this.getItemSets(), this.symbolManager, 
@@ -120,7 +122,7 @@ class ProductionManager {
 		//println(mergedExtendedToString(pm, sm));
 		this.computeFinalTable();
 		log("applyPrecedence");
-		this.applyPrecedence(glr);
+		return this.applyPrecedence(glr);
 	}
 
 
@@ -315,8 +317,9 @@ class ProductionManager {
 		return remove;
 	}
 
-	private void applyPrecedence(bool glr) {
+	private bool applyPrecedence(bool glr) {
 		Deque!(Deque!(Deque!(FinalItem))) table = this.getFinalTable();
+		bool ret = false;
 
 		foreach(size_t idx, Deque!(Deque!(FinalItem)) row; table) {
 			if(idx == 0) { // ignore the first row
@@ -383,53 +386,80 @@ class ProductionManager {
 							number));*/
 						if(item.getSize() == 2 && item[0].typ == Type.Reduce
 								&& item[1].typ == Type.Reduce) {
-							warn("conflict in itemset %u with lookahead token "
-							~ "%s", table[idx][0][0].number, 
-							this.symbolManager.getSymbolName(table[0][jdx][0].
-							number));
+							warn("conflict in itemset %u %s", 
+								table[idx][0][0].number);
 							warn("reduce recduce conflict with rule %d " ~
-								"and rule %d", item[0].number, item[1].number);
+								"and rule %d\n%s\n%s", 
+								item[0].number, 
+								item[1].number, 
+								productionToString(this.prod[item[0].number], 
+									this.symbolManager),
+								productionToString(this.prod[item[1].number], 
+									this.symbolManager));
 
+							ret = true;
 						} else if(item.getSize() == 2 &&
 								item[0].typ == Type.Reduce
 								&& item[1].typ == Type.Shift) {
 							warn("conflict in itemset %u with lookahead token "
-							~ "%s", table[idx][0][0].number, 
-							this.symbolManager.getSymbolName(table[0][jdx][0].
-							number));
-							warn("shift conflicts with reduction rule %d", 
-								item[0].number);
+							~ "%s\nwith reduction rule %d %s", 
+								table[idx][1][1].number, 
+								this.symbolManager.
+								getSymbolName(table[1][jdx][0].number),
+								item[0].number, 
+								productionToString(this.prod[item[0].number],
+								this.symbolManager));
 							// so if we are not creating a glr parser we do as 
 							// yacc does
 							/*if(!this.glr) {
 								item.popFront();
 							}*/
+							ret = true;
 						} else if(item.getSize() == 2 &&
 								item[0].typ == Type.Shift
 								&& item[1].typ == Type.Reduce) {
 							warn("conflict in itemset %u with lookahead token "
-							~ "%s", table[idx][0][0].number, 
-							this.symbolManager.getSymbolName(table[0][jdx][0].
-							number));
-							warn("shift conflicts with reduction rule %d", 
-								item[1].number);
+							~ "%s\nwith reduction rule %d %s", 
+								table[idx][0][0].number, 
+								this.symbolManager.
+								getSymbolName(table[0][jdx][0].number),
+								item[1].number, 
+								productionToString(this.prod[item[1].number],
+								this.symbolManager));
 							// so if we are not creating a glr parser we do as 
 							// yacc does
 							/*if(!this.glr) {
 								item.popBack();
 							}*/
+							ret = true;
 						} else if(item.getSize() > 2) {
 							warn("last conflict comprised of more " ~
 								"than two items");
 							foreach(FinalItem gt; item) {
-								warn("type %s number %u", typeToString(gt.typ),
-									gt.number);
+								warn(gt.typ == Type.Shift, "type %s number %u",
+									typeToString(gt.typ), gt.number);
+								if(gt.typ == Type.Reduce) {
+									if(gt.number < this.prod.getSize()) {
+										warn(gt.typ == Type.Reduce, 
+											"type %s number %u %s", 
+											typeToString(gt.typ), gt.number,
+											productionToString(
+											this.prod[gt.number],
+											this.symbolManager));
+									} else {
+										warn(gt.typ == Type.Reduce, 
+											"type %s number %u", 
+											typeToString(gt.typ), gt.number);
+									}
+								}
 							}
+							ret = true;
 						}
 					}
 				}
 			}
 		}
+		return ret;
 	}
 
 	private bool isThereAValidItem(Deque!(FinalItem) item) {

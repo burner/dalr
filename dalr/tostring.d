@@ -423,6 +423,7 @@ public string normalProductionToString(ProductionManager pm, SymbolManager sm) {
 		sb.pushBack(conv!(size_t,string)(idx));
 		sb.pushBack(": ");
 		sb.pushBack(productionToString(pro,sm));
+		sb.pushBack('\n');
 	}
 	return sb.getString();
 }
@@ -433,12 +434,11 @@ public string productionToString(Deque!(int) pro, SymbolManager sm) {
 	foreach(idx, it; pro) {
 		sb.pushBack(productionItemToString(it,sm));
 		if(idx == 0) {
-			sb.pushBack(" -> ");
+			sb.pushBack(" := ");
 		} else {
 			sb.pushBack(" ");
 		}
 	}
-	sb.pushBack("\n");
 	string ret = sb.getString();
 	assert(ret != "");
 	return ret;

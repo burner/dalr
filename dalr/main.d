@@ -146,7 +146,17 @@ int main(string[] args) {
 	// for conflict resolution
 	pm.setProdMapping(actions);
 
-	pm.makeAll(graphfile, printAround, glr);
+	// do some last checks
+	sm.printUnexpectedTerms();
+
+	bool isGlr = pm.makeAll(graphfile, printAround, glr);
+
+
+	if(isGlr) {
+		File logFile = new File("dalrlog", FileMode.OutNew);
+		logFile.writeString(normalProductionToString(pm, sm));
+		logFile.close();
+	}
 
 	//println(extendedGrammerToString(pm, sm));
 	//println(itemsetsToString(pm, sm));

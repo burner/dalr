@@ -199,6 +199,8 @@ class FileReader {
 				continue;
 			}
 
+			bool didSomething = false;
+
 			// grammer rules
 			size_t prodStart = findArr!(char)(cur, ":=");
 			size_t pipe = find!(char)(cur, '|');
@@ -206,15 +208,26 @@ class FileReader {
 			if(prodStart < cur.length) {
 				cur = this.parseProduction(cur);
 				this.checkAndSetPrecedence!("%prec")(productions.back());
+				didSomething = true;
 			} else if(pipe < cur.length) {
 				cur = this.parseProduction(cur, true);
 				this.checkAndSetPrecedence!("%prec")(productions.back());
+				didSomething = true;
 			}
 
 			// production code 
 			size_t prodCodeStart = findArr!(char)(cur, "{:");
 			if(prodCodeStart < cur.length) {
 				cur = this.parseProductionAction(cur);
+				didSomething = true;
+			}
+
+			if(cur.length > 0 && !didSomething) {
+				foreach(size_t idx, char it; cur) {
+					assert(isWhiteSpace(it), 
+						format("error in line %d:%d with char %c",
+						this.getLineNumber(), idx, it));		
+				}
 			}
 		}
 	}
@@ -302,6 +315,7 @@ class FileReader {
 				cur));
 			tmp.pushBack(cur[colom+2 .. semi]);
 		}
+
 		// as long as we find no semicolom
 		while(semi == cur.length) {
 			startRound = false;

@@ -1,13 +1,14 @@
 module dalr.symbolmanager;
 
 import hurt.container.deque;
+import hurt.container.isr;
 import hurt.container.map;
 import hurt.container.mapset;
 import hurt.container.set;
-import hurt.container.isr;
 import hurt.io.stdio;
 import hurt.string.formatter;
 import hurt.string.stringbuffer;
+import hurt.string.stringutil;
 import hurt.util.pair;
 import hurt.util.slog;
 
@@ -114,6 +115,22 @@ public class SymbolManager {
 		}
 
 		return true;
+	}
+
+	public void printUnexpectedTerms() {
+		log("%d", this.stringSymbols.getSize());
+		foreach(string key, Symbol value; this.stringSymbols) {
+			bool capLetter = false;
+			if(!isLowerCase(key)) {
+				capLetter = true;
+			}
+			if(!capLetter) {
+				continue;
+			}
+			warn(!value.whatKind(), "term %s has uppercase " 
+				"that was a terminal symbol", key);
+		}
+		log();
 	}
 
 	public Pair!(bool,int) getPrecedence(string symbol) {
