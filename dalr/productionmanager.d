@@ -388,7 +388,9 @@ class ProductionManager {
 								&& item[1].typ == Type.Reduce) {
 							warn("conflict in itemset %u %s", 
 								table[idx][0][0].number);
-							warn("reduce recduce conflict with rule %d " ~
+							warn(item[0].number < this.prod.getSize() &&
+								item[1].number < this.prod.getSize(), 
+								"reduce recduce conflict with rule %d " ~
 								"and rule %d\n%s\n%s", 
 								item[0].number, 
 								item[1].number, 
