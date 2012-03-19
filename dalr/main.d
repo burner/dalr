@@ -1,5 +1,6 @@
 module dalr.main;
 
+import dalr.checker;
 import dalr.dotfilewriter;
 import dalr.grammerparser;
 import dalr.productionmanager;
@@ -148,6 +149,9 @@ int main(string[] args) {
 
 	// do some last checks
 	sm.printUnexpectedTerms();
+
+	// check if all non-terms are reached
+	Checker(pm.getProductions(), sm);
 
 	bool isGlr = pm.makeAll(graphfile, printAround, glr);
 
