@@ -118,10 +118,10 @@ public class SymbolManager {
 	}
 
 	public void printUnexpectedTerms() {
-		log("%d", this.stringSymbols.getSize());
+		//log("%d", this.stringSymbols.getSize());
 		foreach(string key, Symbol value; this.stringSymbols) {
 			bool capLetter = false;
-			if(!isLowerCase(key)) {
+			if(hasUpperCase(key)) {
 				capLetter = true;
 			}
 			if(!capLetter) {
@@ -130,7 +130,7 @@ public class SymbolManager {
 			warn(!value.whatKind(), "term %s has uppercase " 
 				"that was a terminal symbol", key);
 		}
-		log();
+		//log();
 	}
 
 	public Pair!(bool,int) getPrecedence(string symbol) {

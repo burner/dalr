@@ -11,14 +11,16 @@ import dalr.filereader;
 import dalr.filewriter;
 
 import hurt.container.deque;
+import hurt.container.isr;
 import hurt.container.map;
 import hurt.container.mapset;
 import hurt.container.set;
-import hurt.container.isr;
 import hurt.io.stdio;
 import hurt.io.stream;
-import hurt.util.slog;
+import hurt.string.formatter;
 import hurt.util.getopt;
+import hurt.util.pair;
+import hurt.util.slog;
 
 int main(string[] args) {
 	Args arg = Args(args);
@@ -80,7 +82,6 @@ int main(string[] args) {
 		~ " around that itemset. If you pass an int after this option " ~
 		" a graph will be created", 
 		printAround, true);
-
 	
 
 	if(driverFile !is null && driverFile.length > 0) {
@@ -153,13 +154,19 @@ int main(string[] args) {
 	// check if all non-terms are reached
 	Checker(pm.getProductions(), sm);
 
-	bool isGlr = pm.makeAll(graphfile, printAround, glr);
+	Pair!(Set!(int),string) ambiSet = pm.makeAll(graphfile, printAround, glr);
 
-
-	if(isGlr) {
+	if(ambiSet.first.getSize() > 0) {
 		File logFile = new File("dalrlog", FileMode.OutNew);
 		logFile.writeString(normalProductionToString(pm, sm));
+		foreach(int it; ambiSet.first) {
+			logFile.writeString(format("ambiguity %d\n", it));
+		}
+		logFile.writeString("\n\n\n");
+		logFile.writeString(ambiSet.second);
 		logFile.close();
+		writeLR0GraphAround(pm.getItemSets(), sm, 
+			pm.getProductions(), graphfile, pm, ambiSet.first);
 	}
 
 	//println(extendedGrammerToString(pm, sm));

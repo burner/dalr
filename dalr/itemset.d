@@ -193,6 +193,15 @@ class ItemSet {
 		return this.id;
 	}
 
+	public bool goesToId(Set!(long) to) {
+		foreach(it; to) {
+			if(this.goesToId(it)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public bool goesToId(long to) {
 		auto it = this.followSets.begin();
 		for(; it.isValid(); it++) {

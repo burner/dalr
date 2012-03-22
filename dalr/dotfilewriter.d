@@ -239,57 +239,70 @@ private MapSet!(ItemSet,ItemSet) minItemSets(Deque!(ItemSet) de,
 
 public void writeLR0GraphAround(Deque!(ItemSet) de, SymbolManager sm, 
 		Deque!(Deque!(int)) prod, string filename, ProductionManager pm, 
-		int around) {
-	hurt.io.stream.File file = new hurt.io.stream.File(filename ~ ".dot", 
-		FileMode.OutNew);
+		Set!(int) around) {
 
-	ItemSet a = null;
-	foreach(it; de) {
-		if(it.getId() == around) {
-			a = it;
-			break;
+	Deque!(Set!(long)) aroundLong = new Deque!(Set!(long))();
+	foreach(idx, it; around) {
+		if(idx % 1 == 0) {
+			aroundLong.pushBack(new Set!(long));
 		}
+		aroundLong[-1].insert(conv!(long,int)(it));
 	}
-	assert(a !is null);
 
-	Deque!(ItemSet) conn = new Deque!(ItemSet)(de.getSize());
-	conn.pushBack(a);
+	foreach(zidx, zz; aroundLong) {
+		hurt.io.stream.File file = new hurt.io.stream.File(format("%s%u.dot",
+			filename, zidx), FileMode.OutNew);
+		Set!(ItemSet) a = new Set!(ItemSet)();
+		foreach(it; de) {
+			if(zz.contains(it.getId())) {
+				a.insert(it);
+			}
+		}
+		assert(a.getSize() > 0);
 
-	for(auto it = a.getFollowSet().begin(); it.isValid(); it++) {
-		conn.pushBack((*it).getData());	
-	}
-	foreach(it; de) {
-		if(it.goesToId(around)) {
+		Deque!(ItemSet) conn = new Deque!(ItemSet)(de.getSize());
+		foreach(it; a) {
 			conn.pushBack(it);
 		}
-	}
 
-	Set!(ItemSet) processed = new Set!(ItemSet)(ISRType.HashTable);
-	StringBuffer!(char) sb = new StringBuffer!(char)(1000);
-	file.writeString("digraph g {\n");
-	file.writeString("graph [fontsize=30 labelloc=\"t\" label=\"\" ");
-	file.writeString("splines=true overlap=false rankdir = \"LR\"];\n");
-	file.writeString("ratio = auto;\n");
-	foreach(size_t idx, ItemSet iSet; conn) {
-		file.writeString("\"state");
-		file.writeString(conv!(long,string)(iSet.getId()));
-		file.writeString("\" ");
-		file.writeString("[ style = \"filled\" penwidth = 1 fillcolor = ");
-		file.writeString("\"white\"");
-		file.writeString(" fontname = \"Courier New\" shape = \"Mrecord\" ");
-		file.writeString("label =<");
-		file.writeString(itemsetToHTML(iSet, prod, sm));
-		file.writeString("> ];\n");
-		processed.insert(iSet);
-	}
-	ISRIterator!(ItemSet) iSet = processed.begin();
-	for(; iSet.isValid(); iSet++) {
-		file.writeString(makeTransitions(*iSet, sm, processed));
-	}
+		foreach(ItemSet jt; a) {
+			for(auto it = jt.getFollowSet().begin(); it.isValid(); it++) {
+				conn.pushBack((*it).getData());	
+			}
+		}
+		foreach(it; de) {
+			if(it.goesToId(zz)) {
+				conn.pushBack(it);
+			}
+		}
 
-	file.writeString("}\n");
-	file.close();
-	system("dot -T png " ~ filename ~ ".dot > " ~ filename ~ ".png &disown");
+		Set!(ItemSet) processed = new Set!(ItemSet)(ISRType.HashTable);
+		StringBuffer!(char) sb = new StringBuffer!(char)(1000);
+		file.writeString("digraph g {\n");
+		file.writeString("graph [fontsize=30 labelloc=\"t\" label=\"\" ");
+		file.writeString("splines=true overlap=false rankdir = \"LR\"];\n");
+		file.writeString("ratio = auto;\n");
+		foreach(size_t idx, ItemSet iSet; conn) {
+			file.writeString("\"state");
+			file.writeString(conv!(long,string)(iSet.getId()));
+			file.writeString("\" ");
+			file.writeString("[ style = \"filled\" penwidth = 1 fillcolor = ");
+			file.writeString("\"white\"");
+			file.writeString(" fontname = \"Courier New\" shape = \"Mrecord\" ");
+			file.writeString("label =<");
+			file.writeString(itemsetToHTML(iSet, prod, sm));
+			file.writeString("> ];\n");
+			processed.insert(iSet);
+		}
+		ISRIterator!(ItemSet) iSet = processed.begin();
+		for(; iSet.isValid(); iSet++) {
+			file.writeString(makeTransitions(*iSet, sm, processed));
+		}
+
+		file.writeString("}\n");
+		file.close();
+	}
+	//system("dot -T png " ~ filename ~ ".dot > " ~ filename ~ ".png &disown");
 }
 
 public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm, 

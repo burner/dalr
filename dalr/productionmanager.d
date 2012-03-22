@@ -85,20 +85,18 @@ class ProductionManager {
 		this.symbolManager = symbolManager;
 	}
 	
-	public bool makeAll(string graphFileName, int printAround, bool glr) {
+	public Pair!(Set!(int),string) makeAll(string graphFileName, 
+			int printAround, bool glr) {
+
 		log("makeLRZeroItemSets");
 		StopWatch lrzero;
 		this.makeLRZeroItemSets();
 		log("\btoke %f", lrzero.stop());
-		if(graphFileName.length > 0 && printAround == -1) {
+		/*if(graphFileName.length > 0 && printAround == -1) {
 			log("writeGraph");
 			writeLR0Graph(this.getItemSets(), this.symbolManager, 
 				this.getProductions(), graphFileName, this);
-		} else if(graphFileName.length > 0 && printAround != -1) {
-			log("writeGraph around %d", printAround);
-			writeLR0GraphAround(this.getItemSets(), this.symbolManager, 
-				this.getProductions(), graphFileName, this, printAround);
-		}
+		} */
 		log("makeExtendedGrammer");
 		this.makeExtendedGrammer();
 		log("makeExtendedFirstSet");
@@ -317,7 +315,10 @@ class ProductionManager {
 		return remove;
 	}
 
-	private bool applyPrecedence(bool glr) {
+	private Pair!(Set!(int),string) applyPrecedence(bool glr) {
+		Set!(int) ambiSet = new Set!(int)();
+		StringBuffer!(char) amStrBuf = new StringBuffer!(char)(2048);
+
 		Deque!(Deque!(Deque!(FinalItem))) table = this.getFinalTable();
 		bool ret = false;
 
@@ -386,7 +387,10 @@ class ProductionManager {
 							number));*/
 						if(item.getSize() == 2 && item[0].typ == Type.Reduce
 								&& item[1].typ == Type.Reduce) {
-							warn("conflict in itemset %u %s", 
+							ambiSet.insert(table[idx][0][0].number);
+							warn("conflict in itemset %d", 
+								table[idx][0][0].number);
+							amStrBuf.pushBack("conflict in itemset %d\n", 
 								table[idx][0][0].number);
 							warn(item[0].number < this.prod.getSize() &&
 								item[1].number < this.prod.getSize(), 
@@ -398,14 +402,32 @@ class ProductionManager {
 									this.symbolManager),
 								productionToString(this.prod[item[1].number], 
 									this.symbolManager));
-
+							if(item[0].number < this.prod.getSize() &&
+								item[1].number < this.prod.getSize()) {
+								amStrBuf.pushBack("reduce recduce conflict with rule %d"
+									~ " and rule %d\n%s\n%s\n", item[0].number, 
+									item[1].number, 
+									productionToString(this.prod[
+										item[0].number], this.symbolManager),
+									productionToString(this.prod[
+										item[1].number], this.symbolManager));
+							}
 							ret = true;
 						} else if(item.getSize() == 2 &&
 								item[0].typ == Type.Reduce
 								&& item[1].typ == Type.Shift) {
+							ambiSet.insert(table[idx][0][0].number);
+							amStrBuf.pushBack("conflict in itemset %u with " ~
+								" lookahead token %s\nwith reduction rule " ~
+								"%d %s\n", table[idx][0][0].number, 
+								this.symbolManager.
+								getSymbolName(table[1][jdx][0].number),
+								item[0].number, 
+								productionToString(this.prod[item[0].number],
+								this.symbolManager));
 							warn("conflict in itemset %u with lookahead token "
 							~ "%s\nwith reduction rule %d %s", 
-								table[idx][1][1].number, 
+								table[idx][0][0].number, 
 								this.symbolManager.
 								getSymbolName(table[1][jdx][0].number),
 								item[0].number, 
@@ -420,6 +442,15 @@ class ProductionManager {
 						} else if(item.getSize() == 2 &&
 								item[0].typ == Type.Shift
 								&& item[1].typ == Type.Reduce) {
+							ambiSet.insert(table[idx][0][0].number);
+							amStrBuf.pushBack("conflict in itemset %u with " ~
+								" lookahead token %s\nwith reduction rule " ~
+								"%d %s\n", table[idx][0][0].number, 
+								this.symbolManager.
+								getSymbolName(table[0][jdx][0].number),
+								item[1].number, 
+								productionToString(this.prod[item[1].number],
+								this.symbolManager));
 							warn("conflict in itemset %u with lookahead token "
 							~ "%s\nwith reduction rule %d %s", 
 								table[idx][0][0].number, 
@@ -436,12 +467,30 @@ class ProductionManager {
 							ret = true;
 						} else if(item.getSize() > 2) {
 							warn("last conflict comprised of more " ~
-								"than two items");
+								"than two items %u", table[idx][0][0].number);
+							amStrBuf.pushBack("last conflict comprised of more " 
+								~ "than two items %u\n", 
+								table[idx][0][0].number);
 							foreach(FinalItem gt; item) {
-								warn(gt.typ == Type.Shift, "type %s number %u",
-									typeToString(gt.typ), gt.number);
+								warn(gt.typ == Type.Shift, "type %s number %s",
+									typeToString(gt.typ), this.symbolManager.
+									getSymbolName(gt.number));
+								if(gt.typ == Type.Shift) {
+									amStrBuf.pushBack(
+										"type %s number %s\n", 
+										typeToString(gt.typ), 
+										this.symbolManager.getSymbolName
+										(gt.number));
+								}
 								if(gt.typ == Type.Reduce) {
 									if(gt.number < this.prod.getSize()) {
+										if(gt.typ == Type.Reduce) {
+											amStrBuf.pushBack("type %s number %u %s\n", 
+												typeToString(gt.typ), 
+												gt.number, productionToString(
+												this.prod[gt.number],
+												this.symbolManager));
+										}
 										warn(gt.typ == Type.Reduce, 
 											"type %s number %u %s", 
 											typeToString(gt.typ), gt.number,
@@ -452,6 +501,10 @@ class ProductionManager {
 										warn(gt.typ == Type.Reduce, 
 											"type %s number %u", 
 											typeToString(gt.typ), gt.number);
+										if(gt.typ == Type.Reduce) {
+											amStrBuf.pushBack("type %s number %u\n"
+											, typeToString(gt.typ), gt.number);
+										}
 									}
 								}
 							}
@@ -461,7 +514,7 @@ class ProductionManager {
 				}
 			}
 		}
-		return ret;
+		return Pair!(Set!(int),string)(ambiSet,amStrBuf.getString());
 	}
 
 	private bool isThereAValidItem(Deque!(FinalItem) item) {
