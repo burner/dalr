@@ -1370,8 +1370,8 @@ class ProductionManager {
 		sw.start();
 		while(changed) { // run as long as the follow set change
 			if(cnt % 100 == 0) {
-				log("mapping iterator cnt %d mapping size %d", cnt, 
-					followSets.getSize());
+				//log("mapping iterator cnt %d mapping size %d", cnt, 
+					//followSets.getSize());
 			}
 			cnt++;
 			changed = false;

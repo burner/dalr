@@ -242,16 +242,18 @@ public void writeLR0GraphAround(Deque!(ItemSet) de, SymbolManager sm,
 		Set!(int) around) {
 
 	Deque!(Set!(long)) aroundLong = new Deque!(Set!(long))();
+	Deque!(int) filenameIdx = new Deque!(int)();
 	foreach(idx, it; around) {
 		if(idx % 1 == 0) {
 			aroundLong.pushBack(new Set!(long));
 		}
 		aroundLong[-1].insert(conv!(long,int)(it));
+		filenameIdx.pushBack(it);
 	}
 
 	foreach(zidx, zz; aroundLong) {
 		hurt.io.stream.File file = new hurt.io.stream.File(format("%s%u.dot",
-			filename, zidx), FileMode.OutNew);
+			filename, filenameIdx[zidx]), FileMode.OutNew);
 		Set!(ItemSet) a = new Set!(ItemSet)();
 		foreach(it; de) {
 			if(zz.contains(it.getId())) {
