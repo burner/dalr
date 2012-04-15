@@ -12,13 +12,14 @@ import lexer;
 import parsetable;
 import token;
 
-struct Parse {
+class Parse {
 	private int id;
 	private long tokenBufIdx;
 	private Parser parser;
 	private Deque!(int) parseStack;
 	private Deque!(Token) tokenStack;
 	private AST ast;
+	private Token input;
 
 	this(Parser parser, int id) {
 		this.parser = parser;
@@ -29,16 +30,23 @@ struct Parse {
 		this.parseStack.pushBack(0);
 
 		this.ast = new AST();
-		long tokenBufIdx = 0;
+		this.tokenBufIdx = 0;
+		this.input = this.getToken();
 	}
 
-	this(Parser parser, Parse toCopy) {
+	this(Parser parser, Parse toCopy, int id) {
 		this.parser = parser;
 		this.parseStack = new Deque!(int)(toCopy.parseStack);
 		this.tokenStack = new Deque!(Token)(toCopy.tokenStack);
 		this.tokenBufIdx = toCopy.tokenBufIdx;
 		this.ast = new AST(toCopy.ast);
 		this.tokenBufIdx = toCopy.tokenBufIdx;
+		this.input = toCopy.input;
+		this.id = id;
+	}
+
+	package int getId() const {
+		return this.id;
 	}
 
 	package AST getAst() {
@@ -49,7 +57,8 @@ struct Parse {
 		return this.parser.increToNextToken(this.tokenBufIdx++);
 	}
 
-	private immutable(TableItem[]) getAction(const Token input) const {
+	//public immutable(TableItem[]) getAction(const Token input) const {
+	public immutable(TableItem[]) getAction() const {
 		immutable(Pair!(int,immutable(immutable(TableItem)[]))) retError = 
 			Pair!(int,immutable(immutable(TableItem)[]))(int.min, 
 			[TableItem(TableType.Error, 0)]);
@@ -58,15 +67,15 @@ struct Parse {
 
 		immutable(Pair!(int,immutable(immutable(TableItem)[]))) toSearch = 
 			Pair!(int,immutable(immutable(TableItem)[]))(
-			input.getTyp(), [TableItem(false)]);
+			this.input.getTyp(), [TableItem(false)]);
 
-		immutable(immutable(Pair!(int,immutable(immutable(TableItem)[])))[]) row
+		immutable(immutable(Pair!(int,immutable(TableItem[])))[]) row
 			= parseTable[this.parseStack.back()];
 
 		bool found;
 		size_t foundIdx;
 
-		auto ret = binarySearch!((TitP))
+		auto ret = binarySearch!(TitP)
 			(row, toSearch, retError, row.length, found, foundIdx,
 			function(immutable(Pair!(int,immutable(TableItem[]))) a, 
 					immutable(Pair!(int,immutable(TableItem[]))) b) {
@@ -84,18 +93,9 @@ struct Parse {
 			Pair!(int,immutable(immutable(TableItem)[]))(int.min, 
 			[TableItem(TableType.Error, 0)]);
 
-		//log("%d %d", this.parseStack.back(), input.getTyp());
-
 		immutable(Pair!(int,immutable(immutable(TableItem)[]))) toSearch = 
 			Pair!(int,immutable(immutable(TableItem)[]))(
 			input, [TableItem(false)]);
-
-		/*immutable(Pair!(int,immutable(TableItem))) retError = 
-			Pair!(int,immutable(TableItem))(int.min, 
-			TableItem(TableType.Error, 0));
-
-		immutable(Pair!(int,immutable(TableItem))) toSearch = 
-			Pair!(int,immutable(TableItem))(input, TableItem(false));*/
 
 		auto row = gotoTable[this.parseStack.back()];
 		bool found;
@@ -111,16 +111,8 @@ struct Parse {
 					immutable(Pair!(int,immutable(TableItem[]))) b) {
 				return a.first == b.first; });
 
-		/*auto ret = binarySearch!(immutable(Pair!(int,immutable(TableItem))))
-			(row, toSearch, retError, row.length, found, foundIdx,
-			function(immutable(Pair!(int,immutable(TableItem))) a, 
-					immutable(Pair!(int,immutable(TableItem))) b) {
-				return a.first > b.first;
-			}, 
-			function(immutable(Pair!(int,immutable(TableItem))) a, 
-					immutable(Pair!(int,immutable(TableItem))) b) {
-				return a.first == b.first; });*/
 
+		assert(ret.second.length == 1);
 		return ret.second[0].getNumber();
 	}
 
@@ -158,20 +150,19 @@ struct Parse {
 		this.printStack();
 	}
 
-	public void parse(size_t actIdx) {
-		TableItem action;
-		Token input = this.getToken();
+	public bool step(immutable(TableItem[]) actionTable, size_t actIdx) {
+		TableItem action = actionTable[actIdx];
+		//Token input = this.getToken();
 		//this.tokenStack.pushBack(input);
 		//log("%s", input.toString());
 		
-		action = this.getAction(input)[0]; 
-		assert(false, "look one line up idiot");
+		//action = this.getAction(input)[actIdx]; 
 		//log("%s", action.toString());
 		if(action.getTyp() == TableType.Accept) {
 			//log("%s %s", action.toString(), input.toString());
 			this.parseStack.popBack(rules[action.getNumber()].length-1);
 			this.runAction(action.getNumber());
-			return;
+			return true;
 		} else if(action.getTyp() == TableType.Error) {
 			//log();
 			this.reportError(input);
@@ -193,6 +184,7 @@ struct Parse {
 			// tmp token stack stuff
 			this.runAction(action.getNumber());
 		}
+		return false;
 	}
 }
 
@@ -201,6 +193,9 @@ class Parser {
 	private Deque!(Token) tokenBuffer;
 	private Deque!(Token) tokenStore;
 	private Deque!(Parse) parses;
+	private Deque!(Parse) newParses;
+	private Deque!(Parse) acceptingParses;
+	private Deque!(int) toRemove;
 	private int nextId;
 
 	public this(Lexer lexer) {
@@ -208,7 +203,10 @@ class Parser {
 		this.tokenBuffer = new Deque!(Token)(64);
 		this.tokenStore = new Deque!(Token)(128);
 		this.parses = new Deque!(Parse)(16);
-		this.parses.pushBack(Parse(this,this.nextId++));
+		this.parses.pushBack(new Parse(this,this.nextId++));
+		this.newParses = new Deque!(Parse)(16);
+		this.acceptingParses = new Deque!(Parse)(16);
+		this.toRemove = new Deque!(int)(16);
 	} 
 
 	public AST getAst() {
@@ -244,5 +242,24 @@ class Parser {
 	}
 
 	public void parse() {
+		for(size_t i = 0; i < this.parses.getSize(); i++) {
+			immutable(TableItem[]) actions = this.parses[i].getAction();
+			if(actions.length > 1) {
+				for(size_t j = 1; j < actions.length; j++) {
+					Parse tmp = new Parse(this, this.parses[i], this.nextId++);
+					if(tmp.step(actions, j)) {
+						this.acceptingParses.pushBack(this.parses[i]);
+					} else {
+						this.newParses.pushBack(tmp);
+					}
+				}
+			}
+			if(this.parses[i].step(actions, 0)) {
+				this.toRemove.pushBack(this.parses[i].getId);					
+				this.acceptingParses.pushBack(this.parses[i]);
+			}
+			
+		}
+		// TODO copy all new parses
 	}
 }

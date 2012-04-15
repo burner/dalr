@@ -183,10 +183,9 @@ final class RuleWriter : Writer {
 		Deque!(Deque!(Deque!(FinalItem))) table = this.pm.getFinalTable();
 		StringBuffer!(char) sb = new StringBuffer!(char)(1024);
 		StringBuffer!(char) arrTmp = new StringBuffer!(char)(1024);
-		sb.pushBack("alias Pair!(int,TableItem[]) TitP;\n\n");
+		sb.pushBack("alias Pair!(int,immutable(TableItem[])) TitP;\n\n");
 		sb.pushBack("alias TableItem Tit;\n\n");
-		sb.pushBack("public static " ~
-			" immutable(immutable(immutable(TitP)[])[]) " ~
+		sb.pushBack("public static immutable(immutable(TitP[])[]) " ~
 			"parseTable = \n");
 		sb.pushBack("[\n");
 		foreach(size_t jdx, Deque!(Deque!(FinalItem)) row; table) {
@@ -272,8 +271,8 @@ final class RuleWriter : Writer {
 		StringBuffer!(char) sb = new StringBuffer!(char)(1024);
 		StringBuffer!(char) arrTmp = new StringBuffer!(char)(1024);
 		this.file.writeString(format(
-			"public static immutable(immutable(immutable(Pair" ~
-			" !(int,TableItem[]))[])[%u]) gotoTable = [\n", table.getSize()-1));
+			"public static immutable(immutable(immutable(TitP)[])[%u]) " ~
+			"gotoTable = [\n", table.getSize()-1));
 
 		foreach(size_t idx, Deque!(Deque!(FinalItem)) row; table) {
 			if(idx == 0) { // don't need the items

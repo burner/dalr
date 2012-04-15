@@ -273,12 +273,19 @@ class ItemSet {
 		return true;
 	}
 
-	public override hash_t toHash() const {
-		hash_t ret = this.items.getSize();
-		for(size_t idx; idx < this.items.getSize(); idx++) {
-			ret += this.items.opIndexConst(idx).toHash();
+	public override hash_t toHash() const @trusted {
+		try {
+			hash_t ret = this.items.getSize();
+			for(size_t idx; idx < this.items.getSize(); idx++) {
+				ret += this.items.opIndexConst(idx).toHash();
+			}
+			return ret;
+		} catch(Exception e) {
+			try {
+				warn("VERY BAD THING HAPPEND HERE");
+			} catch(Exception e) {}
+			return 0;
 		}
-		return ret;
 	}
 }
 
