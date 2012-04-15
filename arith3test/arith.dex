@@ -1,10 +1,7 @@
-"\+\+" {:  return Token(this.getLoc(), termincrement); :}
-"--" {: return Token(this.getLoc(), termdecrement); :}
-"/" {: return Token(this.getLoc(), termdiv); :}
-"-" {: return Token(this.getLoc(), termminus); :}
-"*" {: return Token(this.getLoc(), termstar); :}
-"%" {: return Token(this.getLoc(), termmodulo); :}
-"\+" {: return Token(this.getLoc(), termplus); :}
-"[:digit:]+" {: return Token(this.getLoc(), terminteger, this.lexText.getString()); :}
-"[:digit:]+.[:digit:]+" {: return Token(this.getLoc(), termfloat, this.lexText.getString()); :}
 "[ \\t\\n]+" {: return Token(this.getLoc(), -99); :}
+"true" {: return Token(this.getLoc(), termbool, "true"); :}
+"false" {: return Token(this.getLoc(), termbool, "false"); :}
+"if" {: return Token(this.getLoc(), termif); :}
+"then" {: return Token(this.getLoc(), termthen); :}
+"else" {: return Token(this.getLoc(), termelse); :}
+"[:word:][:word]*" {: return Token(this.getLoc(), termidentifier, this.lexText.getString()); :}

@@ -13,7 +13,7 @@ build: $(GEN) $(OBJS) Makefile
 	dmd $(OBJS) buildinfo.d -ofdmcd -L../../libhurt/libhurt.a $(DFLAGS)
 
 parsetable.d: arith3.dlr Makefile
-	../Dalr -i arith3.dlr -r parsetable.d -rm parsetable
+	../Dalr -i arith3.dlr -r parsetable.d -rm parsetable --glr
 
 lextable.d: arith3.dlr arith.dex Makefile
 	../../dex/fsm -i arith.dex -n lextable.d -nm lextable

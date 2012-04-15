@@ -2,6 +2,6 @@ S := A;
 
 A := if B then A; 
 	| if B then A else A;
-	| a ;
+	| identifier ;
 
 B := bool ;

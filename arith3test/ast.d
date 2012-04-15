@@ -9,7 +9,7 @@ import hurt.util.pair;
 import token;
 import parsetable;
 
-import std.stdio;
+import std.process;
 
 struct ASTNode {
 	private Token token;
@@ -19,13 +19,14 @@ struct ASTNode {
 
 	public this(immutable(int) typ, size_t childPos) {
 		this.typ = typ;
-		this.dummyToken = false;
+		this.dummyToken = true;
 		//this.childs = new Deque!(size_t)(16);
 		this.initChilds(childPos);
 	}
 
 	public this(Token token, int typ, size_t childPos) {
 		this(typ, childPos);
+		this.dummyToken = false;
 		this.token = token;
 	}
 
@@ -91,14 +92,28 @@ class AST {
 	private Deque!(ASTNode) tree;
 	private Deque!(size_t) childs;
 
+	public this(AST ast) {
+		this.tree = new Deque!(ASTNode)(ast.getTree());
+		this.childs = new Deque!(size_t)(ast.getChilds());
+	}
+
 	public this() {
 		this.tree = new Deque!(ASTNode)(128);
 		this.childs = new Deque!(size_t)(128);
 	}
 
+	Deque!(size_t) getChilds() {
+		return this.childs;
+	}
+
+	Deque!(ASTNode) getTree() {
+		return this.tree;
+	}
+
 	// insert a new token to the tree
 	public size_t insert(Token token, int typ, bool dummyToken) { 
-		this.tree.pushBack(ASTNode(token, typ, dummyToken, this.childs.getSize()));
+		this.tree.pushBack(ASTNode(token, typ, dummyToken, 
+			this.childs.getSize()));
 		return this.tree.getSize()-1;
 	}
 
@@ -138,10 +153,9 @@ class AST {
 		graph.writeString("splines=true overlap=false];\n");
 		graph.writeString("ratio = auto;\n");
 		for(size_t idx = 0; idx < this.tree.getSize(); idx++) {
-			writeln(this.tree[idx].toString());
 			graph.writeString(format("\"state%u\" [style = \"filled\" " ~
-				"penwidth = 1 fillcolor = \"white\" fontname = " ~
-				"\"Courier\" shape = \"Mrecord\" label =<%s>];\n", idx,
+				"penwidth = 1 fillcolor = \"white\" " ~
+				"shape = \"Mrecord\" label =<%s>];\n", idx,
 				this.tree[idx].toAST()));
 		}
 		graph.writeString("\n");
@@ -156,5 +170,7 @@ class AST {
 		graph.writeString("\n");
 		graph.writeString("}\n");
 		graph.close();
+		system("dot -T png " ~ filename ~ " > " ~ filename ~ 
+			".png");
 	}
 }
