@@ -242,24 +242,36 @@ class Parser {
 	}
 
 	public void parse() {
-		for(size_t i = 0; i < this.parses.getSize(); i++) {
-			immutable(TableItem[]) actions = this.parses[i].getAction();
-			if(actions.length > 1) {
-				for(size_t j = 1; j < actions.length; j++) {
-					Parse tmp = new Parse(this, this.parses[i], this.nextId++);
-					if(tmp.step(actions, j)) {
-						this.acceptingParses.pushBack(this.parses[i]);
-					} else {
-						this.newParses.pushBack(tmp);
+		while(!this.parses.isEmpty()) {
+			for(size_t i = 0; i < this.parses.getSize(); i++) {
+				immutable(TableItem[]) actions = this.parses[i].getAction();
+				if(actions.length > 1) {
+					for(size_t j = 1; j < actions.length; j++) {
+						Parse tmp = new Parse(this, this.parses[i], 
+							this.nextId++);
+						if(tmp.step(actions, j)) {
+							this.acceptingParses.pushBack(this.parses[i]);
+						} else {
+							this.newParses.pushBack(tmp);
+						}
 					}
 				}
+				if(this.parses[i].step(actions, 0)) {
+					this.toRemove.pushBack(this.parses[i].getId);
+					this.acceptingParses.pushBack(this.parses[i]);
+				}
+				
 			}
-			if(this.parses[i].step(actions, 0)) {
-				this.toRemove.pushBack(this.parses[i].getId);					
-				this.acceptingParses.pushBack(this.parses[i]);
+			// copy all new parses
+			while(!this.newParses.isEmpty()) {
+				this.parses.pushBack(this.newParses.popBack());
 			}
-			
+
+			// remove all accepting parses
+			this.parses.removeFalse(delegate(Parse a) {
+				return this.toRemove.containsNot(a.getId()); });
+
+			// call merge function for all parse that are equal
 		}
-		// TODO copy all new parses
 	}
 }
