@@ -329,5 +329,9 @@ class Parser {
 			this.parses.removeFalse(delegate(Parse a) {
 				return this.toRemove.containsNot(a.getId()); });
 		}
+
+		// this is necessary because their might be more than one accepting 
+		// parse
+		this.mergeRun();
 	}
 }
