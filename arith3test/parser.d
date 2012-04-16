@@ -49,6 +49,30 @@ class Parse {
 		return this.id;
 	}
 
+	public override bool opEquals(Object o) @trusted {
+		Parse p = cast(Parse)o;
+
+		if(this.tokenBufIdx != p.tokenBufIdx) {
+			return false;
+		}
+
+		// no need to compare every element if the size is not equal
+		if(this.parseStack.getSize() != p.parseStack.getSize()) {
+			return false;
+		}
+
+		// compare the parseStack from the back to the front
+		// because the difference should be at the back
+		for(auto it = this.parseStack.cEnd(), jt = p.parseStack.cEnd(); 
+				it.isValid() && jt.isValid(); it--, jt--) {
+			if(*it != *jt) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	package AST getAst() {
 		return this.ast;
 	}
@@ -150,7 +174,7 @@ class Parse {
 		this.printStack();
 	}
 
-	public bool step(immutable(TableItem[]) actionTable, size_t actIdx) {
+	public int step(immutable(TableItem[]) actionTable, size_t actIdx) {
 		TableItem action = actionTable[actIdx];
 		//Token input = this.getToken();
 		//this.tokenStack.pushBack(input);
@@ -162,11 +186,11 @@ class Parse {
 			//log("%s %s", action.toString(), input.toString());
 			this.parseStack.popBack(rules[action.getNumber()].length-1);
 			this.runAction(action.getNumber());
-			return true;
+			return 1;
 		} else if(action.getTyp() == TableType.Error) {
 			//log();
 			this.reportError(input);
-			assert(false, "ERROR");
+			return -1;
 		} else if(action.getTyp() == TableType.Shift) {
 			log("%s", input.toString());
 			//log();
@@ -184,7 +208,7 @@ class Parse {
 			// tmp token stack stuff
 			this.runAction(action.getNumber());
 		}
-		return false;
+		return 0;
 	}
 }
 
@@ -241,6 +265,33 @@ class Parser {
 		return this.tokenStore[idx++];
 	}
 
+	private int merge(Parse a, Parse b) {
+		return a.getId();
+	}
+
+	private void mergeRun() {
+		// remove all accepting parses or merged away parses
+		// call merge function for all parse that are equal
+		for(size_t i = 0; i < this.parses.getSize() - 1; i++) {
+			if(this.toRemove.contains(this.parses[i].getId())) {
+				continue;
+			}
+			for(size_t j = i+1; j < this.parses.getSize(); j++) {
+				if(this.toRemove.contains(this.parses[j].getId())) {
+					continue;
+				}
+
+				// for every tow parse that are equal call the merge 
+				// function
+				if(this.parses[i] == this.parses[j]) {
+					this.toRemove.pushBack(
+						this.merge(this.parses[i], this.parses[j]) 
+					);
+				}
+			}
+		}
+	}
+
 	public void parse() {
 		while(!this.parses.isEmpty()) {
 			for(size_t i = 0; i < this.parses.getSize(); i++) {
@@ -249,29 +300,34 @@ class Parser {
 					for(size_t j = 1; j < actions.length; j++) {
 						Parse tmp = new Parse(this, this.parses[i], 
 							this.nextId++);
-						if(tmp.step(actions, j)) {
+						int rslt = tmp.step(actions, j);
+						if(rslt == 1) {
 							this.acceptingParses.pushBack(this.parses[i]);
+							this.toRemove.pushBack(this.parses[i].getId);
+						} else if(rslt == -1) {
+							this.toRemove.pushBack(this.parses[i].getId);
 						} else {
 							this.newParses.pushBack(tmp);
 						}
 					}
 				}
-				if(this.parses[i].step(actions, 0)) {
-					this.toRemove.pushBack(this.parses[i].getId);
+				int rslt = this.parses[i].step(actions, 0);
+				if(rslt == 1) {
 					this.acceptingParses.pushBack(this.parses[i]);
-				}
-				
+					this.toRemove.pushBack(this.parses[i].getId);
+				} else if(rslt == -1) {
+					this.toRemove.pushBack(this.parses[i].getId);
+				} 
 			}
 			// copy all new parses
 			while(!this.newParses.isEmpty()) {
 				this.parses.pushBack(this.newParses.popBack());
 			}
 
-			// remove all accepting parses
+			this.mergeRun();
+
 			this.parses.removeFalse(delegate(Parse a) {
 				return this.toRemove.containsNot(a.getId()); });
-
-			// call merge function for all parse that are equal
 		}
 	}
 }
