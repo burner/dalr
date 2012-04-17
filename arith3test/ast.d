@@ -5,6 +5,7 @@ import hurt.string.stringbuffer;
 import hurt.string.formatter;
 import hurt.io.stream;
 import hurt.util.pair;
+import hurt.util.slog;
 
 import token;
 import parsetable;
@@ -41,6 +42,10 @@ struct ASTNode {
 
 	public void insert() {
 		this.childs.second++;
+	}
+
+	public const(Token) getToken() const {
+		return this.token;
 	}
 
 	public Pair!(size_t,ubyte) getChilds() const {
@@ -142,6 +147,36 @@ class AST {
 		foreach(it; this.childs) {
 			ret.pushBack(format("%d ", it));
 		}
+		return ret.getString();
+	}
+
+	public string toStringGraph() const {
+		log();
+		if(this.tree.isEmpty()) {
+			log();
+			return "()";
+		}
+		string ret = this.toStringGraph(this.tree.back());
+		log();
+		return ret;
+	}
+
+	private string toStringGraph(const ASTNode node) const {
+		StringBuffer!(char) ret = new StringBuffer!(char)(128);	
+		ret.pushBack("( %s %s ", idToString(node.getTyp()),
+			node.getToken().toString());
+
+		Pair!(size_t,ubyte) childs = node.getChilds();
+		for(ubyte i = 0; i < childs.second; i++) {
+			// do some sanity checks
+			assert(this.tree.getSize() > childs.first + i);
+
+			log("%s", this.tree[childs.first + i].toString());
+			ret.pushBack("( %s )", this.toStringGraph(
+				this.tree[childs.first + i]) );
+		}
+
+		ret.pushBack(')');
 		return ret.getString();
 	}
 

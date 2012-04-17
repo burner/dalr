@@ -30,7 +30,7 @@ ast.o: ast.d token.d Makefile
 lexer.o: lexer.d lextable.d token.d Makefile
 	dmd -c $(DFLAGS) lexer.d
 
-main.o: main.d lexer.d lextable.d token.d Makefile
+main.o: main.d lexer.d lextable.d token.d ast.d parser.d parsetable.d Makefile
 	dmd -c $(DFLAGS) main.d
 
 token.o: token.d lextable.d Makefile

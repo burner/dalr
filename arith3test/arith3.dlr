@@ -1,7 +1,7 @@
 S := A;
 
-A := if B then A; 
-	| if B then A else A;
+A := if B then A; {: ret = buildTree(termA, [-3,-1]); :}
+	| if B then A else A; {: ret = buildTree(termA, [-5,-3,-1]); :}
 	| identifier ;
 
 B := bool ;

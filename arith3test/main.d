@@ -4,6 +4,7 @@ import hurt.container.deque;
 import hurt.time.stopwatch;
 import hurt.io.stdio;
 import hurt.util.getopt;
+import hurt.util.slog;
 
 import lexer;
 import token;
@@ -17,7 +18,7 @@ void main(string[] args) {
 		" if nothing or true is passed the lexer parser combination will" ~
 		" be multithreaded.", lpMulti);
 
-	string file = "examplearith.dpp";
+	string file = "short.dpp";
 	arg.setOption("-f", "--file", "pass a string do define the file you " ~
 		"want to parse. Default is examplearith.dpp" , file);
 
@@ -30,6 +31,7 @@ void main(string[] args) {
 	Parser p = new Parser(new Lexer(file, lpMulti, 10));
 
 	p.parse();
+	log();
 	p.getAst().toGraph("test1.dot");
 	//p.run();
 	printfln("lexing and parsing took %f seconds", sw.stop());

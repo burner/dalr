@@ -31,7 +31,9 @@ class Parse {
 
 		this.ast = new AST();
 		this.tokenBufIdx = 0;
+		log();
 		this.input = this.getToken();
+		log();
 	}
 
 	this(Parser parser, Parse toCopy, int id) {
@@ -73,12 +75,40 @@ class Parse {
 		return true;
 	}
 
+	package const(Token) getCurrentInput() const {
+		return this.input;
+	}
+
+	package int getTos() const {
+		return this.parseStack[this.parseStack.getSize()-1];
+	}
+
 	package AST getAst() {
 		return this.ast;
 	}
 
 	private Token getToken() {
 		return this.parser.increToNextToken(this.tokenBufIdx++);
+	}
+
+	private Token buildTree(immutable int retType, immutable(int[]) tokens, 
+			immutable int startPosIdx = 0) {
+
+		assert(tokens !is null);
+		assert(tokens.length > 0);
+		size_t pos = this.ast.insert(this.tokenStack[tokens[startPosIdx]],
+			retType);
+
+		foreach(idx, it; tokens) {
+			if(idx == startPosIdx) { // ignore the head of the tree
+				continue;
+			}
+
+			Token tmp = this.tokenStack[it];
+			this.ast.append(tmp.getTreeIdx());
+		}
+		return Token(this.tokenStack[tokens[startPosIdx]].getLoc(), retType, 
+			pos);
 	}
 
 	//public immutable(TableItem[]) getAction(const Token input) const {
@@ -147,7 +177,7 @@ class Parse {
 			default:
 				assert(false, format("no action for %d defined", actionNum));
 		}
-		//log("%s", ret.toString());
+		log("%s", ret.toString());
 		this.tokenStack.popBack(rules[actionNum].length-1);
 		this.tokenStack.pushBack(ret);
 	}
@@ -169,8 +199,8 @@ class Parse {
 	}
 
 	private void reportError(const Token input) const {
-		printfln("%?1!1s in state %?1!1d on input %?1!1s", "ERROR", 
-			this.parseStack.back(), input.toString());
+		printfln("%?1!1s in state %?1!1d on input %?1!1s this is parse %d", 
+			"ERROR", this.parseStack.back(), input.toString(), this.id);
 		this.printStack();
 	}
 
@@ -183,7 +213,7 @@ class Parse {
 		//action = this.getAction(input)[actIdx]; 
 		//log("%s", action.toString());
 		if(action.getTyp() == TableType.Accept) {
-			//log("%s %s", action.toString(), input.toString());
+			log("%s %s", action.toString(), input.toString());
 			this.parseStack.popBack(rules[action.getNumber()].length-1);
 			this.runAction(action.getNumber());
 			return 1;
@@ -198,7 +228,8 @@ class Parse {
 			this.tokenStack.pushBack(input);
 			input = this.getToken();
 		} else if(action.getTyp() == TableType.Reduce) {
-			log();
+			log("%d %d %d", this.id, rules[action.getNumber()].length-1, 
+				this.parseStack.getSize());
 			// do action
 			// pop RHS of Production
 			this.parseStack.popBack(rules[action.getNumber()].length-1);
@@ -207,7 +238,9 @@ class Parse {
 
 			// tmp token stack stuff
 			this.runAction(action.getNumber());
+			log();
 		}
+		printfln("id %d ast %s", this.id, this.ast.toStringGraph());
 		return 0;
 	}
 }
@@ -223,19 +256,26 @@ class Parser {
 	private int nextId;
 
 	public this(Lexer lexer) {
+		log();
 		this.lexer = lexer;	
 		this.tokenBuffer = new Deque!(Token)(64);
-		this.tokenStore = new Deque!(Token)(128);
+		this.tokenStore = new Deque!(Token);
+		assert(this.tokenStore.isEmpty());
+		assert(this.tokenStore.getSize() == 0, 
+			format("%d", this.tokenStore.getSize()));
 		this.parses = new Deque!(Parse)(16);
+		log();
+		this.nextId = 0;
 		this.parses.pushBack(new Parse(this,this.nextId++));
 		this.newParses = new Deque!(Parse)(16);
 		this.acceptingParses = new Deque!(Parse)(16);
 		this.toRemove = new Deque!(int)(16);
+		log();
 	} 
 
 	public AST getAst() {
-		assert(!this.parses.isEmpty());
-		return this.parses.front().getAst();
+		assert(!this.acceptingParses.isEmpty());
+		return this.acceptingParses.front().getAst();
 	}
 
 	/** do not call this direct unless you want whitespace token
@@ -258,9 +298,12 @@ class Parser {
 	}
 
 	package Token increToNextToken(long idx) {
-		if(idx + 1 == this.tokenStore.getSize()) {
+		//log("%d %d", idx, this.tokenStore.getSize());
+		if(idx + 1 >= this.tokenStore.getSize()) {
+			//log();
 			this.tokenStore.pushBack(this.getToken());
 		}
+		//log("%u", this.tokenStore.getSize());
 
 		return this.tokenStore[idx++];
 	}
@@ -269,23 +312,27 @@ class Parser {
 		return a.getId();
 	}
 
-	private void mergeRun() {
+	private void mergeRun(Deque!(Parse) parse) {
+		// early exit if only one parse is left
+		if(parse.getSize() <= 1) {
+			return;
+		}
 		// remove all accepting parses or merged away parses
 		// call merge function for all parse that are equal
-		for(size_t i = 0; i < this.parses.getSize() - 1; i++) {
-			if(this.toRemove.contains(this.parses[i].getId())) {
+		for(size_t i = 0; i < parse.getSize() - 1; i++) {
+			if(this.toRemove.contains(parse[i].getId())) {
 				continue;
 			}
-			for(size_t j = i+1; j < this.parses.getSize(); j++) {
-				if(this.toRemove.contains(this.parses[j].getId())) {
+			for(size_t j = i+1; j < parse.getSize(); j++) {
+				if(this.toRemove.contains(parse[j].getId())) {
 					continue;
 				}
 
 				// for every tow parse that are equal call the merge 
 				// function
-				if(this.parses[i] == this.parses[j]) {
+				if(parse[i] == parse[j]) {
 					this.toRemove.pushBack(
-						this.merge(this.parses[i], this.parses[j]) 
+						this.merge(parse[i], parse[j]) 
 					);
 				}
 			}
@@ -293,10 +340,18 @@ class Parser {
 	}
 
 	public void parse() {
+		log();
 		while(!this.parses.isEmpty()) {
+			// for every parse
 			for(size_t i = 0; i < this.parses.getSize(); i++) {
+				// get all actions
 				immutable(TableItem[]) actions = this.parses[i].getAction();
+				// if there are more than one action we found a conflict
 				if(actions.length > 1) {
+					log("fork at id %d, tos %d, input %s, number of actions %d",
+						this.parses[i].getId(), this.parses[i].getTos(),
+						this.parses[i].getCurrentInput().toString(), 
+						actions.length);
 					for(size_t j = 1; j < actions.length; j++) {
 						Parse tmp = new Parse(this, this.parses[i], 
 							this.nextId++);
@@ -311,6 +366,8 @@ class Parser {
 						}
 					}
 				}
+
+				// after all one action is left
 				int rslt = this.parses[i].step(actions, 0);
 				if(rslt == 1) {
 					this.acceptingParses.pushBack(this.parses[i]);
@@ -324,14 +381,15 @@ class Parser {
 				this.parses.pushBack(this.newParses.popBack());
 			}
 
-			this.mergeRun();
+			this.mergeRun(this.parses);
 
 			this.parses.removeFalse(delegate(Parse a) {
 				return this.toRemove.containsNot(a.getId()); });
 		}
+		log();
 
 		// this is necessary because their might be more than one accepting 
 		// parse
-		this.mergeRun();
+		this.mergeRun(this.acceptingParses);
 	}
 }
