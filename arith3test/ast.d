@@ -40,12 +40,12 @@ struct ASTNode {
 		this.childs = Pair!(size_t,ubyte)(childPos,0);
 	}
 
-	public void insert() {
-		this.childs.second++;
+	private Token getToken() const {
+		return this.token;
 	}
 
-	public const(Token) getToken() const {
-		return this.token;
+	public void insert() {
+		this.childs.second++;
 	}
 
 	public Pair!(size_t,ubyte) getChilds() const {
@@ -132,10 +132,40 @@ class AST {
 		return this.tree.getSize()-1;
 	}
 
+	public void append(Token token, int typ) { 
+		this.tree.pushBack(ASTNode(token, typ, this.childs.getSize()));
+		this.childs.pushBack(this.tree.getSize()-1);
+	}
+
 	public void append(size_t idx) { // link nodes to node
 		assert(!this.tree.isEmpty());
 		this.childs.pushBack(idx);
 		this.tree.backRef().insert();
+	}
+
+	public override bool opEquals(Object o) @trusted {
+		AST ast = cast(AST)o;
+		if(ast.tree is this.tree || ast.tree != this.tree) {
+			log();
+			return false;
+		}
+
+		if(ast.childs is this.childs || ast.childs != this.childs) {
+			log();
+			return false;
+		}
+
+		return true;
+	}
+
+	public string singleNodeToString(size_t idx) {
+		StringBuffer!(char) ret = new StringBuffer!(char)(
+			this.tree[idx].toString());
+		Pair!(size_t,ubyte) ch = this.tree[idx].getChilds();
+		for(ubyte i = 0; i < ch.second; i++) {
+			ret.pushBack("%d ", ch.first + i);
+		}
+		return ret.getString();
 	}
 
 	public string toString() const {

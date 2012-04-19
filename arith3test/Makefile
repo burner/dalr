@@ -1,7 +1,7 @@
 OBJS=main.o token.o lexer.o parsetable.o lextable.o parser.o ast.o
 GEN=parsetable.d lextable.d
 
-DFLAGS=-unittest -I../../libhurt -m64 -gc -debug
+DFLAGS=-unittest -I../../libhurt -m64 -gc -gs -debug
 
 all: build
 

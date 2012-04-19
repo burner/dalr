@@ -40,16 +40,22 @@ struct Token {
 		this.treeIdxPlaced = true;
 	}
 
+	public bool isPlacedInAst() const @trusted {
+		return this.treeIdxPlaced;
+	}
+
 	string toString() const {
 		scope StringBuffer!(char) ret = new StringBuffer!(char)(128);	
 
 		// the location
-		ret.pushBack(format("%s:%d.%d ", loc.getFile(), loc.getRow(), 
-			loc.getColumn()));
+		ret.pushBack("%s:%d.%d ", loc.getFile(), loc.getRow(), 
+			loc.getColumn());
 		
 		// the payload
-		ret.pushBack(format("%s %s", idToString(typ), 
-			conv!(dstring,string)(value)));
+		ret.pushBack("%s %s", idToString(typ), 
+			conv!(dstring,string)(value));
+
+		ret.pushBack(" %b:%d", this.treeIdxPlaced, this.treeIdx);
 
 		return ret.getString();
 	}

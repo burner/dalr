@@ -1,4 +1,4 @@
-S := A;
+S := A; {: ret = buildTree(termS, [-1]); :}
 
 A := if B then A; {: ret = buildTree(termA, [-3,-1]); :}
 	| if B then A else A; {: ret = buildTree(termA, [-5,-3,-1]); :}

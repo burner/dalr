@@ -31,9 +31,7 @@ class Parse {
 
 		this.ast = new AST();
 		this.tokenBufIdx = 0;
-		log();
 		this.input = this.getToken();
-		log();
 	}
 
 	this(Parser parser, Parse toCopy, int id) {
@@ -42,6 +40,8 @@ class Parse {
 		this.tokenStack = new Deque!(Token)(toCopy.tokenStack);
 		this.tokenBufIdx = toCopy.tokenBufIdx;
 		this.ast = new AST(toCopy.ast);
+		assert(this.ast == toCopy.ast);
+
 		this.tokenBufIdx = toCopy.tokenBufIdx;
 		this.input = toCopy.input;
 		this.id = id;
@@ -49,6 +49,30 @@ class Parse {
 
 	package int getId() const {
 		return this.id;
+	}
+
+	public bool copyEqualButDistinged(Parse p) @trusted {
+		if(p is this) {
+			log();
+			return false;
+		}
+		
+		if(this.ast != p.ast) {
+			log();
+			return false;
+		}
+
+		if(this.parseStack is p.parseStack || this.parseStack != p.parseStack) {
+			log();
+			return false;
+		}
+
+		if(this.tokenStack is p.tokenStack || this.tokenStack != p.tokenStack) {
+			log();
+			return false;
+		}
+
+		return this.input == p.input;
 	}
 
 	public override bool opEquals(Object o) @trusted {
@@ -93,9 +117,17 @@ class Parse {
 
 	private Token buildTree(immutable int retType, immutable(int[]) tokens, 
 			immutable int startPosIdx = 0) {
+		log("%s, %d", idToString(retType), startPosIdx);
+		foreach(it; tokens) {
+			printf("%d ", it);
+		}
+		println();
+		this.printTokenStack();
 
 		assert(tokens !is null);
 		assert(tokens.length > 0);
+		log("%s %d", this.tokenStack[tokens[startPosIdx]].toString(), 
+			tokens[startPosIdx]);
 		size_t pos = this.ast.insert(this.tokenStack[tokens[startPosIdx]],
 			retType);
 
@@ -105,8 +137,14 @@ class Parse {
 			}
 
 			Token tmp = this.tokenStack[it];
-			this.ast.append(tmp.getTreeIdx());
+			log("%s", tmp.toString());
+			if(tmp.isPlacedInAst()) {
+				this.ast.append(tmp.getTreeIdx());
+			} else {
+				this.ast.append(tmp, it);
+			}
 		}
+		log("pos %d %s", pos, this.ast.singleNodeToString(pos));
 		return Token(this.tokenStack[tokens[startPosIdx]].getLoc(), retType, 
 			pos);
 	}
@@ -172,11 +210,16 @@ class Parse {
 
 	private void runAction(short actionNum) {
 		Token ret;
+		log("actionNum %d", actionNum);
 		switch(actionNum) {
 			mixin(actionString);
 			default:
 				assert(false, format("no action for %d defined", actionNum));
 		}
+		log("%d", this.id);
+		this.printTokenStack();
+		log("%s", this.ast.toString());
+
 		log("%s", ret.toString());
 		this.tokenStack.popBack(rules[actionNum].length-1);
 		this.tokenStack.pushBack(ret);
@@ -213,7 +256,7 @@ class Parse {
 		//action = this.getAction(input)[actIdx]; 
 		//log("%s", action.toString());
 		if(action.getTyp() == TableType.Accept) {
-			log("%s %s", action.toString(), input.toString());
+			//log("%s %s", action.toString(), input.toString());
 			this.parseStack.popBack(rules[action.getNumber()].length-1);
 			this.runAction(action.getNumber());
 			return 1;
@@ -222,14 +265,14 @@ class Parse {
 			this.reportError(input);
 			return -1;
 		} else if(action.getTyp() == TableType.Shift) {
-			log("%s", input.toString());
+			//log("%s", input.toString());
 			//log();
 			this.parseStack.pushBack(action.getNumber());
 			this.tokenStack.pushBack(input);
 			input = this.getToken();
 		} else if(action.getTyp() == TableType.Reduce) {
-			log("%d %d %d", this.id, rules[action.getNumber()].length-1, 
-				this.parseStack.getSize());
+			/*log("%d %d %d", this.id, rules[action.getNumber()].length-1, 
+				this.parseStack.getSize());*/
 			// do action
 			// pop RHS of Production
 			this.parseStack.popBack(rules[action.getNumber()].length-1);
@@ -238,9 +281,8 @@ class Parse {
 
 			// tmp token stack stuff
 			this.runAction(action.getNumber());
-			log();
 		}
-		printfln("id %d ast %s", this.id, this.ast.toStringGraph());
+		//printfln("id %d ast %s", this.id, this.ast.toStringGraph());
 		return 0;
 	}
 }
@@ -256,7 +298,6 @@ class Parser {
 	private int nextId;
 
 	public this(Lexer lexer) {
-		log();
 		this.lexer = lexer;	
 		this.tokenBuffer = new Deque!(Token)(64);
 		this.tokenStore = new Deque!(Token);
@@ -264,13 +305,11 @@ class Parser {
 		assert(this.tokenStore.getSize() == 0, 
 			format("%d", this.tokenStore.getSize()));
 		this.parses = new Deque!(Parse)(16);
-		log();
 		this.nextId = 0;
 		this.parses.pushBack(new Parse(this,this.nextId++));
 		this.newParses = new Deque!(Parse)(16);
 		this.acceptingParses = new Deque!(Parse)(16);
 		this.toRemove = new Deque!(int)(16);
-		log();
 	} 
 
 	public AST getAst() {
@@ -340,7 +379,6 @@ class Parser {
 	}
 
 	public void parse() {
-		log();
 		while(!this.parses.isEmpty()) {
 			// for every parse
 			for(size_t i = 0; i < this.parses.getSize(); i++) {
@@ -355,6 +393,7 @@ class Parser {
 					for(size_t j = 1; j < actions.length; j++) {
 						Parse tmp = new Parse(this, this.parses[i], 
 							this.nextId++);
+						assert(tmp.copyEqualButDistinged(this.parses[i]));
 						int rslt = tmp.step(actions, j);
 						if(rslt == 1) {
 							this.acceptingParses.pushBack(this.parses[i]);
@@ -386,7 +425,6 @@ class Parser {
 			this.parses.removeFalse(delegate(Parse a) {
 				return this.toRemove.containsNot(a.getId()); });
 		}
-		log();
 
 		// this is necessary because their might be more than one accepting 
 		// parse
