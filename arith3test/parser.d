@@ -361,6 +361,7 @@ class Parser {
 	private Deque!(Parse) acceptingParses;
 	private Deque!(int) toRemove;
 	private int nextId;
+	private bool lastTokenFound;
 
 	public this(Lexer lexer) {
 		this.lexer = lexer;	
@@ -375,6 +376,7 @@ class Parser {
 		this.newParses = new Deque!(Parse)(16);
 		this.acceptingParses = new Deque!(Parse)(16);
 		this.toRemove = new Deque!(int)(16);
+		this.lastTokenFound = false;
 	} 
 
 	public AST getAst() {
@@ -388,14 +390,22 @@ class Parser {
 		if(this.tokenBuffer.isEmpty()) {
 			this.lexer.getToken(this.tokenBuffer);
 		} 
-		assert(!this.tokenBuffer.isEmpty());
-
-		return this.tokenBuffer.popFront();
+		if(this.tokenBuffer.isEmpty()) {
+			return Token(termdollar);
+		} else {
+			return this.tokenBuffer.popFront();
+		}
 	}
 
 	private Token getToken() {
 		Token t = this.getNextToken();
+		if(t.getTyp() == termdollar) {
+			this.lastTokenFound = true;
+		}
 		while(t.getTyp() == -99) {
+			if(t.getTyp() == termdollar) {
+				this.lastTokenFound = true;
+			}
 			t = this.getNextToken();
 		}
 		return t;
@@ -404,7 +414,10 @@ class Parser {
 	package Token increToNextToken(long idx) {
 		//log("%d %d", idx, this.tokenStore.getSize());
 		if(idx + 1 >= this.tokenStore.getSize()) {
-			//log();
+			log("lastTokenFound %b", this.lastTokenFound);
+			if(this.lastTokenFound) {
+				return Token(termdollar);
+			}
 			this.tokenStore.pushBack(this.getToken());
 		}
 		//log("%u", this.tokenStore.getSize());
@@ -413,7 +426,8 @@ class Parser {
 	}
 
 	private int merge(Parse a, Parse b) {
-		return a.getId();
+		log();
+		return b.getId();
 	}
 
 	private void mergeRun(Deque!(Parse) parse) {
@@ -445,6 +459,7 @@ class Parser {
 
 	public bool parse() {
 		while(!this.parses.isEmpty()) {
+			log();
 			// for every parse
 			for(size_t i = 0; i < this.parses.getSize(); i++) {
 				// get all actions
@@ -493,7 +508,9 @@ class Parser {
 			this.parses.removeFalse(delegate(Parse a) {
 				return this.toRemove.containsNot(a.getId()); });
 
-			//this.toRemove.clear();
+			log("%d", this.toRemove.getSize());
+			this.toRemove.clean();
+			log("%d", this.toRemove.getSize());
 		}
 
 		// this is necessary because their might be more than one accepting 
