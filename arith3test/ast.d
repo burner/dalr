@@ -15,41 +15,28 @@ import std.process;
 struct ASTNode {
 	private Token token;
 	private int typ;
-	private bool dummyToken;
 	private Pair!(size_t,ubyte) childs;
 
-	public this(immutable(int) typ, size_t childPos) {
-		this.typ = typ;
-		this.dummyToken = true;
-		//this.childs = new Deque!(size_t)(16);
-		this.initChilds(childPos);
-	}
-
 	public this(Token token, int typ, size_t childPos) {
-		this(typ, childPos);
-		this.dummyToken = false;
-		this.token = token;
-	}
-
-	public this(Token token, int typ, bool dummyToken, size_t childPos) {
-		this(token, typ, childPos);
-		this.dummyToken = dummyToken;
-	}
-
-	private void initChilds(size_t childPos) {
 		this.childs = Pair!(size_t,ubyte)(childPos,0);
+		this.token = token;
+		this.typ = typ;
+	}
+
+	public void appendChild() {
+		this.childs.second++;
 	}
 
 	private Token getToken() const {
 		return this.token;
 	}
 
-	public void insert() {
-		this.childs.second++;
-	}
-
 	public Pair!(size_t,ubyte) getChilds() const {
 		return this.childs;
+	}
+
+	public int getTyp() const {
+		return this.typ;
 	}
 
 	public string toAST() const {
@@ -61,19 +48,17 @@ struct ASTNode {
 		ret.pushBack("<font color=\"white\">");
 		ret.pushBack(idToString(this.typ));
 		ret.pushBack("</font></td>\n</tr>\n");
-		if(!this.dummyToken) {
-			ret.pushBack(format("<tr><td align=\"left\">Token</td><td " ~
-				"align=\"right\">%s</td></tr>\n",
-				idToString(this.token.getTyp())));
-			if(!this.token.getLoc().isDummyLoc()) {
-				ret.pushBack(format("<tr><td align=\"left\">Loc</td><td " ~
-				"align=\"right\">%s</td></tr>\n",
-					this.token.getLoc().toString()));
-			}
-			if(this.token.getValue() !is null && this.token.getValue() != "") {
-				ret.pushBack(format("<tr><td align=\"left\">Value</td><td " ~
-				"align=\"right\">%s</td></tr>\n", this.token.getValue()));
-			}
+		ret.pushBack(format("<tr><td align=\"left\">Token</td><td " ~
+			"align=\"right\">%s</td></tr>\n",
+			idToString(this.token.getTyp())));
+		if(!this.token.getLoc().isDummyLoc()) {
+			ret.pushBack(format("<tr><td align=\"left\">Loc</td><td " ~
+			"align=\"right\">%s</td></tr>\n",
+				this.token.getLoc().toString()));
+		}
+		if(this.token.getValue() !is null && this.token.getValue() != "") {
+			ret.pushBack(format("<tr><td align=\"left\">Value</td><td " ~
+			"align=\"right\">%s</td></tr>\n", this.token.getValue()));
 		}
 		ret.pushBack("</table>");
 		return ret.getString();
@@ -82,14 +67,10 @@ struct ASTNode {
 	public string toString() const {
 		StringBuffer!(char) ret = new StringBuffer!(char)(128);
 		ret.pushBack(format("[%s (%s)", idToString(this.typ),
-			this.token.toString()));
+			this.token.toStringShort()));
 
 		ret.pushBack(" ]");
 		return ret.getString();
-	}
-
-	public int getTyp() const {
-		return this.typ;
 	}
 }
 
@@ -115,32 +96,15 @@ class AST {
 		return this.tree;
 	}
 
-	// insert a new token to the tree
-	public size_t insert(Token token, int typ, bool dummyToken) { 
-		this.tree.pushBack(ASTNode(token, typ, dummyToken, 
-			this.childs.getSize()));
-		return this.tree.getSize()-1;
-	}
-
 	public size_t insert(Token token, int typ) { 
 		this.tree.pushBack(ASTNode(token, typ, this.childs.getSize()));
 		return this.tree.getSize()-1;
 	}
 
-	public size_t insert(immutable(int) typ) {
-		this.tree.pushBack(ASTNode(typ, this.childs.getSize()));
-		return this.tree.getSize()-1;
-	}
-
-	public void append(Token token, int typ) { 
-		this.tree.pushBack(ASTNode(token, typ, this.childs.getSize()));
-		this.childs.pushBack(this.tree.getSize()-1);
-	}
-
 	public void append(size_t idx) { // link nodes to node
 		assert(!this.tree.isEmpty());
 		this.childs.pushBack(idx);
-		this.tree.backRef().insert();
+		this.tree.backRef().appendChild();
 	}
 
 	public override bool opEquals(Object o) @trusted {

@@ -13,12 +13,13 @@ struct Token {
 	// if this is -3 treeIdx gives you the index of the ast node
 	private int typ; 
 	private dstring value;
-	private size_t treeIdx; // the index of the ast node in the ast array
+	private long treeIdx; // the index of the ast node in the ast array
 	private bool treeIdxPlaced;
 
 	this(int typ) {
 		this.typ = typ;
 		this.treeIdxPlaced = false;
+		this.treeIdx = -1;
 	}
 
 	this(int typ, dstring value) {
@@ -27,17 +28,21 @@ struct Token {
 	}
 
 	this(Location loc, int typ, dstring value = "") {
+		this(typ);
 		this.loc = loc;
-		this.typ = typ;
 		this.value = value;
-		this.treeIdx = 0;
 	}
 
-	this(Location loc, int typ, size_t treeIdx) {
+	this(Location loc, int typ, long treeIdx) {
 		this.loc = loc;
 		this.typ = typ;
 		this.treeIdx = treeIdx;
 		this.treeIdxPlaced = true;
+	}
+
+	this(Token toCopy, long treeIdx) {
+		this(toCopy.loc, toCopy.typ, treeIdx);
+		this.value = toCopy.value;
 	}
 
 	public bool isPlacedInAst() const @trusted {
@@ -90,7 +95,7 @@ struct Token {
 		return this.loc;
 	}
 
-	public size_t getTreeIdx() const {
+	public long getTreeIdx() const {
 		return this.treeIdx;
 	}
 }
