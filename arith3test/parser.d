@@ -118,14 +118,15 @@ class Parse {
 		return this.parser.increToNextToken(this.tokenBufIdx++);
 	}
 
-	private Token buildTreeWithLoc(immutable int retType, immutable(int[]) tokens, 
-			size_t rule, Location loc) {
-		log("%s", idToString(retType));
+	private Token buildTreeWithLoc(immutable int retType, immutable(int[]) 
+			tokens, size_t rule, Location loc) {
+		/*log("%s", idToString(retType));
 		foreach(it; tokens) {
 			printf("%d ", it);
 		}
 		println();
 		this.printTokenStack();
+		*/
 
 		assert(tokens !is null);
 		assert(tokens.length > 0);
@@ -133,17 +134,18 @@ class Parse {
 		// insert all the token that are not yet placed in the ast
 		foreach(idx, it; tokens) {
 			 if(!this.tokenStack[it].isPlacedInAst()) {
-			 	log("rules.length %d, rule %d it %d", rules.length, rule,
+			 	/*log("rules.length %d, rule %d it %d", rules.length, rule,
 					it);
 				log("rules[rule].length %d", rules[rule].length);
 				log("negIdx(rules[rule], it) %d", negIdx(rules[rule], it));
+				*/
 				size_t npos = this.ast.insert(
 					this.tokenStack[it], // the token
 					rules[rule][negIdx(rules[rule], it)]);
-				log("%s", this.tokenStack[it].toString());
+				//log("%s", this.tokenStack[it].toString());
 				this.tokenStack[it] = Token(this.tokenStack[it], npos);
 				assert(this.tokenStack[it].getTreeIdx() == npos);
-				log("%s", this.tokenStack[it].toString());
+				//log("%s", this.tokenStack[it].toString());
 			 }
 		}
 
@@ -152,29 +154,29 @@ class Parse {
 
 		foreach(idx, it; tokens) {
 			Token tmp = this.tokenStack[it];
-			log("%s", tmp.toString());
+			//log("%s", tmp.toString());
 			this.ast.append(tmp.getTreeIdx());
 		}
 		//log("pos %d %s", pos, this.ast.singleNodeToString(pos));
 		//Token ret = Token(this.tokenStack[tokens[startPosIdx]].getLoc(), retType, 
 			//pos);
-		log("%s", ret.toString());
+		//log("%s", ret.toString());
 		return Token(ret, pos);
 	}
 
 	private Token buildTree(immutable int retType, immutable(int[]) tokens, 
 			size_t rule, immutable int startPosIdx = 0) {
-		log("%s, %d", idToString(retType), startPosIdx);
+		/*log("%s, %d", idToString(retType), startPosIdx);
 		foreach(it; tokens) {
 			printf("%d ", it);
 		}
 		println();
 		this.printTokenStack();
-
+		*/
 		assert(tokens !is null);
 		assert(tokens.length > 0);
-		log("%s %d", this.tokenStack[tokens[startPosIdx]].toString(), 
-			tokens[startPosIdx]);
+		//log("%s %d", this.tokenStack[tokens[startPosIdx]].toString(), 
+		//	tokens[startPosIdx]);
 
 		// insert all the token that are not yet placed in the ast
 		foreach(idx, it; tokens) {
@@ -182,16 +184,17 @@ class Parse {
 				continue;
 			 }
 			 if(!this.tokenStack[it].isPlacedInAst()) {
-			 	log("rules.length %d, rule %d it %d", rules.length, rule,
+			 	/*log("rules.length %d, rule %d it %d", rules.length, rule,
 					it);
 				log("rules[rule].length %d", rules[rule].length);
 				log("negIdx(rules[rule], it) %d", negIdx(rules[rule], it));
+				*/
 				size_t npos = this.ast.insert(
 					this.tokenStack[it], // the token
 					rules[rule][negIdx(rules[rule], it)]);
-				log("%s", this.tokenStack[it].toString());
+				//log("%s", this.tokenStack[it].toString());
 				this.tokenStack[it] = Token(this.tokenStack[it], npos);
-				log("%s", this.tokenStack[it].toString());
+				//log("%s", this.tokenStack[it].toString());
 			 }
 		}
 
@@ -204,13 +207,13 @@ class Parse {
 			}
 
 			Token tmp = this.tokenStack[it];
-			log("%s", tmp.toString());
+			//log("%s", tmp.toString());
 			this.ast.append(tmp.getTreeIdx());
 		}
-		log("pos %d %s", pos, this.ast.singleNodeToString(pos));
-		Token ret = Token(this.tokenStack[tokens[startPosIdx]].getLoc(), retType, 
-			pos);
-		log("%s", ret.toString());
+		//log("pos %d %s", pos, this.ast.singleNodeToString(pos));
+		Token ret = Token(this.tokenStack[tokens[startPosIdx]].getLoc(), 
+			retType, pos);
+		//log("%s", ret.toString());
 		return ret;
 	}
 
@@ -274,18 +277,18 @@ class Parse {
 
 	private void runAction(short actionNum) {
 		Token ret;
-		log("actionNum %d", actionNum);
+		//log("actionNum %d", actionNum);
 		switch(actionNum) {
 			mixin(actionString);
 			default:
 				assert(false, format("no action for %d defined", actionNum));
 		}
-		log("%d", this.id);
-		log("%s", ret.toString());
+		//log("%d", this.id);
+		//log("%s", ret.toString());
 		this.tokenStack.popBack(rules[actionNum].length-1);
 		this.tokenStack.pushBack(ret);
-		this.printTokenStack();
-		log("%s", this.ast.toString());
+		//this.printTokenStack();
+		//log("%s", this.ast.toString());
 
 	}
 
@@ -312,7 +315,8 @@ class Parse {
 		return ret.getString();
 	}
 
-	public Pair!(int,string) step(immutable(TableItem[]) actionTable, size_t actIdx) {
+	public Pair!(int,string) step(immutable(TableItem[]) actionTable, 
+			size_t actIdx) {
 		TableItem action = actionTable[actIdx];
 		//Token input = this.getToken();
 		//this.tokenStack.pushBack(input);
@@ -359,6 +363,7 @@ class Parser {
 	private Deque!(Parse) newParses;
 	private Deque!(Parse) acceptingParses;
 	private Deque!(int) toRemove;
+	private Deque!(Pair!(int,string)) parseError;
 	private int nextId;
 	private bool lastTokenFound;
 
@@ -375,6 +380,7 @@ class Parser {
 		this.newParses = new Deque!(Parse)(16);
 		this.acceptingParses = new Deque!(Parse)(16);
 		this.toRemove = new Deque!(int)(16);
+		this.parseError = new Deque!(Pair!(int,string))(16);
 		this.lastTokenFound = false;
 	} 
 
@@ -413,7 +419,7 @@ class Parser {
 	package Token increToNextToken(long idx) {
 		//log("%d %d", idx, this.tokenStore.getSize());
 		if(idx + 1 >= this.tokenStore.getSize()) {
-			log("lastTokenFound %b", this.lastTokenFound);
+			//log("lastTokenFound %b", this.lastTokenFound);
 			if(this.lastTokenFound) {
 				return Token(termdollar);
 			}
@@ -425,7 +431,8 @@ class Parser {
 	}
 
 	private int merge(Parse a, Parse b) {
-		log();
+		log("a ast = %s", a.getAst().toStringGraph());
+		log("b ast = %s", b.getAst().toStringGraph());
 		return b.getId();
 	}
 
@@ -458,17 +465,17 @@ class Parser {
 
 	public bool parse() {
 		while(!this.parses.isEmpty()) {
-			log();
 			// for every parse
 			for(size_t i = 0; i < this.parses.getSize(); i++) {
 				// get all actions
 				immutable(TableItem[]) actions = this.parses[i].getAction();
 				// if there are more than one action we found a conflict
 				if(actions.length > 1) {
-					log("fork at id %d, tos %d, input %s, number of actions %d",
+					/*log("fork at id %d, tos %d, input %s, number of actions %d",
 						this.parses[i].getId(), this.parses[i].getTos(),
 						this.parses[i].getCurrentInput().toString(), 
 						actions.length);
+					*/
 					for(size_t j = 1; j < actions.length; j++) {
 						Parse tmp = new Parse(this, this.parses[i], 
 							this.nextId++);
@@ -479,6 +486,7 @@ class Parser {
 							this.toRemove.pushBack(this.parses[i].getId);
 						} else if(rslt.first == -1) {
 							this.toRemove.pushBack(this.parses[i].getId);
+							this.parseError.pushBack(rslt);
 						} else {
 							this.newParses.pushBack(tmp);
 						}
@@ -492,9 +500,7 @@ class Parser {
 					this.toRemove.pushBack(this.parses[i].getId);
 				} else if(rslt.first == -1) {
 					this.toRemove.pushBack(this.parses[i].getId);
-					if(this.newParses.isEmpty() && this.acceptingParses.isEmpty()) {
-						printfln("%s", rslt.second);
-					}
+					this.parseError.pushBack(rslt);
 				} 
 			}
 			// copy all new parses
@@ -507,9 +513,15 @@ class Parser {
 			this.parses.removeFalse(delegate(Parse a) {
 				return this.toRemove.containsNot(a.getId()); });
 
-			log("%d", this.toRemove.getSize());
+			//log("%d", this.toRemove.getSize());
 			this.toRemove.clean();
-			log("%d", this.toRemove.getSize());
+			if(this.parses.isEmpty() && this.acceptingParses.isEmpty()) {
+				foreach(it; this.parseError) {
+					printfln("%s", it.second);
+				}
+			}
+			this.parseError.clean();
+			//log("%d", this.toRemove.getSize());
 		}
 
 		// this is necessary because their might be more than one accepting 

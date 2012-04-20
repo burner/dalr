@@ -145,32 +145,32 @@ class AST {
 	}
 
 	public string toStringGraph() const {
-		log();
 		if(this.tree.isEmpty()) {
-			log();
 			return "()";
 		}
-		string ret = this.toStringGraph(this.tree.back());
-		log();
+		string ret = this.toStringGraph(this.tree.back(), 0);
 		return ret;
 	}
 
-	private string toStringGraph(const ASTNode node) const {
+	private string toStringGraph(const ASTNode node, int indent) const {
 		StringBuffer!(char) ret = new StringBuffer!(char)(128);	
-		ret.pushBack("( %s %s ", idToString(node.getTyp()),
-			node.getToken().toString());
+		for(int i = 0; i < indent; i++) {
+			ret.pushBack('\t');
+		}
+		ret.pushBack("%s %s ", idToString(node.getTyp()),
+			node.getToken().toStringShort());
 
 		Pair!(size_t,ubyte) childs = node.getChilds();
 		for(ubyte i = 0; i < childs.second; i++) {
 			// do some sanity checks
 			assert(this.tree.getSize() > childs.first + i);
 
-			log("%s", this.tree[childs.first + i].toString());
-			ret.pushBack("( %s )", this.toStringGraph(
-				this.tree[childs.first + i]) );
+			//log("%s", this.tree[childs.first + i].toString());
+			ret.pushBack("( \n%s )", this.toStringGraph(
+				this.tree[childs.first + i], indent+1) );
 		}
 
-		ret.pushBack(')');
+		ret.pushBack("\n");
 		return ret.getString();
 	}
 
