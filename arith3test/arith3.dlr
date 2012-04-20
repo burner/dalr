@@ -1,10 +1,12 @@
 S := C; 
 
-C := C A; {: ret = buildTreeWithLoc(termC, [-2, -1], actionNum, this.tokenStack[-2].getLoc()); :}
-	| A;
+C := C IF; {: ret = buildTreeWithLoc(termC, [-2, -1], actionNum, this.tokenStack[-2].getLoc()); :}
+	| IF;
 
-A := if B then A; {: ret = buildTreeWithLoc(termA, [-3,-1], actionNum, this.tokenStack[-4].getLoc()); :}
-	| if B then A else A; {: ret = buildTreeWithLoc(termA, [-5,-3,-1], actionNum, this.tokenStack[-6].getLoc()); :}
-	| identifier ;
+IF := if B then IF; {: ret = buildTreeWithLoc(termIF, [-3,-1], actionNum, this.tokenStack[-4].getLoc()); :}
+	| if B then IF else IF; {: ret = buildTreeWithLoc(termIF, [-5,-3,-1], actionNum, this.tokenStack[-6].getLoc()); :}
+	| ID ;
 
-B := bool ;
+ID := identifier; {: ret = buildTree(termID, [-1], actionNum); :}
+
+B := bool ; {: ret = buildTree(termB, [-1], actionNum); :}

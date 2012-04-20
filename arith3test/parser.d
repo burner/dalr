@@ -214,7 +214,6 @@ class Parse {
 		return ret;
 	}
 
-	//public immutable(TableItem[]) getAction(const Token input) const {
 	public immutable(TableItem[]) getAction() const {
 		immutable(Pair!(int,immutable(immutable(TableItem)[]))) retError = 
 			Pair!(int,immutable(immutable(TableItem)[]))(int.min, 

@@ -85,9 +85,16 @@ int main(string[] args) {
 	
 
 	if(driverFile !is null && driverFile.length > 0) {
-		LalrWriter lw = new LalrWriter(driverFile, driverModulename,
-			null, null, driverClassname !is null && driverClassname.length > 0 ?
-			driverClassname : "Lalr");
+		Writer lw;
+		if(glr) {
+			lw = new GlrWriter(driverFile, driverModulename,
+				null, null, driverClassname !is null && 
+				driverClassname.length > 0 ?  driverClassname : "Glr");
+		} else {
+			lw = new LalrWriter(driverFile, driverModulename,
+				null, null, driverClassname !is null && 
+				driverClassname.length > 0 ?  driverClassname : "Lalr");
+		}
 		lw.write();
 		lw.close();
 	}
