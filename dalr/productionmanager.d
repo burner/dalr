@@ -86,17 +86,17 @@ class ProductionManager {
 	}
 	
 	public Pair!(Set!(int),string) makeAll(string graphFileName, 
-			int printAround, bool glr) {
+			int printAround, bool glr, bool printAll) {
 
 		log("makeLRZeroItemSets");
 		StopWatch lrzero;
 		this.makeLRZeroItemSets();
 		log("\btoke %f", lrzero.stop());
-		/*if(graphFileName.length > 0 && printAround == -1) {
+		if(graphFileName.length > 0 && printAround == -1) {
 			log("writeGraph");
 			writeLR0Graph(this.getItemSets(), this.symbolManager, 
 				this.getProductions(), graphFileName, this);
-		} */
+		}
 		log("makeExtendedGrammer");
 		this.makeExtendedGrammer();
 		log("makeExtendedFirstSet");

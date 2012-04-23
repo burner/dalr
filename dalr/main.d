@@ -15,6 +15,7 @@ import hurt.container.isr;
 import hurt.container.map;
 import hurt.container.mapset;
 import hurt.container.set;
+import hurt.conv.conv;
 import hurt.io.stdio;
 import hurt.io.stream;
 import hurt.string.formatter;
@@ -81,8 +82,13 @@ int main(string[] args) {
 		"If a grammer has ambiguites it might make sense to print the lr set"
 		~ " around that itemset. If you pass an int after this option " ~
 		" a graph will be created", 
-		printAround, true);
-	
+		printAround);
+
+	bool printAll = false;
+	arg.setOption("-k", "--printitemsets",
+		"The resulting graph are to big to be layouted with dot" ~
+		", because of this every itemset is printed by itself to a dot file",
+		printAll, true);
 
 	if(driverFile !is null && driverFile.length > 0) {
 		Writer lw;
@@ -161,7 +167,8 @@ int main(string[] args) {
 	// check if all non-terms are reached
 	Checker(pm.getProductions(), sm);
 
-	Pair!(Set!(int),string) ambiSet = pm.makeAll(graphfile, printAround, glr);
+	Pair!(Set!(int),string) ambiSet = pm.makeAll(graphfile, printAround, glr, 
+		printAll);
 
 	if(ambiSet.first.getSize() > 0) {
 		File logFile = new File("dalrlog", FileMode.OutNew);
@@ -174,6 +181,15 @@ int main(string[] args) {
 		logFile.close();
 		writeLR0GraphAround(pm.getItemSets(), sm, 
 			pm.getProductions(), graphfile, pm, ambiSet.first);
+	}
+
+	if(printAll) {
+		auto a = new Set!int();
+		foreach(it; pm.getItemSets()) {
+			a.insert(conv!(long,int)(it.getId()));
+		}
+		writeLR0GraphAround(pm.getItemSets(), sm, 
+			pm.getProductions(), "itemset", pm, a);
 	}
 
 	//println(extendedGrammerToString(pm, sm));

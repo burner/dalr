@@ -433,7 +433,7 @@ class Parser {
 	private int merge(Parse a, Parse b) {
 		log("a ast = %s", a.getAst().toStringGraph());
 		log("b ast = %s", b.getAst().toStringGraph());
-		return b.getId();
+		return a.getId();
 	}
 
 	private void mergeRun(Deque!(Parse) parse) {
