@@ -84,6 +84,11 @@ int main(string[] args) {
 		" a graph will be created", 
 		printAround);
 
+	string prodTreeFilename = "";
+	arg.setOption("-z", "--prodTree", "Sometimes it makes sense to print the "
+		~ " productions and it follow productions. To do this pass a" ~
+		" outputfile name to dalr.", prodTreeFilename);
+
 	bool printAll = false;
 	arg.setOption("-k", "--printitemsets",
 		"The resulting graph are to big to be layouted with dot" ~
