@@ -12,6 +12,10 @@ build: $(GEN) $(OBJS) Makefile
 	sh IncreBuildId.sh
 	dmd $(OBJS) buildinfo.d -ofdmcd -L../../libhurt/libhurt.a $(DFLAGS)
 
+parsetable: arith3.dlr
+	../Dalr -g ambiGraph -i arith3.dlr -glr true
+
+
 parsetable.d: arith3.dlr Makefile
 	../Dalr -i arith3.dlr -r parsetable.d -rm parsetable --glr
 

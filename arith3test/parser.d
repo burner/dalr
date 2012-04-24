@@ -34,7 +34,7 @@ class Parse {
 
 		this.ast = new AST();
 		this.tokenBufIdx = 0;
-		this.input = this.getToken();
+		//this.input = this.getToken();
 	}
 
 	this(Parser parser, Parse toCopy, int id) {
@@ -116,6 +116,28 @@ class Parse {
 
 	private Token getToken() {
 		return this.parser.increToNextToken(this.tokenBufIdx++);
+	}
+
+	private Token getCurrentToken() {
+		return this.parser.increToNextToken(this.tokenBufIdx);
+	}
+
+	private string tokenStackToString() const {
+		auto ret = new StringBuffer!(char)("token stack: ");
+		foreach(it; this.tokenStack) {
+			ret.pushBack("%s ", it.toStringShort());
+		}
+		ret.pushBack('\n');
+		return ret.getString();
+	}
+
+	private string stackToString() const {
+		auto ret = new StringBuffer!(char)("parse stack: ");
+		foreach(it; this.parseStack) {
+			ret.pushBack("%d ", it);
+		}
+		ret.pushBack('\n');
+		return ret.getString();
 	}
 
 	private Token buildTreeWithLoc(immutable int retType, immutable(int[]) 
@@ -222,7 +244,7 @@ class Parse {
 			Pair!(int,immutable(immutable(TableItem)[]))(int.min, 
 			[TableItem(TableType.Error, 0)]);
 
-		//log("%d %d", this.parseStack.back(), input.getTyp());
+		log("%d %d", this.parseStack.back(), input.getTyp());
 
 		immutable(Pair!(int,immutable(immutable(TableItem)[]))) toSearch = 
 			Pair!(int,immutable(immutable(TableItem)[]))(
@@ -310,8 +332,10 @@ class Parse {
 
 	private string reportError(const Token input) const {
 		StringBuffer!(char) ret = new StringBuffer!(char)(1023);
-		ret.pushBack("%?1!1s in state %?1!1d on input %?1!1s this is parse %d", 
+		ret.pushBack("%?1!1s in state %?1!1d on input %?1!1s this is parse %d\n", 
 			"ERROR", this.parseStack.back(), input.toString(), this.id);
+		ret.pushBack(this.stackToString());
+		ret.pushBack(this.tokenStackToString());
 		return ret.getString();
 	}
 
@@ -323,7 +347,9 @@ class Parse {
 		//log("%s", input.toString());
 		
 		//action = this.getAction(input)[actIdx]; 
-		//log("%s", action.toString());
+		log("%s%s", this.stackToString(), this.tokenStackToString());
+		log("%s || %s", action.toString(), this.getCurrentToken().toString());
+		log();
 		if(action.getTyp() == TableType.Accept) {
 			//log("%s %s", action.toString(), input.toString());
 			this.parseStack.popBack(rules[action.getNumber()].length-1);
