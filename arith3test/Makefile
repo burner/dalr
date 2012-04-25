@@ -17,7 +17,7 @@ parsetable: arith3.dlr
 
 
 parsetable.d: arith3.dlr Makefile
-	../Dalr -i arith3.dlr -r parsetable.d -rm parsetable --glr
+	../Dalr -i arith3.dlr -r parsetable.d -rm parsetable --glr true -z prodgraph.dot -g arith3graph
 
 lextable.d: arith3.dlr arith.dex Makefile
 	../../dex/fsm -i arith.dex -n lextable.d -nm lextable

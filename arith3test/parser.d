@@ -34,7 +34,7 @@ class Parse {
 
 		this.ast = new AST();
 		this.tokenBufIdx = 0;
-		//this.input = this.getToken();
+		this.input = this.getToken();
 	}
 
 	this(Parser parser, Parse toCopy, int id) {
@@ -244,7 +244,7 @@ class Parse {
 			Pair!(int,immutable(immutable(TableItem)[]))(int.min, 
 			[TableItem(TableType.Error, 0)]);
 
-		log("%d %d", this.parseStack.back(), input.getTyp());
+		log("%d %s", this.parseStack.back(), input.toString());
 
 		immutable(Pair!(int,immutable(immutable(TableItem)[]))) toSearch = 
 			Pair!(int,immutable(immutable(TableItem)[]))(
@@ -359,11 +359,13 @@ class Parse {
 			//log();
 			return Pair!(int,string)(-1,this.reportError(input));
 		} else if(action.getTyp() == TableType.Shift) {
-			//log("%s", input.toString());
+			log("%s", input.toString());
 			//log();
 			this.parseStack.pushBack(action.getNumber());
 			this.tokenStack.pushBack(input);
 			input = this.getToken();
+			log("%s%s", this.stackToString(), this.tokenStackToString());
+			log("%s", input.toString());
 		} else if(action.getTyp() == TableType.Reduce) {
 			/*log("%d %d %d", this.id, rules[action.getNumber()].length-1, 
 				this.parseStack.getSize());*/
@@ -497,11 +499,11 @@ class Parser {
 				immutable(TableItem[]) actions = this.parses[i].getAction();
 				// if there are more than one action we found a conflict
 				if(actions.length > 1) {
-					/*log("fork at id %d, tos %d, input %s, number of actions %d",
+					log("fork at id %d, tos %d, input %s, number of actions %d",
 						this.parses[i].getId(), this.parses[i].getTos(),
 						this.parses[i].getCurrentInput().toString(), 
 						actions.length);
-					*/
+					
 					for(size_t j = 1; j < actions.length; j++) {
 						Parse tmp = new Parse(this, this.parses[i], 
 							this.nextId++);
@@ -520,6 +522,7 @@ class Parser {
 				}
 
 				// after all one action is left
+				log("%s", actions[0].toString());
 				auto rslt = this.parses[i].step(actions, 0);
 				if(rslt.first == 1) {
 					this.acceptingParses.pushBack(this.parses[i]);

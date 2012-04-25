@@ -2,6 +2,7 @@ S := C;
 
 C := C IF; {: ret = buildTreeWithLoc(termC, [-2, -1], actionNum, this.tokenStack[-2].getLoc()); :}
 	| IF;
+	| C identifier; {: ret = buildTreeWithLoc(termC, [-2, -1], actionNum, this.tokenStack[-2].getLoc()); :}
 
 IF := if B then IF; {: ret = buildTreeWithLoc(termIF, [-3,-1], actionNum, this.tokenStack[-4].getLoc()); :}
 	| if B then IF else IF; {: ret = buildTreeWithLoc(termIF, [-5,-3,-1], actionNum, this.tokenStack[-6].getLoc()); :}
