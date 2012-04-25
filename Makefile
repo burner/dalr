@@ -8,7 +8,7 @@ CFLAGS=-m64 -unittest -debug -g -I../libhurt/ -wi
 OBJS=dalr.productionmanager.o dalr.item.o dalr.itemset.o \
 dalr.symbolmanager.o dalr.grammerparser.o dalr.dotfilewriter.o \
 dalr.extendeditem.o dalr.finalitem.o dalr.mergedreduction.o dalr.tostring.o \
-dalr.filereader.o dalr.filewriter.o dalr.checker.o
+dalr.filereader.o dalr.filewriter.o dalr.checker.o dalr.prodtree.o
 
 DALROBJS=dalr.main.o
 
@@ -33,13 +33,17 @@ fine: $(OBJS) $(DALROBJS)
 
 dalr.main.o: dalr/main.d dalr/productionmanager.d dalr/dotfilewriter.d \
 dalr/symbolmanager.d dalr/grammerparser.d dalr/filereader.d \
-dalr/tostring.d Makefile
+dalr/tostring.d dalr/prodtree.d Makefile
 	dmd $(CFLAGS) -c dalr/main.d -ofdalr.main.o
 
 dalr.productionmanager.o: dalr/productionmanager.d dalr/item.d dalr/itemset.d \
 dalr/symbolmanager.d dalr/finalitem.d dalr/extendeditem.d dalr/grammerparser.d \
 dalr/mergedreduction.d dalr/filereader.d Makefile
 	dmd $(CFLAGS) -c dalr/productionmanager.d -ofdalr.productionmanager.o
+
+dalr.prodtree.o: dalr/prodtree.d dalr/productionmanager.d dalr/symbolmanager.d \
+Makefile
+	dmd $(CFLAGS) -c dalr/prodtree.d -ofdalr.prodtree.o
 
 dalr.item.o: dalr/item.d Makefile
 	dmd $(CFLAGS) -c dalr/item.d -ofdalr.item.o

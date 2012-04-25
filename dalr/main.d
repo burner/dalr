@@ -9,6 +9,7 @@ import dalr.finalitem;
 import dalr.tostring;
 import dalr.filereader;
 import dalr.filewriter;
+import dalr.prodtree;
 
 import hurt.container.deque;
 import hurt.container.isr;
@@ -195,6 +196,10 @@ int main(string[] args) {
 		}
 		writeLR0GraphAround(pm.getItemSets(), sm, 
 			pm.getProductions(), "itemset", pm, a);
+	}
+
+	if(prodTreeFilename.length > 0) {
+		prodToTree(prodTreeFilename, pm, sm);
 	}
 
 	//println(extendedGrammerToString(pm, sm));
