@@ -1,7 +1,6 @@
 module dalr.itemset;
 
 import dalr.item;
-//import dalr.productionmanager;
 
 import hurt.math.bigintbase10;
 import hurt.container.deque;
@@ -249,6 +248,7 @@ class ItemSet {
 
 	public override string toString() {
 		StringBuffer!(char) ret = new StringBuffer!(char)();
+		ret.pushBack("Itemset %d\n", this.id);
 		foreach(Item it; this.items) {
 			ret.pushBack(it.toString());	
 			ret.pushBack('\n');

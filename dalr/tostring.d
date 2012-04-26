@@ -454,7 +454,7 @@ public string productionItemToString(const int item, SymbolManager sm) {
 	}
 }
 
-private string itemToString(const Item item, ProductionManager pm, 
+public string itemToString(const Item item, ProductionManager pm, 
 		SymbolManager sm) {
 	Deque!(int) de = pm.getProduction(item.getProd());	
 	StringBuffer!(char) ret = new StringBuffer!(char)(de.getSize()*4);
@@ -496,8 +496,7 @@ public string itemsetsToString(ProductionManager pm, SymbolManager sm) {
 
 	Iterator!(ItemSet) it = pm.getItemSet().begin();
 	for(size_t idx = 0; it.isValid(); idx++, it++) {
-		sb.pushBack(conv!(ulong,string)(idx));
-		sb.pushBack('\n');
+		sb.pushBack("Itemset %d\n",idx);
 		sb.pushBack(itemsetToString(*it, pm, sm));
 	}
 	return sb.getString();

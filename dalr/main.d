@@ -176,15 +176,17 @@ int main(string[] args) {
 	Pair!(Set!(int),string) ambiSet = pm.makeAll(graphfile, printAround, glr, 
 		printAll);
 
+	File logFile = new File("dalrlog", FileMode.OutNew);
+	logFile.writeString(normalProductionToString(pm, sm));
+	foreach(int it; ambiSet.first) {
+		logFile.writeString(format("ambiguity %d\n", it));
+	}
+	logFile.writeString("\n\n\n");
+	logFile.writeString(ambiSet.second);
+	logFile.writeString(itemsetsToString(pm, sm));
+	logFile.close();
+
 	if(ambiSet.first.getSize() > 0) {
-		File logFile = new File("dalrlog", FileMode.OutNew);
-		logFile.writeString(normalProductionToString(pm, sm));
-		foreach(int it; ambiSet.first) {
-			logFile.writeString(format("ambiguity %d\n", it));
-		}
-		logFile.writeString("\n\n\n");
-		logFile.writeString(ambiSet.second);
-		logFile.close();
 		writeLR0GraphAround(pm.getItemSets(), sm, 
 			pm.getProductions(), graphfile, pm, ambiSet.first);
 	}
