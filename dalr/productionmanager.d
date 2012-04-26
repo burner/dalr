@@ -1315,7 +1315,7 @@ class ProductionManager {
 	}
 
 	public void makeExtendedFollowSetLinear() {
-		scope Trace st = new Trace("makeExtendedFirstSetLinear");
+		scope Trace st = new Trace("makeExtendedFollowSetLinear");
 		assert(this.firstExtended !is null);
 		assert(this.firstExtended.getSize() > 0);
 
