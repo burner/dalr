@@ -4,4 +4,5 @@
 "if" {: return Token(this.getLoc(), termif); :}
 "then" {: return Token(this.getLoc(), termthen); :}
 "else" {: return Token(this.getLoc(), termelse); :}
+"," {: return Token(this.getLoc(), termcomma); :}
 "[:word:][:word:]*" {: return Token(this.getLoc(), termidentifier, this.lexText.getString()); :}
