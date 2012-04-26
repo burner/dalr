@@ -23,6 +23,7 @@ import hurt.string.formatter;
 import hurt.util.getopt;
 import hurt.util.pair;
 import hurt.util.slog;
+import hurt.util.stacktrace;
 
 int main(string[] args) {
 	Args arg = Args(args);
@@ -157,9 +158,7 @@ int main(string[] args) {
 
 	// operator precedence prolog
 	//insertMetaSymbolsIntoSymbolManager(sm, fr.getProductionIterator());
-	debug {
-		sm.checkIfPrecedenceIsCorrect(left, right, non);
-	}
+	sm.checkIfPrecedenceIsCorrect(left, right, non);
 
 	//println(sm.precedenceToString());
 
@@ -217,6 +216,8 @@ int main(string[] args) {
 		fw.write();
 		fw.close();
 	}
+
+	Trace.printStats();
 
 	return 0;
 }

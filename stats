@@ -1,0 +1,13 @@
+
+Stats of all traced function:
+                                                    function    calls   time in ms
+makeExtendedFirstSetLinear() at dalr/productionmanager.d: 1318        1       117780
+    makeExtendedFirstSet() at dalr/productionmanager.d: 1749        1        49150
+       computeFinalTable() at dalr/productionmanager.d:  748        2        40425
+      makeLRZeroItemSets() at dalr/productionmanager.d: 1159        4        36918
+           fillFollowSet() at dalr/productionmanager.d: 1064    16842        22257
+         applyPrecedence() at dalr/productionmanager.d:  319        1        19654
+           compleItemSet() at dalr/productionmanager.d: 1000    44393        10759
+    insertItemsToProcess() at dalr/productionmanager.d: 1129    16842         7045
+ computeTranslationTable() at dalr/productionmanager.d:  547        1          490
+     makeExtendedGrammar() at dalr/productionmanager.d: 1545        4          467

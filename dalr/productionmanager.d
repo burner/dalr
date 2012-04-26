@@ -316,6 +316,7 @@ class ProductionManager {
 	}
 
 	private Pair!(Set!(int),string) applyPrecedence(bool glr) {
+		scope Trace st = new Trace("applyPrecedence");
 		Set!(int) ambiSet = new Set!(int)();
 		StringBuffer!(char) amStrBuf = new StringBuffer!(char)(2048);
 
@@ -543,6 +544,7 @@ class ProductionManager {
 	}
 
 	private Deque!(Deque!(int)) computeTranslationTable() {
+		scope Trace st = new Trace("computeTranslationTable");
 		Deque!(Deque!(int)) ret = new Deque!(Deque!(int))(
 			this.itemSets.getSize()+1);
 		Deque!(int) tmp = new Deque!(int)(this.symbolManager.getSize());
@@ -743,6 +745,7 @@ class ProductionManager {
 	}
 
 	public Deque!(Deque!(Deque!(FinalItem))) computeFinalTable() {
+		scope Trace st = new Trace("computeFinalTable");
 		Deque!(Deque!(Deque!(FinalItem))) ret = 
 			new Deque!(Deque!(Deque!(FinalItem)))(this.itemSets.getSize()+1);
 
@@ -1312,6 +1315,7 @@ class ProductionManager {
 	}
 
 	public void makeExtendedFollowSetLinear() {
+		scope Trace st = new Trace("makeExtendedFirstSetLinear");
 		assert(this.firstExtended !is null);
 		assert(this.firstExtended.getSize() > 0);
 
@@ -1538,6 +1542,7 @@ class ProductionManager {
 	 */
 
 	public void makeExtendedGrammer() {
+		scope Trace st = new Trace("makeExtendedGrammar");
 		// This looks ugly because itemset numbers as well
 		// as items are mixed and both are encoded as ints.
 		// Every even indexed item in a deque!(int) is a symbol.
@@ -1741,6 +1746,7 @@ class ProductionManager {
 	}
 
 	public void makeExtendedFirstSet() {
+		scope Trace st = new Trace("makeExtendedFirstSet");
 		this.constructExtendedKind();
 		//log();
 		//new Deque!(Deque!(ExtendedItem))(this.extGrammerComplex);

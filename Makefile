@@ -3,7 +3,7 @@ all: fine
 #CFLAGS=-m64 -offsm -unittest -d-debug -gc
 #CFLAGS=-m64 -offsm -unittest -debug -gc -debug=RegExDebug -debug=StateDebug
 CFLAGS=-m64 -unittest -debug -g -I../libhurt/ -wi
-#CFLAGS=-m64 -offsm -O -wi -I../libhurt
+#CFLAGS=-m64 -wi -I../libhurt -O -release
 
 OBJS=dalr.productionmanager.o dalr.item.o dalr.itemset.o \
 dalr.symbolmanager.o dalr.grammerparser.o dalr.dotfilewriter.o \
