@@ -486,7 +486,16 @@ private string itemsetToString(ItemSet iSet, ProductionManager pm,
 		sb.pushBack(itemToString(it, pm, sm));
 		sb.pushBack('\n');
 	}
-	sb.pushBack('\n');
+	Map!(int,ItemSet) fo = iSet.getFollowSet();
+	sb.pushBack("Follow Set {");
+	for(auto it = fo.begin(); it.isValid(); it++) {
+		sb.pushBack("%s:%d,", sm.getSymbolName((*it).getKey()), 
+			(*it).getData().getId());
+	}
+	if(!fo.isEmpty()) {
+		sb.popBack();
+	}
+	sb.pushBack("}\n\n");
 	return sb.getString();
 }
 

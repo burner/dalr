@@ -183,6 +183,7 @@ int main(string[] args) {
 	}
 	logFile.writeString("\n\n\n");
 	logFile.writeString(ambiSet.second);
+	logFile.writeString("\n\n\n");
 	logFile.writeString(itemsetsToString(pm, sm));
 	logFile.close();
 
