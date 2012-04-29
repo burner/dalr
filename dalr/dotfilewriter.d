@@ -39,9 +39,9 @@ private string itemsetToHTML(ItemSet iSet, Deque!(Deque!(int)) prod,
 		});
 
 	foreach(size_t idx, Item it; iSet.getItems()) {
-		if(length && idx > longItem) {
+		/*if(length && idx > longItem) {
 			break;
-		}
+		}*/
 		ret.pushBack("<tr>\n");
 		ret.pushBack("\t<td align=\"left\" port=\"r");
 		ret.pushBack(conv!(ulong,string)(it.getProd()));

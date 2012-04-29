@@ -1,0 +1,23 @@
+S := Module;
+
+Module := module IdentifierList semicolon; 
+		{: ret = buildTreeWithLoc(termModule, [-2], actionNum, tokenStack[-3].getLoc()); :}
+	| module IdentifierList semicolon DeclDefs;
+		{: ret = buildTreeWithLoc(termModule, [-3, -1], actionNum, this.tokenStack[-4].getLoc()); :}
+	| DeclDefs;
+
+DeclDefs := DeclDefs DeclDef; 
+		{: ret = buildTreeWithLoc(termDeclDefs, [-2, -1], actionNum, this.tokenStack[-2].getLoc()); :}
+	| DeclDef;
+
+DeclDef := ImportDeclaration;
+
+ImportDeclaration := import IdentifierList semicolon; 
+	{: ret = buildTreeWithLoc(termImportDeclaration, [-2], actionNum, this.tokenStack[-3].getLoc()); :}
+
+IdentifierList := identifier dot IdentifierList; 
+	{: ret = buildTreeWithLoc(termIdentifierList, [-3, -1], actionNum, this.tokenStack[-3].getLoc()); :}
+
+	| identifier; 
+		{: ret = buildTree(termIdentifierList, [-1], actionNum); :}
+

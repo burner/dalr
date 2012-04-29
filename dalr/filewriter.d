@@ -669,43 +669,62 @@ private immutable string parserBody = `
 	}
 
 	private TableItem getAction(const Token input) const {
-		auto retError = Pair!(int,TableItem)(int.min, 
-			TableItem(TableType.Error, 0));
+		immutable(Pair!(int,TableItem)) retError = Pair!(int,TableItem)(
+			int.min, TableItem(TableType.Error, 0));
+
 
 		//log("%d %d", this.parseStack.back(), input.getTyp());
 
-		auto toSearch = Pair!(int,TableItem)(input.getTyp(), TableItem(false));
-		auto row = parseTable[this.parseStack.back()];
+		immutable(Pair!(int,TableItem)) toSearch = Pair!(int,TableItem)(
+			input.getTyp(), TableItem(false));
+
+		immutable(Pair!(int,TableItem)[]) row = cast(immutable)parseTable[
+			this.parseStack.back()];
+
 		bool found;
 		size_t foundIdx;
 
 		auto ret = binarySearch!(Pair!(int,TableItem))
 			(row, toSearch, retError, row.length, found, foundIdx,
-			function(Pair!(int,TableItem) a, Pair!(int,TableItem) b) {
+			function(immutable(Pair!(int,TableItem)) a, 
+					immutable(Pair!(int,TableItem)) b) {
 				return a.first > b.first;
 			}, 
-			function(Pair!(int,TableItem) a, Pair!(int,TableItem) b) {
+			function(immutable(Pair!(int,TableItem)) a, 
+					immutable(Pair!(int,TableItem)) b) {
 				return a.first == b.first; });
 
 		return ret.second;
 	}
 
 	private short getGoto(const int input) const {
-		auto retError = Pair!(int,TableItem)(int.min, 
-			TableItem(TableType.Error, 0));
+		immutable(Pair!(int,TableItem)) retError = Pair!(int,TableItem)(
+			int.min, TableItem(TableType.Error, 0));
 
-		auto toSearch = Pair!(int,TableItem)(input, TableItem(false));
+		immutable(Pair!(int,TableItem)) toSearch = Pair!(int,TableItem)(
+			input, TableItem(false));
 		auto row = gotoTable[this.parseStack.back()];
 		bool found;
 		size_t foundIdx;
 
 		auto ret = binarySearch!(Pair!(int,TableItem))
 			(row, toSearch, retError, row.length, found, foundIdx,
+			function(immutable(Pair!(int,TableItem)) a, 
+					immutable(Pair!(int,TableItem)) b) {
+				return a.first > b.first;
+			}, 
+			function(immutable(Pair!(int,TableItem)) a, 
+					immutable(Pair!(int,TableItem)) b) {
+				return a.first == b.first; });
+
+		/*auto ret = binarySearch!(Pair!(int,TableItem))
+			(row, toSearch, retError, row.length, found, foundIdx,
 			function(Pair!(int,TableItem) a, Pair!(int,TableItem) b) {
 				return a.first > b.first;
 			}, 
 			function(Pair!(int,TableItem) a, Pair!(int,TableItem) b) {
 				return a.first == b.first; });
+		*/
 
 		return ret.second.getNumber();
 	}

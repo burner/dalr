@@ -112,7 +112,8 @@ class ProductionManager {
 		//println(normalFollowSetToString(pm, sm));
 		//println(extendedGrammerItemsToString(pm, sm));
 		log("makeExtendedFollowSetLinear");
-		this.makeExtendedFollowSetLinear();
+		//this.makeExtendedFollowSetLinear();
+		this.makeExtendedFollowSet();
 		log("computeTranslationTable");
 		this.computeTranslationTable();
 		log("computeFinalTable");
@@ -1007,7 +1008,7 @@ class ProductionManager {
 		Deque!(Item) tmpOld;
 		Deque!(Item) foundOld;
 		// lets check if we hace make the itemset allready
-		if(this.completeItemSetCache.contains(de)) {
+		/*if(this.completeItemSetCache.contains(de)) {
 			foundOld = this.completeItemSetCache.find(de);
 			iSet.setItems(foundOld);
 			return;
@@ -1015,7 +1016,7 @@ class ProductionManager {
 			// if we haven't found it we need to save the deque we
 			// create
 			tmpOld = new Deque!(Item)(de);
-		}
+		}*/
 		Deque!(Item) stack = new Deque!(Item)(de);
 		while(!stack.isEmpty()) {
 			Item item = stack.popFront();
@@ -1045,7 +1046,7 @@ class ProductionManager {
 		}
 		// it needs to be sorted so the items of the itemset can
 		// be used in a trie
-		sortDeque!(Item)(de, function(in Item a, in Item b) {
+		/*sortDeque!(Item)(de, function(in Item a, in Item b) {
 			return a.toHash() < b.toHash(); });
 
 		// well we have created a new complete itemset that we need to cache
@@ -1056,7 +1057,7 @@ class ProductionManager {
 		if(tmpOld !is null && !this.completeItemSetCache.contains(tmpOld)) {
 			assert(tmpOld !is null);
 			this.completeItemSetCache.insert(tmpOld, de);
-		}
+		}*/
 
 	}
 
@@ -2013,4 +2014,32 @@ unittest {
 	assert(mi !is null);
 	//assert(mi.getData().contains(sm.getSymbolId("a")));
 	assert(mi.getData().contains(-2));
+}
+
+unittest {
+	Map!(size_t, Production) actions = new Map!(size_t, Production)(
+		ISRType.HashTable);
+	auto sm = new SymbolManager();
+	auto gp = new GrammerParser(sm);
+	auto pm = new ProductionManager(sm, false);
+	actions.insert(pm.insertProduction(gp.processProduction("S := N")), 
+		new Production("S", "N"));
+	actions.insert(pm.insertProduction(gp.processProduction("N := V = E")), 
+		new Production("N", "V = E"));
+	actions.insert(pm.insertProduction(gp.processProduction("N := E")), 
+		new Production("N", "E"));
+	actions.insert(pm.insertProduction(gp.processProduction("E := V")), 
+		new Production("E", "V"));
+	actions.insert(pm.insertProduction(gp.processProduction("V := x")), 
+		new Production("V", "x"));
+	actions.insert(pm.insertProduction(gp.processProduction("V := * E")), 
+		new Production("V", "* E"));
+	pm.setProdMapping(actions);
+	/*
+	sm.checkIfPrecedenceIsCorrect(new MapSet!(int,string)(), 
+		new MapSet!(int,string)(), new Set!(string)());
+	auto rslt = pm.makeAll("unittest2", 0, false, false);
+	version(unittest) {
+		printfln("%s", finalTransitionTableToString(pm,sm));
+	}*/
 }
