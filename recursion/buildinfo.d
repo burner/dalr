@@ -1,4 +1,4 @@
 module buildinfo;
 
-public static immutable(uint) buildID = 620;
-public static immutable(dstring) gitHash = "79ef28925f156cec8352ae61068392ee94f8777d";
+public static immutable(uint) buildID = 623;
+public static immutable(dstring) gitHash = "6fbeb9d7559d8fb64542a17430c73b17a96bd26e";

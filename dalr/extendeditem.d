@@ -46,12 +46,12 @@ class ExtendedItem {
 	}
 
 	// TODO this will only work correctly on 64 bit machines 
-	public override hash_t toHash() const {
+	public override hash_t toHash() const nothrow @safe {
 		//return (this.left << 20) + (this.item<<10) + this.right;
 		return (this.left << 21) + (this.right<<10) + this.item;
 	}
 
-	public override int opCmp(Object o) const {
+	public override int opCmp(Object o) const nothrow @safe{
 		ExtendedItem e = cast(ExtendedItem)o;
 		hash_t t = this.toHash();
 		hash_t c = e.toHash();
@@ -64,7 +64,7 @@ class ExtendedItem {
 		}
 	}
 
-	public override bool opEquals(Object o) const {
+	public override bool opEquals(Object o) const nothrow @safe{
 		ExtendedItem item = cast(ExtendedItem)o;
 		return this.left == item.left && 
 			this.item == item.item &&
