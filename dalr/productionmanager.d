@@ -111,7 +111,7 @@ class ProductionManager {
 		//log();
 		//pm.makeNormalFollowSet();
 		//println(normalFollowSetToString(pm, sm));
-		log("makeExtendedFollowSetLinear");
+		log("makeExtendedFollowSet");
 		//this.makeExtendedFollowSet();
 		//this.makeExtendedFollowSetLinear();
 		//this.makeExtendedFollowSetFaster();
@@ -1040,7 +1040,7 @@ class ProductionManager {
 		Deque!(Item) tmpOld;
 		Deque!(Item) foundOld;
 		// lets check if we hace make the itemset allready
-		/*if(this.completeItemSetCache.contains(de)) {
+		if(this.completeItemSetCache.contains(de)) {
 			foundOld = this.completeItemSetCache.find(de);
 			iSet.setItems(foundOld);
 			return;
@@ -1048,7 +1048,7 @@ class ProductionManager {
 			// if we haven't found it we need to save the deque we
 			// create
 			tmpOld = new Deque!(Item)(de);
-		}*/
+		}
 		Deque!(Item) stack = new Deque!(Item)(de);
 		while(!stack.isEmpty()) {
 			Item item = stack.popFront();
@@ -1078,7 +1078,7 @@ class ProductionManager {
 		}
 		// it needs to be sorted so the items of the itemset can
 		// be used in a trie
-		/*sortDeque!(Item)(de, function(in Item a, in Item b) {
+		sortDeque!(Item)(de, function(in Item a, in Item b) {
 			return a.toHash() < b.toHash(); });
 
 		// well we have created a new complete itemset that we need to cache
@@ -1089,7 +1089,7 @@ class ProductionManager {
 		if(tmpOld !is null && !this.completeItemSetCache.contains(tmpOld)) {
 			assert(tmpOld !is null);
 			this.completeItemSetCache.insert(tmpOld, de);
-		}*/
+		}
 
 	}
 

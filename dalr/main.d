@@ -79,6 +79,11 @@ int main(string[] args) {
 		"if passed the glr parsetable will be emitted", 
 		glr);
 
+	bool dontPrintError = false;
+	arg.setOption("-e", "--dontprinterror", 
+		"if passed no error dot files will be printed", 
+		dontPrintError);
+
 	int printAround = -1;
 	arg.setOption("-a", "--printaround", 
 		"If a grammer has ambiguites it might make sense to print the lr set"
@@ -175,6 +180,7 @@ int main(string[] args) {
 	Pair!(Set!(int),string) ambiSet = pm.makeAll(graphfile, printAround, glr, 
 		printAll);
 
+	log("writing dalrlog file");
 	File logFile = new File("dalrlog", FileMode.OutNew);
 	logFile.writeString(normalProductionToString(pm, sm));
 	logFile.writeString("\n\n\n");
@@ -188,12 +194,14 @@ int main(string[] args) {
 	logFile.writeString(itemsetsToString(pm, sm));
 	logFile.close();
 
-	if(ambiSet.first.getSize() > 0) {
+	if(!dontPrintError && ambiSet.first.getSize() > 0) {
+		log("writing %d graphs with conflict", ambiSet.first.getSize());
 		writeLR0GraphAround(pm.getItemSets(), sm, 
 			pm.getProductions(), graphfile, pm, ambiSet.first);
 	}
 
 	if(printAll) {
+		log("writing all itemsets");
 		auto a = new Set!int();
 		foreach(it; pm.getItemSets()) {
 			a.insert(conv!(long,int)(it.getId()));
@@ -203,16 +211,19 @@ int main(string[] args) {
 	}
 
 	if(prodTreeFilename.length > 0) {
+		log("print production tree");
 		prodToTree(prodTreeFilename, pm, sm);
 	}
 
 	//println(extendedGrammerToString(pm, sm));
 	//println(itemsetsToString(pm, sm));
+	/*log("writing transition table");
 	File tranTable = new File("tranTable", FileMode.OutNew);
 	tranTable.writeString(finalTransitionTableToString(pm, sm));
-	tranTable.close();
+	tranTable.close();*/
 
 	if(outputFile !is null && outputFile.length > 0) {
+		log("writing the parsetable into file %s", outputFile);
 		RuleWriter fw = new RuleWriter(outputFile, outputModulename,
 			sm, pm, glr);
 		fw.write();
