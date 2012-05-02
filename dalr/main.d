@@ -177,6 +177,8 @@ int main(string[] args) {
 
 	File logFile = new File("dalrlog", FileMode.OutNew);
 	logFile.writeString(normalProductionToString(pm, sm));
+	logFile.writeString("\n\n\n");
+	logFile.writeString(extendedFollowSetToString(pm, sm));
 	foreach(int it; ambiSet.first) {
 		logFile.writeString(format("ambiguity %d\n", it));
 	}

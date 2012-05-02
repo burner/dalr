@@ -3,6 +3,7 @@ module dalr.dotfilewriter;
 import dalr.item;
 import dalr.itemset;
 import dalr.symbolmanager;
+import dalr.extendeditem;
 import dalr.productionmanager;
 
 import hurt.algo.sorting;
@@ -22,8 +23,28 @@ import std.process;
 
 private immutable size_t longItem = 6;
 
+private string lookaheadToken(long itemsetId, int prodSym, 
+		Map!(ExtendedItem,Set!(int)) follow, SymbolManager sm) {
+	assert(follow !is null);
+	assert(sm !is null);
+	StringBuffer!(char) ret = new StringBuffer!(char)(128);
+	for(auto it = follow.begin(); it.isValid(); it++) {
+		if((*it).getKey().getItem() == prodSym && 
+				(*it).getKey().getRight() == itemsetId) {
+			foreach(jt; (*it).getData()) {
+				ret.pushBack("%s ",sm.getSymbolName(jt));
+			}
+			break;
+		}
+	}
+	if(ret.getSize() > 0) {
+		ret.popBack();
+	}
+	return ret.getString();
+}
+
 private string itemsetToHTML(ItemSet iSet, Deque!(Deque!(int)) prod, 
-		SymbolManager sm, bool length = true) {
+		SymbolManager sm, ProductionManager pm, bool length = true) {
 	StringBuffer!(char) ret = new StringBuffer!(char)(100);	
 	ret.pushBack("<table border=\"0\" cellborder=\"0\" cellpadding=\"3\" ");
 	ret.pushBack("bgcolor=\"white\">\n");
@@ -49,7 +70,7 @@ private string itemsetToHTML(ItemSet iSet, Deque!(Deque!(int)) prod,
 		ret.pushBack(conv!(ulong,string)(it.getProd()));
 		ret.pushBack("&#41; ");
 		//l -&gt; &bull;'*' r 
-		foreach(size_t idx, int pro; prod[it.getProd]) {
+		foreach(size_t idx, int pro; prod[it.getProd()]) {
 			if(idx == 0) {
 				ret.pushBack(sm.getSymbolName(pro));
 				ret.pushBack(" -&gt; ");
@@ -62,12 +83,22 @@ private string itemsetToHTML(ItemSet iSet, Deque!(Deque!(int)) prod,
 				ret.pushBack(" ");
 			}
 		}
+		string follow = lookaheadToken(iSet.getId(), 
+			prod[it.getProd()][it.getDotPosition-1], pm.getFollowExtended(), 
+			sm);
+
 		ret.popBack();
 		if(prod[it.getProd()].getSize() == it.getDotPosition()) {
 			ret.pushBack("&bull;");
 		}
+		ret.pushBack("</td>\n");
 
-		ret.pushBack("</td>\n</tr>\n");
+		if(follow.length > 0) {
+			ret.pushBack("<td align=\"right\" >,%s</td>\n", follow);
+		}
+
+
+		ret.pushBack("</tr>\n");
 	}
   	ret.pushBack("</table>");
 	return ret.getString();
@@ -292,7 +323,7 @@ public void writeLR0GraphAround(Deque!(ItemSet) de, SymbolManager sm,
 			file.writeString("\"white\"");
 			file.writeString(" fontname = \"Courier New\" shape = \"Mrecord\" ");
 			file.writeString("label =<");
-			file.writeString(itemsetToHTML(iSet, prod, sm));
+			file.writeString(itemsetToHTML(iSet, prod, sm, pm));
 			file.writeString("> ];\n");
 			processed.insert(iSet);
 		}
@@ -336,7 +367,7 @@ public void writeLR0Graph(Deque!(ItemSet) de, SymbolManager sm,
 		file.writeString("\"white\"");
 		file.writeString(" fontname = \"Courier New\" shape = \"Mrecord\" ");
 		file.writeString("label =<");
-		file.writeString(itemsetToHTML(iSet, prod, sm));
+		file.writeString(itemsetToHTML(iSet, prod, sm, pm));
 		file.writeString("> ];\n");
 		rank.insert(iSet);
 		/*numItems += iSet.getItemCount();

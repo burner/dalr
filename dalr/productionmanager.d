@@ -49,6 +49,9 @@ class ProductionManager {
 	// The follow sets for normal and extended grammer
 	private Map!(int,Set!(int)) followNormal;
 	private Map!(ExtendedItem,Set!(int)) followExtended;
+	private Map!(ExtendedItem,Set!(int)) followExtendedLinear;
+	private Map!(ExtendedItem,Set!(int)) followExtendedEven;
+	private Map!(ExtendedItem,Set!(int)) followExtendedFaster;
 
 	// Translation Table
 	private Deque!(Deque!(int)) translationTable;
@@ -92,11 +95,6 @@ class ProductionManager {
 		StopWatch lrzero;
 		this.makeLRZeroItemSets();
 		log("\btoke %f", lrzero.stop());
-		if(graphFileName.length > 0 && printAround == -1) {
-			log("writeGraph");
-			writeLR0Graph(this.getItemSets(), this.symbolManager, 
-				this.getProductions(), graphFileName, this);
-		}
 		log("makeExtendedGrammer");
 		this.makeExtendedGrammer();
 		log("makeExtendedFirstSet");
@@ -110,10 +108,34 @@ class ProductionManager {
 		//log();
 		//pm.makeNormalFollowSet();
 		//println(normalFollowSetToString(pm, sm));
-		//println(extendedGrammerItemsToString(pm, sm));
 		log("makeExtendedFollowSetLinear");
+		//this.makeExtendedFollowSet();
 		//this.makeExtendedFollowSetLinear();
-		this.makeExtendedFollowSet();
+		//this.makeExtendedFollowSetFaster();
+		this.makeExtendedFollowSetEvenFaster();
+		//println(extendedGrammerItemsToString(this, this.symbolManager));
+		//log("normal %u linear %u", this.followExtended.getSize(),
+		//	this.followExtendedLinear.getSize());
+		//log("normal %u evenFaster %u", this.followExtended.getSize(),
+		//	this.followExtendedEven.getSize());
+		//log("linear = %s", extendedTSetToString!("Follow")(
+		//	this.followExtendedLinear, this.symbolManager));
+		//log("normal = %s", extendedTSetToString!("Follow")(
+		//	this.followExtended, this.symbolManager));
+		//log("Faster = %s\nequalToNormal %b", extendedTSetToString!("Follow")(
+		//	this.followExtendedFaster, this.symbolManager), 
+		//	this.followExtended == this.followExtendedFaster);
+		//log("evenFaster = %s\nequalToNormal %b", extendedTSetToString!(
+		//	"Follow")(this.followExtendedEven, this.symbolManager),
+		//	this.followExtended == this.followExtendedEven);
+		//log("%b", this.followExtendedEven is this.followExtended);
+		this.followExtended = this.followExtendedEven;
+
+		if(graphFileName.length > 0 && printAround == -1) {
+			log("writeGraph");
+			writeLR0Graph(this.getItemSets(), this.symbolManager, 
+				this.getProductions(), graphFileName, this);
+		}
 		log("computeTranslationTable");
 		this.computeTranslationTable();
 		log("computeFinalTable");
@@ -1284,21 +1306,31 @@ class ProductionManager {
 				this.firstExtended.begin();
 			for(; it.isValid(); it++) {
 				if((*it).getKey() == from) {
-					log("found it in the firstExtended\n\n");
-					break;
+					assert(false,"found it in the firstExtended\n\n");
 				}
 			}
 			//log("check if this is valid");
-			follow.insert(to,from.getItem());
+			//follow.insert(to,from.getItem());
 			return;
 		}
 		MapItem!(ExtendedItem,Set!(int)) mi = this.firstExtended.find(from);
-		log("%u", mi.getData().getSize());
+		//log("%u", mi.getData().getSize());
 		ISRIterator!(int) it = mi.getData().begin();
 		for(; it.isValid(); it++) {
 			if(*it != -2) {
 				follow.insert(to, *it);
 			}
+		}
+	}
+
+	private bool containsEpsilon(Map!(ExtendedItem,Set!(int)) first,
+			ExtendedItem item) {
+		MapItem!(ExtendedItem,Set!(int)) mi = first.find(item);
+		if(mi is null) {
+			return false;
+		} else {
+			Set!(int) miSet = mi.getData();
+			return miSet.contains(-2);
 		}
 	}
 
@@ -1313,6 +1345,12 @@ class ProductionManager {
 			Set!(int) miSet = mi.getData();
 			return miSet.contains(-2) && miSet.getSize() == 1;
 		}
+	}
+
+	private bool getKindOfExtendedItem(ExtendedItem item) {
+		MapItem!(ExtendedItem,bool) kindItem = this.extGrammerKind.find(item);
+		assert(kindItem !is null);
+		return kindItem.getData();
 	}
 
 	public void makeExtendedFollowSetLinear() {
@@ -1336,49 +1374,32 @@ class ProductionManager {
 			this.extGrammerComplex), -1);
 
 		foreach(size_t idx, Deque!(ExtendedItem) it; this.extGrammerComplex) {
-			if(idx % 100 == 0) {
-				//log("%u from %u", idx, this.extGrammerComplex.getSize());
-			}
-			foreach(size_t jdx, ExtendedItem jt; it) {
-				// nothing for the first two
-				if(jdx == 0) {
+			for(size_t jdx = 0; jdx < it.getSize()-1; jdx++) {
+				if(jdx == 0 /*|| !getKindOfExtendedItem(it[jdx])*/) {
 					continue;
 				}
-
+				
 				// rule 2
-				if(!this.extGrammerKind.find(jt).getData() &&
-						this.extGrammerKind.find(it[jdx-1]).getData()) {
-					//log("%s", extendedGrammerItemRuleToString(it, this,
-						//this.symbolManager));
-					// check if follow(jt) contains epsilon and jt is the last
-					// item of the production
-					if(jdx == it.getSize()-1 && 
-							containsOnlyEpsilon(this.firstExtended, jt)) {
-						log();
-						mapping.insert(it[0], it[jdx-1]);
-					} else if(jdx > 1) { 
-						// at all from first jt to follow it[jdx-1]
-						//log();
-						insertAllButEpsilon(followSets, jt, it[jdx-1]);
-					}
-				// rule 3
-				} else if(jdx == it.getSize()-1 &&  // the last item is a non-
-						this.extGrammerKind.find(jt).getData()) { // term
-					mapping.insert(it[0], jt);
+				insertAllButEpsilon(followSets, it[jdx+1], it[jdx]);
+				mapping.insert(it[jdx+1], it[jdx]);
+ 				// prep for rule 3
+				if(jdx+2 == it.getSize() && containsEpsilon(this.firstExtended,
+						it[jdx+1])) {
+					mapping.insert(it[jdx], it[0]);
+				}
+				if(jdx+1 == it.getSize()) {
+					mapping.insert(it[jdx], it[0]);
 				}
 			}
 		}
+		log("after rule two %u; mappingSize %u", followSets.getSize(),
+			mapping.getSize());
 
 		int cnt = 0;
 		bool changed = true;
 		StopWatch sw;
 		sw.start();
 		while(changed) { // run as long as the follow set change
-			if(cnt % 100 == 0) {
-				//log("mapping iterator cnt %d mapping size %d", cnt, 
-					//followSets.getSize());
-			}
-			cnt++;
 			changed = false;
 			size_t oldSize = followSets.getSize();
 			
@@ -1410,8 +1431,186 @@ class ProductionManager {
 
 
 		// save the followSet
-		this.followExtended = followSets.getMap();
+		this.followExtendedLinear = followSets.getMap();
 	}
+
+	public void makeExtendedFollowSetEvenFaster() {
+		scope Trace st = new Trace("makeExtendedFollowSetEvenFaster");
+		assert(this.firstExtended !is null);
+		Deque!(Deque!(ExtendedItem)) grammer = 
+			new Deque!(Deque!(ExtendedItem))(this.extGrammerComplex);
+
+		MapSet!(ExtendedItem,int) followSets = 
+			new MapSet!(ExtendedItem,int)(ISRType.HashTable, 
+			ISRType.HashTable);
+
+		auto mapping = new MapSet!(ExtendedItem,ExtendedItem)(
+			ISRType.HashTable, ISRType.HashTable);
+
+		Set!(int) tmp = new Set!(int)();
+		/* the first non terminal of the first prod should contain the 
+		 * $ Symbol aka -1 */
+		tmp.insert(-1); 
+		followSets.insert(this.findFirstItemOfExtendedItem(grammer), tmp);
+
+		tmp = null;
+		size_t oldSize = followSets.getSize();
+
+		foreach(size_t idx, Deque!(ExtendedItem) it; grammer) {
+			foreach(size_t jdx, ExtendedItem jt; it) {
+				if(jdx > 0 && jdx+1 < it.getSize()) { // rule 2
+					MapItem!(ExtendedItem,bool) kindItem = 
+						this.extGrammerKind.find(jt);
+					assert(kindItem !is null);
+					bool kind = kindItem.getData();
+					if(kind) {
+						ProductionManager.insertFollowItems!(ExtendedItem)
+							(followSets.getMap(), jt, this.firstExtended, 
+							it[jdx+1]);
+						//mapping.insert(it[jdx+1], jt);
+					}
+				}
+				if((jdx+1 == it.getSize()) || 
+							ProductionManager.areExtendedItemEpsilon(idx,
+							jdx, grammer)) {
+
+					MapItem!(ExtendedItem,bool) kindItem = 
+						this.extGrammerKind.find(it.back());
+					assert(kindItem !is null);
+					bool kind = kindItem.getData();
+					if(kind) {
+						ProductionManager.insertFollowItems!(ExtendedItem)
+							(followSets.getMap(), it.back, followSets.getMap(),
+							it[0], true);
+						mapping.insert(it.back, it[0]);
+					}
+				}
+			}
+		}
+
+		foreach(key, value; mapping) {
+			log("key %s value %s", extendedGrammerItemToString(this, 
+				this.symbolManager, key), extendedGrammerItemToString(this, 
+				this.symbolManager, value));
+		}
+
+		oldSize = 0;
+		while(oldSize < followSets.getSize()) {
+			oldSize = followSets.getSize();
+			foreach(from, to; mapping) {
+				followSets.insert(from, followSets.getSet(to));
+			}
+		}
+		this.followExtendedEven = followSets.getMap();
+
+		
+		/*foreach(size_t idx, Deque!(ExtendedItem) it; grammer) { 
+			foreach(size_t jdx, ExtendedItem jt; it) {
+				MapItem!(ExtendedItem,bool) kindItem = 
+					this.extGrammerKind.find(it.back());
+				assert(kindItem !is null);
+				bool kind = kindItem.getData();
+				if(kind && ( (jdx+1 == it.getSize()) || 
+
+					ProductionManager.insertFollowItems!(ExtendedItem)
+						(followSets.getMap(), it.back, followSets.getMap(),
+						it[0], true);
+					/*
+					hasChanged = hasChanged || 
+						ProductionManager.insertFollowItems!(ExtendedItem)
+						(followSets, it.back, followSets, it[0],true);
+					/
+				}
+			}
+		}
+		tmpSize = followSets.getSize();*/
+
+	}
+
+	public void makeExtendedFollowSetFaster() {
+		scope Trace st = new Trace("makeExtendedFollowSetFaster");
+		assert(this.firstExtended !is null);
+		Deque!(Deque!(ExtendedItem)) grammer = 
+			new Deque!(Deque!(ExtendedItem))(this.extGrammerComplex);
+
+		MapSet!(ExtendedItem,int) followSets = 
+			new MapSet!(ExtendedItem,int)(ISRType.HashTable, 
+			ISRType.HashTable);
+
+		Set!(int) tmp = new Set!(int)();
+		/* the first non terminal of the first prod should contain the 
+		 * $ Symbol aka -1 */
+		tmp.insert(-1); 
+		followSets.insert(this.findFirstItemOfExtendedItem(grammer), tmp);
+
+		tmp = null;
+
+		size_t oldSize = followSets.getSize();
+		size_t tmpSize = followSets.getSize();
+		size_t oldSizeSave;
+
+		int innerCnt = 0;
+		outer: do {
+			oldSize = tmpSize;
+			if(innerCnt % 100 == 0) {
+				log("extendedFollow cnt %d grammarSize %d", innerCnt, 
+					grammer.getSize());
+			}
+			innerCnt++;
+			oldSizeSave = oldSize;
+			foreach(size_t idx, Deque!(ExtendedItem) it; grammer) {
+				foreach(size_t jdx, ExtendedItem jt; it) {
+					if(jdx == 0) {
+						continue;
+					} else if(jdx+1 < it.getSize()) { // rule 2
+						MapItem!(ExtendedItem,bool) kindItem = 
+							this.extGrammerKind.find(jt);
+						assert(kindItem !is null);
+						bool kind = kindItem.getData();
+						if(kind) {
+							ProductionManager.insertFollowItems!(ExtendedItem)
+								(followSets.getMap(), jt, this.firstExtended, 
+								it[jdx+1]);
+						}
+					}
+				}
+			}
+			/*if(tmpSize > oldSize) {
+				oldSize = tmpSize;
+				continue outer;
+			}*/
+			// rule 3
+			inner: foreach(size_t idx, Deque!(ExtendedItem) it; grammer) { 
+				foreach(size_t jdx, ExtendedItem jt; it) {
+					MapItem!(ExtendedItem,bool) kindItem = 
+						this.extGrammerKind.find(it.back());
+					assert(kindItem !is null);
+					bool kind = kindItem.getData();
+					if(kind && ( (jdx+1 == it.getSize()) || 
+							ProductionManager.areExtendedItemEpsilon(idx,
+							jdx, grammer))) {
+
+						ProductionManager.insertFollowItems!(ExtendedItem)
+							(followSets.getMap(), it.back, followSets.getMap(),
+							it[0], true);
+						/*
+						hasChanged = hasChanged || 
+							ProductionManager.insertFollowItems!(ExtendedItem)
+							(followSets, it.back, followSets, it[0],true);
+						*/
+					}
+				}
+			}
+			tmpSize = followSets.getSize();
+			if(tmpSize > oldSize) {
+				log("oldSize %u tmpSize %u", oldSize, tmpSize);
+				//oldSize = tmpSize;
+				//continue outer;
+			}
+		} while(tmpSize > oldSize);
+		this.followExtendedFaster = followSets.getMap();
+	}
+
 
 	public void makeExtendedFollowSet() {
 		assert(this.firstExtended !is null);

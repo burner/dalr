@@ -11,12 +11,13 @@ DeclDefs := DeclDefs DeclDef;
 	| DeclDef;
 
 DeclDef := ImportDeclaration;
+	| semicolon ;
 
 ImportDeclaration := import IdentifierList semicolon; 
 	{: ret = buildTreeWithLoc(termImportDeclaration, [-2], actionNum, this.tokenStack[-3].getLoc()); :}
 
 IdentifierList := identifier dot IdentifierList; 
-	{: ret = buildTreeWithLoc(termIdentifierList, [-3, -1], actionNum, this.tokenStack[-3].getLoc()); :}
+	{: ret = buildTree(termIdentifierList, [-3, -1], actionNum); :}
 
 	| identifier; 
 		{: ret = buildTree(termIdentifierList, [-1], actionNum); :}

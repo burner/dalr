@@ -332,7 +332,7 @@ public string extendedFollowSetToString(ProductionManager pm,
 	return extendedTSetToString!("Follow")(pm.getFollowExtended(), sm);
 }
 
-private string extendedTSetToString(string type)(Map!(ExtendedItem, 
+public string extendedTSetToString(string type)(Map!(ExtendedItem, 
 		Set!(int)) map, SymbolManager sm) {
 	ISRIterator!(MapItem!(ExtendedItem, Set!(int))) it = map.begin();
 	StringBuffer!(char) sb = new StringBuffer!(char)(map.getSize() * 20);
