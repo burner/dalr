@@ -21,6 +21,7 @@ import hurt.container.stack;
 import hurt.container.trie;
 import hurt.conv.conv;
 import hurt.io.stdio;
+import hurt.io.progressbar;
 import hurt.math.mathutil;
 import hurt.string.formatter;
 import hurt.string.stringbuffer;
@@ -96,8 +97,9 @@ class ProductionManager {
 
 		log("makeLRZeroItemSets");
 		StopWatch lrzero;
+		lrzero.start();
 		this.makeLRZeroItemSets();
-		log("\btoke %f", lrzero.stop());
+		log("\b toke %f sec", lrzero.stop());
 		log("makeExtendedGrammer");
 		this.makeExtendedGrammer();
 		log("makeExtendedFirstSet");
@@ -114,8 +116,8 @@ class ProductionManager {
 		log("makeExtendedFollowSet");
 		//this.makeExtendedFollowSet();
 		//this.makeExtendedFollowSetLinear();
-		//this.makeExtendedFollowSetFaster();
-		this.makeExtendedFollowSetEvenFaster();
+		this.makeExtendedFollowSetFaster();
+		//this.makeExtendedFollowSetEvenFaster();
 		//this.makeExtendedFollowSetThreaded();
 		//println(extendedGrammerItemsToString(this, this.symbolManager));
 		//log("normal %u linear %u", this.followExtended.getSize(),
@@ -134,8 +136,8 @@ class ProductionManager {
 		//	this.followExtended == this.followExtendedEven);
 		//log("%b", this.followExtendedEven is this.followExtended);
 
-		this.followExtended = this.followExtendedEven;
-		//this.followExtended = this.followExtendedThread;
+		//this.followExtended = this.followExtendedEven;
+		this.followExtended = this.followExtendedFaster;
 		//log("%b", this.followExtendedEven == this.followExtendedThread);
 
 		if(graphFileName.length > 0 && printAround == -1) {
@@ -406,12 +408,12 @@ class ProductionManager {
 						// remove all the items that have lower precedence
 						// than that of the highest, there might be more
 						// than one item that fulfills this requirement
-						if(!glr) {
+						//if(!glr) {
 							item.removeFalse(delegate(FinalItem toTest) {
 								return this.getPrecedence(toTest, jdx) >= 
 									highPrecValue;
 							});
-						}
+						//}
 
 						// warn the user about ambiguities
 						/*warn(item.getSize() > 1, 
@@ -1511,10 +1513,13 @@ class ProductionManager {
 		tmp = null;
 		size_t oldSize = followSets.getSize();
 
+		log("processing %u grammer rules", grammer.getSize());
 		foreach(size_t idx, Deque!(ExtendedItem) it; grammer) {
-			if(idx % 100 == 0) {
+			/*if(idx % 100 == 0) {
 				log("%d of %d", idx, grammer.getSize());
-			}
+			}*/
+			updateBar( conv!(size_t,int)(idx), conv!(size_t,int)(
+				grammer.getSize()));
 			foreach(size_t jdx, ExtendedItem jt; it) {
 				if(jdx > 0 && jdx+1 < it.getSize()) { // rule 2
 					MapItem!(ExtendedItem,bool) kindItem = 
@@ -1545,6 +1550,7 @@ class ProductionManager {
 				}
 			}
 		}
+		barDone(conv!(size_t,int)(grammer.getSize()));
 
 		/*foreach(key, value; mapping) {
 			log("key %s value %s", extendedGrammerItemToString(this, 
@@ -1608,6 +1614,7 @@ class ProductionManager {
 		size_t oldSizeSave;
 
 		int innerCnt = 0;
+		log("processing %u grammer rules", grammer.getSize());
 		outer: do {
 			oldSize = tmpSize;
 			if(innerCnt % 100 == 0) {

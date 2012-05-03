@@ -8,6 +8,8 @@ import hurt.container.deque;
 import hurt.container.set;
 import hurt.string.stringbuffer;
 import hurt.io.stream;
+import hurt.io.stdio;
+import hurt.string.stringutil;
 
 void prodToTree(string filename, ProductionManager pm, SymbolManager sm) {
 	Deque!(Deque!(int)) prods = pm.getProductions();	
@@ -74,19 +76,17 @@ string prodGroupToDot(int startSym, Set!(size_t) set,
 		}
 	}
 	foreach(it; set) {
+		auto tmpSb = new StringBuffer!(char)(128);
 		foreach(jdx, jt; prods[it]) {
-			if(jdx == 0) {
-				ret.pushBack("\t%s -> ", sm.getSymbolName(startSym));
-				continue;
-			}
 			string symName = sm.getSymbolName(jt);
-			ret.pushBack("%s%d%d -> ", symName, it, jdx);
+			tmpSb.pushBack("%s%d%d -> ", symName, it, jdx);
 		}
-		ret.popBack();
-		ret.popBack();
-		ret.popBack();
-		ret.popBack();
-		ret.pushBack(";\n");
+		tmpSb.popBack();
+		tmpSb.popBack();
+		tmpSb.popBack();
+		tmpSb.popBack();
+		tmpSb.pushBack(";\n");
+		ret.pushBack(tmpSb.getData());
 	}
 	ret.pushBack("}\n");
 	return ret.getString();

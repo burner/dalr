@@ -80,6 +80,7 @@ class FileReader {
 	private int associationCnt;
 	private size_t line;
 	private bool glr;
+	private Deque!(Set!(string)) conflictIgnores;
 	
 	// input file
 	private InputStream inFile;
@@ -127,6 +128,8 @@ class FileReader {
 		this.associationCnt = 1;
 		this.line = 1;
 		this.glr = false;
+
+		this.conflictIgnores = new Deque!(Set!(string))();
 	}
 
 	public bool isGlr() const {

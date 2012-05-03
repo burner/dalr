@@ -86,7 +86,7 @@ int main(string[] args) {
 
 	int printAround = -1;
 	arg.setOption("-a", "--printaround", 
-		"If a grammer has ambiguites it might make sense to print the lr set"
+		"If a grammer has ambiguities it might make sense to print the lr set"
 		~ " around that itemset. If you pass an int after this option " ~
 		" a graph will be created", 
 		printAround);
@@ -101,6 +101,11 @@ int main(string[] args) {
 		"The resulting graph are to big to be layouted with dot" ~
 		", because of this every itemset is printed by itself to a dot file",
 		printAll, true);
+
+	Map!(size_t,string) unpro = arg.getUnprocessed();
+	foreach(key, value; unpro) {
+		warn("option %s at position %u not recognised", value, key);
+	}
 
 	if(driverFile !is null && driverFile.length > 0) {
 		Writer lw;
@@ -198,7 +203,7 @@ int main(string[] args) {
 		log("writing %d graphs with conflict", ambiSet.first.getSize());
 		writeLR0GraphAround(pm.getItemSets(), sm, 
 			pm.getProductions(), graphfile, pm, ambiSet.first);
-	}
+	} 
 
 	if(printAll) {
 		log("writing all itemsets");

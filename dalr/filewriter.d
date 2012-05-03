@@ -263,8 +263,9 @@ final class RuleWriter : Writer {
 					arrTmp.pushBack(',');
 				}
 				while(arrTmp.getSize() > 0 && 
-						(arrTmp.peekBack() == '\n' || 
-						arrTmp.peekBack() == ',')) {
+						(arrTmp.peekBack() == '\n' || arrTmp.peekBack() == ','))
+						{
+					//log("%u %c", arrTmp.getSize(), arrTmp.peekBack());
 					arrTmp.popBack();
 				}
 				arrTmp.pushBack(']');
