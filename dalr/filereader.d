@@ -5,6 +5,7 @@ import dalr.grammerparser;
 import hurt.container.deque;
 import hurt.container.mapset;
 import hurt.container.set;
+import hurt.exception.exception;
 import hurt.conv.conv;
 import hurt.io.stream;
 import hurt.io.file;
@@ -68,6 +69,38 @@ class Production {
 	}
 }
 
+class ConflictIgnore {
+	private Set!(string) rules;
+	private size_t cnt;
+
+	this() {
+		this.rules = new Set!(string)();
+		this.cnt = 0;
+	}
+
+	public void addRule(string rule) {
+		enforce(!this.rules.contains(rule), 
+			format("rule \"%s\" allready present in ConflictIgnore", rule));
+		this.rules.insert(rule);
+	}
+
+	public bool holdsRules(Set!(string) rule) {
+		return this.rules == rule;
+	}
+
+	public bool holdsRule(string rule) {
+		return this.rules.contains(rule);
+	}
+
+	public void increCnt() {
+		this.cnt++;
+	}
+
+	public size_t getCnt() const {
+		return this.cnt;
+	}
+}
+
 class FileReader {
 	// the name of the input file
 	private string filename;
@@ -80,7 +113,7 @@ class FileReader {
 	private int associationCnt;
 	private size_t line;
 	private bool glr;
-	private Deque!(Set!(string)) conflictIgnores;
+	private Deque!(ConflictIgnore) conflictIgnores;
 	
 	// input file
 	private InputStream inFile;
@@ -129,7 +162,7 @@ class FileReader {
 		this.line = 1;
 		this.glr = false;
 
-		this.conflictIgnores = new Deque!(Set!(string))();
+		this.conflictIgnores = new Deque!(ConflictIgnore)();
 	}
 
 	public bool isGlr() const {
@@ -225,6 +258,13 @@ class FileReader {
 				didSomething = true;
 			}
 
+			// to igore know conflicts
+			size_t conIgnore = findArr!(char)(cur, "%{");
+			if(conIgnore < cur.length) {
+				cur = this.parseConflictIgnore(cur);
+				didSomething = true;
+			}
+
 			if(cur.length > 0 && !didSomething) {
 				foreach(size_t idx, char it; cur) {
 					assert(isWhiteSpace(it), 
@@ -232,6 +272,7 @@ class FileReader {
 						this.getLineNumber(), idx, it));		
 				}
 			}
+
 		}
 	}
 
@@ -350,11 +391,68 @@ class FileReader {
 		return cur;
 	}
 
+	private string parseConflictIgnore(string cur) {
+		size_t conStart = findArr!(char)(cur, "%{");	
+		size_t conEnd = findArr!(char)(cur, "}%");	
+		ConflictIgnore c = new ConflictIgnore();
+		if(conStart < cur.length && conEnd < cur.length &&
+				conStart < conEnd) {
+			string between = cur[conStart+2 .. conEnd];		
+			string[] prods = split(between, ';');
+			enforce(prods.length > 1, format(
+				"the conflict ignore block at line %d did only contain %u" ~
+				" productions. at least two are needed", this.getLineNumber(),
+				prods.length));
+
+			foreach(it; prods) {
+				string trimmed = trim(it);
+				assert(trimmed.length > 0);
+				enforce(!c.holdsRule(trimmed), format("the rule \"%s\" can " ~
+					"only be added once. The error occured at line %u",
+					trimmed, this.getLineNumber()));
+
+				c.addRule(trimmed);
+			}
+			this.conflictIgnores.pushBack(c);
+		} else if(conStart < cur.length && conEnd == cur.length) {
+			StringBuffer!(char) tmp = new StringBuffer!(char)(1024);
+			tmp.pushBack(cur[conStart+2 .. $]);
+			do {
+				cur = this.getNextLine();
+				conEnd = findArr!(char)(cur, "}%");
+				tmp.pushBack(cur[0 .. conEnd]);
+			} while(conEnd == cur.length);
+
+			string[] prods = split(tmp.getString(), ';');
+			enforce(prods.length > 1, format(
+				"the conflict ignore block at line %d did only contain %u" ~
+				" productions. at least two are needed", this.getLineNumber(),
+				prods.length));
+
+			foreach(it; prods) {
+				string trimmed = trim(it);
+				assert(trimmed.length > 0);
+				enforce(!c.holdsRule(trimmed), format("the rule \"%s\" can " ~
+					"only be added once. The error occured at line %u",
+					trimmed, this.getLineNumber()));
+
+				c.addRule(trimmed);
+			}
+			this.conflictIgnores.pushBack(c);
+		} else {
+			assert(false, format("a conflict ignore didn't start at line %d",
+				this.getLineNumber()));
+		}
+
+		return this.getNextLine();
+	}
+
 	private string parseProductionAction(string cur) {
 		size_t actionStart = findArr!(char)(cur, "{:");	
 		size_t actionEnd = findArr!(char)(cur, ":}");	
 		// the action spans only one line
-		if(actionStart < cur.length && actionEnd < cur.length) {
+		if(actionStart < cur.length && actionEnd < cur.length && 
+				actionStart < actionEnd) {
 			this.productions.back().setAction(cur[actionStart+2 .. actionEnd]);
 			return cur;
 		// the action spans for more than one line
