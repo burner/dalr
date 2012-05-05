@@ -97,33 +97,22 @@ final class RuleWriter : Writer {
 	public override void write() {
 		this.writeHeader();	
 		this.writeIncludes();	
-		log();
 		this.file.writeString(tableType);
-		log();
 		this.file.write('\n');
-		log();
 		this.writeTermIds();
-		log();
 		this.file.write('\n');
 		if(!this.glr) {
 			this.writeTable();
 			this.file.writeString("\n");
 			this.writeGotoTable();
 		} else {
-			log();
 			this.writeGlrTable();
-			log();
 			this.file.writeString("\n");
-			log();
 			this.writeGotoGlrTable();
-			log();
 		}
 		this.file.writeString("\n\n");
-		log();
 		this.writeRules();
-		log();
 		this.writeActions();
-		log();
 	}
 
 	private void writeActions() {

@@ -200,6 +200,15 @@ int main(string[] args) {
 	Pair!(Set!(int),string) ambiSet = pm.makeAll(graphfile, printAround, glr, 
 		printAll);
 
+	foreach(it; fr.getConflictIgnores()) {
+		if(it.getCnt() == 0) {
+			warn("conflict ignore rule not used");
+			for(auto jt = it.getRuleIterator(); jt.isValid(); jt++) {
+				warn("%s", *jt);
+			}
+		}
+	}
+
 	log("writing dalrlog file");
 	File logFile = new File("dalrlog", FileMode.OutNew);
 	logFile.writeString(normalProductionToString(pm, sm));

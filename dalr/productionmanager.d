@@ -370,6 +370,7 @@ class ProductionManager {
 					}
 				}
 			}
+			it.increCnt();
 			return true;
 		}
 		return false;
