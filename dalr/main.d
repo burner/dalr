@@ -16,6 +16,7 @@ import hurt.container.isr;
 import hurt.container.map;
 import hurt.container.mapset;
 import hurt.container.set;
+import hurt.container.isr;
 import hurt.conv.conv;
 import hurt.io.stdio;
 import hurt.io.stream;
@@ -164,6 +165,20 @@ int main(string[] args) {
 			log("%s", (*it).getProduction());
 		}
 	}
+
+	foreach(it; fr.getConflictIgnores()) {
+		for(auto jt = it.getRuleIterator(); jt.isValid(); jt++) {
+			//log("%s", *jt);
+			auto r = gp.processProductionWithout(*jt);
+			/*foreach(kt; r) {
+				printf("%d ", kt);
+			}
+			println();*/
+			it.addRule(r);
+		}
+	}
+
+	pm.setConflictIgnore(fr.getConflictIgnores());
 	//println(sm.toString());
 
 	// operator precedence prolog

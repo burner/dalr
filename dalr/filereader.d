@@ -5,6 +5,7 @@ import dalr.grammerparser;
 import hurt.container.deque;
 import hurt.container.mapset;
 import hurt.container.set;
+import hurt.container.isr;
 import hurt.exception.exception;
 import hurt.conv.conv;
 import hurt.io.stream;
@@ -70,21 +71,37 @@ class Production {
 }
 
 class ConflictIgnore {
-	private Set!(string) rules;
+	private Deque!(string) rules;
+	private Deque!(Deque!(int)) rulesInt;
 	private size_t cnt;
 
 	this() {
-		this.rules = new Set!(string)();
+		this.rules = new Deque!(string)();
+		this.rulesInt = new Deque!(Deque!(int))();
 		this.cnt = 0;
 	}
 
 	public void addRule(string rule) {
 		enforce(!this.rules.contains(rule), 
 			format("rule \"%s\" allready present in ConflictIgnore", rule));
-		this.rules.insert(rule);
+		this.rules.pushBack(rule);
 	}
 
-	public bool holdsRules(Set!(string) rule) {
+	public void addRule(Deque!(int) rule) {
+		enforce(!this.rulesInt.contains(rule), 
+			format("rule allready present in ConflictIgnore"));
+		this.rulesInt.pushBack(rule);
+	}
+	
+	public bool holdsRules(Deque!(Deque!(int)) rule) {
+		return this.rulesInt == rule;
+	}
+
+	public bool holdsRule(Deque!(int) rule) {
+		return this.rulesInt.contains(rule);
+	}
+
+	public bool holdsRules(Deque!(string) rule) {
 		return this.rules == rule;
 	}
 
@@ -98,6 +115,21 @@ class ConflictIgnore {
 
 	public size_t getCnt() const {
 		return this.cnt;
+	}
+
+	public Iterator!(string) getRuleIterator() {
+		return this.rules.begin();
+	}
+
+	public override string toString() {
+		auto ret = new StringBuffer!(char)(1024);
+		ret.pushBack("%{\n");
+		foreach(it; this.rules) {
+			ret.pushBack(it);
+			ret.pushBack('\n');
+		}
+		ret.pushBack("}%\n");
+		return ret.getString();
 	}
 }
 
@@ -163,6 +195,10 @@ class FileReader {
 		this.glr = false;
 
 		this.conflictIgnores = new Deque!(ConflictIgnore)();
+	}
+
+	public Deque!(ConflictIgnore) getConflictIgnores() {
+		return this.conflictIgnores;
 	}
 
 	public bool isGlr() const {

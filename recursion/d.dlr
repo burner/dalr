@@ -1,3 +1,13 @@
+%{
+	DeclDefs := DeclDef; DeclDef := semicolon;
+}%
+
+%{
+	DeclDefs := DeclDef; 
+	
+	DeclDef := semicolon interface;
+}%
+
 S := Module;
 
 Module := module IdentifierList semicolon; 

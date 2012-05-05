@@ -97,14 +97,14 @@ public class SymbolManager {
 		// check if all items are terminal symbols and fill
 		// the precedence mapping
 		foreach(int idx, string it; left) {
-			log("%s %d", it, idx);
+			log("left precedence %s %d", it, idx);
 			assert(!this.getKind(it));
 			this.precedence.insert(this.getSymbolId(it), 
 				Pair!(bool,int)(false, idx));
 		}
 
 		foreach(int idx, string it; right) {
-			log("%s %d", it, idx);
+			log("right precedence %s %d", it, idx);
 			assert(!this.getKind(it));
 			this.precedence.insert(this.getSymbolId(it), 
 				Pair!(bool,int)(true, idx));

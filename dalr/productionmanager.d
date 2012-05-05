@@ -80,6 +80,8 @@ class ProductionManager {
 	// production index -> Production mapping
 	Map!(size_t,Production) prodMapping;
 
+	Deque!(ConflictIgnore) conflictIgnore;
+
 	this() {
 		this.prod = new Deque!(Deque!(int));
 		this.itemSets = new Deque!(ItemSet)();
@@ -90,6 +92,10 @@ class ProductionManager {
 	this(SymbolManager symbolManager, bool glr) {
 		this();
 		this.symbolManager = symbolManager;
+	}
+
+	public void setConflictIgnore(Deque!(ConflictIgnore) ignore) {
+		this.conflictIgnore = ignore;
 	}
 	
 	public Pair!(Set!(int),string) makeAll(string graphFileName, 
@@ -347,6 +353,28 @@ class ProductionManager {
 		return remove;
 	}
 
+	public bool canBeIgnored(Deque!(FinalItem) item, int shiftSym) {
+		/*foreach(it; item) {
+			log("%s", finalitemToString(it, this, this.symbolManager));
+		}*/
+		Deque!(int) shiftDeque = new Deque!(int)([shiftSym]);
+		outer: foreach(idx, it; this.conflictIgnore) {
+			foreach(jdx, jt; item) {
+				if(jt.typ == Type.Shift) {
+					if(!it.holdsRule(shiftDeque)) {
+						continue outer;
+					}
+				} else if(jt.typ == Type.Reduce || jt.typ == Type.Accept) {
+					if(!it.holdsRule(this.prod[jt.number])) {
+						continue outer;
+					}
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
 	private Pair!(Set!(int),string) applyPrecedence(bool glr) {
 		scope Trace st = new Trace("applyPrecedence");
 		Set!(int) ambiSet = new Set!(int)();
@@ -369,6 +397,9 @@ class ProductionManager {
 				} else if(item.getSize() == 1) {
 					continue; // no ambiguity
 				} else { // got a conflict, resolve by precedence
+					if(this.canBeIgnored(item, table[0][jdx][0].number)) {
+						continue;
+					}
 					// found the accept symbol
 					if(itemContains!(Type.Accept)(item)) { 
 						item.removeFalse(delegate(FinalItem toTest) {

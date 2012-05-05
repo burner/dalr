@@ -41,7 +41,7 @@ struct Checker {
 	}
 
 	void checkReach() {
-		auto startSymbol = ssymRul.iterator(sm.getSymbolId("S"));
+		auto startSymbol = this.ssymRul.iterator(sm.getSymbolId("S"));
 		assert(startSymbol !is null, "no dedicated start symbol S defined");
 
 		Set!(int) processed = new Set!(int)();
@@ -54,7 +54,11 @@ struct Checker {
 				continue;
 			}
 
+			//log("%d", next);
 			auto it = this.ssymRul.iterator(next);
+			if(it is null) {
+				continue;
+			}
 			for(; it.isValid(); it++) {
 				if(!processed.contains(*it)) {
 					toProcess.push(*it);

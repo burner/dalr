@@ -4,6 +4,7 @@ import dalr.symbolmanager;
 
 import hurt.io.stdio;
 import hurt.string.stringutil;
+import hurt.string.formatter;
 import hurt.container.deque;
 
 class GrammerParser {
@@ -11,6 +12,24 @@ class GrammerParser {
 
 	this(SymbolManager sm) {
 		this.symbolManager = sm;
+	}
+
+	public Deque!(int) processProductionWithout(string production) {
+		string[] splits = split!(char)(production);
+		Deque!(int) ret = new Deque!(int)(splits.length);
+
+		foreach(size_t idx, string it; splits) {
+			if(idx == 1) {
+				continue;
+			}
+			string t = trim(it);
+			if(t == ";") {
+				continue;
+			}
+			assert(t.length);
+			ret.pushBack(this.symbolManager.getSymbolId(t));
+		}
+		return ret;
 	}
 
 	public Deque!(int) processProduction(string production) {

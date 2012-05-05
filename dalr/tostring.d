@@ -128,6 +128,19 @@ public string mergedExtendedToString(ProductionManager pm, SymbolManager sm) {
 	return ret.getString();
 }
 
+public string finalitemToString(FinalItem fi, ProductionManager pm, 
+		SymbolManager sm) {
+	auto ret = new StringBuffer!(char)(128);
+	if(fi.typ == Type.Shift) {
+		log("%d %s", fi.number, sm.getSymbolName(fi.number));
+		ret.pushBack(sm.getSymbolName(fi.number));
+	} else if(fi.typ == Type.Reduce) {
+		return productionToString(pm.getProd()[fi.number], sm);
+	}
+
+	return ret.getString();
+}
+
 private bool allTypsAreError(Deque!(FinalItem) de) {
 	foreach(FinalItem it; de) {
 		if(it.typ != Type.Error) {

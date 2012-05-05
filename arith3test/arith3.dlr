@@ -1,9 +1,14 @@
 %right UMINUS
 
+%{
+	IF := if B then IF;
+	else;
+}%
+
 S := IF; 
 
 IF := if B then IF; {: ret = buildTreeWithLoc(termIF, [-3,-1], actionNum, this.tokenStack[-4].getLoc()); :}
-	| if B then IF else IF %prec UMINUS; {: ret = buildTreeWithLoc(termIF, [-5,-3,-1], actionNum, this.tokenStack[-6].getLoc()); :}
+	| if B then IF else IF %prec UMINUS ; {: ret = buildTreeWithLoc(termIF, [-5,-3,-1], actionNum, this.tokenStack[-6].getLoc()); :}
 	| identifier comma IF; {: ret = buildTreeWithLoc(termIF, [-3, -1], actionNum, this.tokenStack[-2].getLoc()); :}
 	| identifier; {: ret = buildTree(termIF, [-1], actionNum); :}
 
