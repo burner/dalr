@@ -397,9 +397,8 @@ class ProductionManager {
 				} else if(item.getSize() == 1) {
 					continue; // no ambiguity
 				} else { // got a conflict, resolve by precedence
-					if(this.canBeIgnored(item, table[0][jdx][0].number)) {
-						continue;
-					}
+					bool canIgnore = this.canBeIgnored(item, 
+						table[0][jdx][0].number);
 					// found the accept symbol
 					if(itemContains!(Type.Accept)(item)) { 
 						item.removeFalse(delegate(FinalItem toTest) {
@@ -452,7 +451,8 @@ class ProductionManager {
 							~ "%s", table[idx][0][0].number, 
 							this.symbolManager.getSymbolName(table[0][jdx][0].
 							number));*/
-						if(item.getSize() == 2 && item[0].typ == Type.Reduce
+						if(!canIgnore && item.getSize() == 2 && 
+								item[0].typ == Type.Reduce
 								&& item[1].typ == Type.Reduce) {
 							ambiSet.insert(table[idx][0][0].number);
 							warn("conflict in itemset %d", 
@@ -480,7 +480,7 @@ class ProductionManager {
 										item[1].number], this.symbolManager));
 							}
 							ret = true;
-						} else if(item.getSize() == 2 &&
+						} else if(!canIgnore && item.getSize() == 2 &&
 								item[0].typ == Type.Reduce
 								&& item[1].typ == Type.Shift) {
 							ambiSet.insert(table[idx][0][0].number);
@@ -506,7 +506,7 @@ class ProductionManager {
 								item.popFront();
 							}*/
 							ret = true;
-						} else if(item.getSize() == 2 &&
+						} else if(!canIgnore && item.getSize() == 2 &&
 								item[0].typ == Type.Shift
 								&& item[1].typ == Type.Reduce) {
 							ambiSet.insert(table[idx][0][0].number);
@@ -532,7 +532,7 @@ class ProductionManager {
 								item.popBack();
 							}*/
 							ret = true;
-						} else if(item.getSize() > 2) {
+						} else if(!canIgnore && item.getSize() > 2) {
 							warn("last conflict comprised of more " ~
 								"than two items %u", table[idx][0][0].number);
 							amStrBuf.pushBack("last conflict comprised of more " 
