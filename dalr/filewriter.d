@@ -291,7 +291,6 @@ final class RuleWriter : Writer {
 		}
 		while(sb.getSize() > 0 && 
 				(sb.peekBack() == '\n' || sb.peekBack() == ',')) {
-			log();
 			sb.popBack();
 		}
 		sb.pushBack("];\n");

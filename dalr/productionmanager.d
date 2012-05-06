@@ -48,6 +48,7 @@ class ProductionManager {
 	// The first sets for normal and extended grammer
 	private Map!(int,Set!(int)) firstNormal;
 	private Map!(ExtendedItem,Set!(int)) firstExtended;
+	private Map!(ExtendedItem,Set!(int)) firstExtendedFaster;
 
 	// The follow sets for normal and extended grammer
 	private Map!(int,Set!(int)) followNormal;
@@ -122,14 +123,19 @@ class ProductionManager {
 		log("makeExtendedFollowSet");
 		//this.makeExtendedFollowSet();
 		//this.makeExtendedFollowSetLinear();
-		this.makeExtendedFollowSetFaster();
-		//this.makeExtendedFollowSetEvenFaster();
+		//this.makeExtendedFollowSetFaster();
+		this.makeExtendedFollowSetEvenFaster();
 		//this.makeExtendedFollowSetThreaded();
 		//println(extendedGrammerItemsToString(this, this.symbolManager));
 		//log("normal %u linear %u", this.followExtended.getSize(),
 		//	this.followExtendedLinear.getSize());
-		//log("normal %u evenFaster %u", this.followExtended.getSize(),
-		//	this.followExtendedEven.getSize());
+		/*log("faster %u evenFaster %u", this.followExtendedFaster.getSize(),
+			this.followExtendedEven.getSize());
+		log("faster and evenFaster equal %b", this.followExtendedFaster ==
+			this.followExtendedEven);
+		assert(this.followExtendedFaster == this.followExtendedEven);
+		*/
+	
 		//log("linear = %s", extendedTSetToString!("Follow")(
 		//	this.followExtendedLinear, this.symbolManager));
 		//log("normal = %s", extendedTSetToString!("Follow")(
@@ -143,7 +149,7 @@ class ProductionManager {
 		//log("%b", this.followExtendedEven is this.followExtended);
 
 		//this.followExtended = this.followExtendedEven;
-		this.followExtended = this.followExtendedFaster;
+		this.followExtended = this.followExtendedEven;
 		//log("%b", this.followExtendedEven == this.followExtendedThread);
 
 		if(graphFileName.length > 0 && printAround == -1) {
@@ -1324,13 +1330,20 @@ class ProductionManager {
 	private static bool areExtendedItemEpsilon(size_t idx, size_t jdx, 
 			Deque!(Deque!(ExtendedItem)) prod) {
 		Deque!(ExtendedItem) items = prod[idx];
-		foreach(size_t j, ExtendedItem jt; items) {
+		/*foreach(size_t j, ExtendedItem jt; items) {
 			if(j < jdx) {
 				continue;
 			}
 
 			foreach(Deque!(ExtendedItem) it; prod) {
 				if(it.front() == jt) {
+					return false;
+				}
+			}
+		}*/
+		for(size_t j = jdx; j < items.getSize(); j++) {
+			foreach(Deque!(ExtendedItem) it; prod) {
+				if(it.front() == items[j]) {
 					return false;
 				}
 			}
@@ -1529,12 +1542,14 @@ class ProductionManager {
 		Deque!(Deque!(ExtendedItem)) grammer = 
 			new Deque!(Deque!(ExtendedItem))(this.extGrammerComplex);
 
+		Set!(ExtendedItem) nonTerm = new Set!(ExtendedItem)(ISRType.HashTable);
+		foreach(Deque!(ExtendedItem) it; grammer) {
+			nonTerm.insert(it[0]);
+		}
+
 		MapSet!(ExtendedItem,int) followSets = 
 			new MapSet!(ExtendedItem,int)(ISRType.HashTable, 
 			ISRType.HashTable);
-
-		auto mapping = new MapSet!(ExtendedItem,ExtendedItem)(
-			ISRType.HashTable, ISRType.HashTable);
 
 		Set!(int) tmp = new Set!(int)();
 		/* the first non terminal of the first prod should contain the 
@@ -1543,84 +1558,85 @@ class ProductionManager {
 		followSets.insert(this.findFirstItemOfExtendedItem(grammer), tmp);
 
 		tmp = null;
-		size_t oldSize = followSets.getSize();
 
+		size_t oldSize = followSets.getSize();
+		size_t tmpSize = followSets.getSize();
+		size_t oldSizeSave;
+
+		int innerCnt = 0;
 		log("processing %u grammer rules", grammer.getSize());
-		foreach(size_t idx, Deque!(ExtendedItem) it; grammer) {
-			/*if(idx % 100 == 0) {
-				log("%d of %d", idx, grammer.getSize());
-			}*/
-			updateBar( conv!(size_t,int)(idx), conv!(size_t,int)(
-				grammer.getSize()));
-			foreach(size_t jdx, ExtendedItem jt; it) {
-				if(jdx > 0 && jdx+1 < it.getSize()) { // rule 2
-					MapItem!(ExtendedItem,bool) kindItem = 
-						this.extGrammerKind.find(jt);
-					assert(kindItem !is null);
-					bool kind = kindItem.getData();
-					if(kind) {
-						ProductionManager.insertFollowItems!(ExtendedItem)
-							(followSets.getMap(), jt, this.firstExtended, 
-							it[jdx+1]);
-						//mapping.insert(it[jdx+1], jt);
+		outer: do {
+			oldSize = tmpSize;
+			if(innerCnt % 100 == 0) {
+				log("extendedFollow cnt %d grammarSize %d", innerCnt, 
+					grammer.getSize());
+			}
+			innerCnt++;
+			oldSizeSave = oldSize;
+			foreach(size_t idx, Deque!(ExtendedItem) it; grammer) {
+				updateBar( conv!(size_t,int)(idx), conv!(size_t,int)(
+					grammer.getSize()*2));
+				foreach(size_t jdx, ExtendedItem jt; it) {
+					if(jdx == 0) {
+						continue;
+					} else if(jdx+1 < it.getSize()) { // rule 2
+						MapItem!(ExtendedItem,bool) kindItem = 
+							this.extGrammerKind.find(jt);
+						assert(kindItem !is null);
+						bool kind = kindItem.getData();
+						if(kind) {
+							ProductionManager.insertFollowItems!(ExtendedItem)
+								(followSets.getMap(), jt, this.firstExtended, 
+								it[jdx+1]);
+						}
 					}
 				}
-				if((jdx+1 == it.getSize()) || 
-							ProductionManager.areExtendedItemEpsilon(idx,
-							jdx, grammer)) {
+			}
 
+			inner: foreach(size_t idx, Deque!(ExtendedItem) it; grammer) { 
+				updateBar( conv!(size_t,int)(idx+grammer.getSize()), 
+					conv!(size_t,int)(grammer.getSize()*2));
+				foreach(size_t jdx, ExtendedItem jt; it) {
 					MapItem!(ExtendedItem,bool) kindItem = 
 						this.extGrammerKind.find(it.back());
 					assert(kindItem !is null);
 					bool kind = kindItem.getData();
-					if(kind) {
+					if(kind && ( (jdx+1 == it.getSize()) || 
+							ProductionManager.restIsTerm(idx,
+							jdx, nonTerm, grammer))) {
+
 						ProductionManager.insertFollowItems!(ExtendedItem)
 							(followSets.getMap(), it.back, followSets.getMap(),
 							it[0], true);
-						mapping.insert(it.back, it[0]);
+						/*
+						hasChanged = hasChanged || 
+							ProductionManager.insertFollowItems!(ExtendedItem)
+							(followSets, it.back, followSets, it[0],true);
+						*/
 					}
 				}
 			}
-		}
-		barDone(conv!(size_t,int)(grammer.getSize()));
-
-		/*foreach(key, value; mapping) {
-			log("key %s value %s", extendedGrammerItemToString(this, 
-				this.symbolManager, key), extendedGrammerItemToString(this, 
-				this.symbolManager, value));
-		}*/
-
-		oldSize = 0;
-		while(oldSize < followSets.getSize()) {
-			oldSize = followSets.getSize();
-			foreach(from, to; mapping) {
-				followSets.insert(from, followSets.getSet(to));
+			barDone(conv!(size_t,int)(grammer.getSize()*2));
+			tmpSize = followSets.getSize();
+			if(tmpSize > oldSize) {
+				log("oldSize %u tmpSize %u", oldSize, tmpSize);
+				//oldSize = tmpSize;
+				//continue outer;
 			}
-		}
+		} while(tmpSize > oldSize);
 		this.followExtendedEven = followSets.getMap();
+	}
 
-		
-		/*foreach(size_t idx, Deque!(ExtendedItem) it; grammer) { 
-			foreach(size_t jdx, ExtendedItem jt; it) {
-				MapItem!(ExtendedItem,bool) kindItem = 
-					this.extGrammerKind.find(it.back());
-				assert(kindItem !is null);
-				bool kind = kindItem.getData();
-				if(kind && ( (jdx+1 == it.getSize()) || 
+	private static bool restIsTerm(size_t idx, size_t jdx, 
+			Set!(ExtendedItem) nonTerm, Deque!(Deque!(ExtendedItem)) grammar) {
+		Deque!(ExtendedItem) items = grammar[idx];
 
-					ProductionManager.insertFollowItems!(ExtendedItem)
-						(followSets.getMap(), it.back, followSets.getMap(),
-						it[0], true);
-					/*
-					hasChanged = hasChanged || 
-						ProductionManager.insertFollowItems!(ExtendedItem)
-						(followSets, it.back, followSets, it[0],true);
-					/
-				}
+		for(size_t j = jdx; j < items.getSize(); j++) {
+			if(nonTerm.contains(items[j])) {
+				return false;
 			}
 		}
-		tmpSize = followSets.getSize();*/
-
+		return true;
 	}
 
 	public void makeExtendedFollowSetFaster() {
@@ -1656,6 +1672,8 @@ class ProductionManager {
 			innerCnt++;
 			oldSizeSave = oldSize;
 			foreach(size_t idx, Deque!(ExtendedItem) it; grammer) {
+				updateBar( conv!(size_t,int)(idx), conv!(size_t,int)(
+					grammer.getSize()*2));
 				foreach(size_t jdx, ExtendedItem jt; it) {
 					if(jdx == 0) {
 						continue;
@@ -1678,6 +1696,8 @@ class ProductionManager {
 			}*/
 			// rule 3
 			inner: foreach(size_t idx, Deque!(ExtendedItem) it; grammer) { 
+				updateBar( conv!(size_t,int)(idx+grammer.getSize()), 
+					conv!(size_t,int)(grammer.getSize()*2));
 				foreach(size_t jdx, ExtendedItem jt; it) {
 					MapItem!(ExtendedItem,bool) kindItem = 
 						this.extGrammerKind.find(it.back());
@@ -1699,6 +1719,7 @@ class ProductionManager {
 				}
 			}
 			tmpSize = followSets.getSize();
+			barDone(conv!(size_t,int)(grammer.getSize()*2));
 			if(tmpSize > oldSize) {
 				log("oldSize %u tmpSize %u", oldSize, tmpSize);
 				//oldSize = tmpSize;
