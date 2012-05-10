@@ -9,7 +9,8 @@ import hurt.string.formatter;
 class MergedReduction {
 	private size_t finalSet;
 	private Map!(int, Set!(size_t)) follow; // needed
-	private Map!(int, Set!(size_t)) extFollow; // debug
+	private Map!(int, Set!(size_t)) extFollow; // debug, this are the old rule
+		// numbers of reduction step 1
 
 	this(size_t finalSet) {
 		this.finalSet = finalSet;
@@ -45,6 +46,15 @@ class MergedReduction {
 
 	public Map!(int, Set!(size_t)) getFollowMap() {
 		return this.follow;
+	}
+
+	public ISRIterator!(size_t) iterator(int it) {
+		auto mi = this.follow.find(it);
+		if(mi !is null) {
+			return mi.getData().begin();
+		} else {
+			return null;
+		}
 	}
 
 	public Map!(int, Set!(size_t)) getExtFollowMap() {

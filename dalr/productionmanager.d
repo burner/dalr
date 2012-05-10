@@ -48,7 +48,8 @@ class ProductionManager {
 	// The first sets for normal and extended grammer
 	private Map!(int,Set!(int)) firstNormal;
 	private Map!(ExtendedItem,Set!(int)) firstExtended;
-	private Map!(ExtendedItem,Set!(int)) firstExtendedFaster;
+	private MapSet!(ExtendedItem,int) firstExtendedMS;
+	private MapSet!(ExtendedItem,int) firstExtendedFasterMS;
 
 	// The follow sets for normal and extended grammer
 	private Map!(int,Set!(int)) followNormal;
@@ -63,6 +64,7 @@ class ProductionManager {
 
 	// Final Table
 	private Deque!(Deque!(Deque!(FinalItem))) finalTable;
+	public Deque!(Deque!(Deque!(FinalItem))) finalTableNew;
 
 	// Merged ExtendedRules
 	private Map!(size_t, MergedReduction) mergedExtended;
@@ -109,13 +111,27 @@ class ProductionManager {
 		log("\b toke %f sec", lrzero.stop());
 		log("makeExtendedGrammer");
 		this.makeExtendedGrammer();
-		log("makeExtendedFirstSet");
+		//log("makeExtendedFirstSet");
 		//print(extendedGrammerToString(pm, sm));
 		//log();
 		//pm.makeNormalFirstSet();
 		//print(normalFirstSetToString(pm, sm));
 		//log();
-		this.makeExtendedFirstSet();
+		//this.makeExtendedFirstSet();
+		log("makeExtendedFirstSetFaster");
+		this.makeExtendedFirstSetFaster();
+		/*log("are firstExtended and firstExtendedFaster equal %b", 
+			this.firstExtendedMS == this.firstExtendedFasterMS);
+		if(this.firstExtendedMS != this.firstExtendedFasterMS) {
+			log("old firstExtended %s\n\n\n", extendedTSetToString!("First")(
+				this.firstExtendedMS.getMap(), this.symbolManager));
+			log("new firstExtended %s", extendedTSetToString!("First")(
+				this.firstExtendedFasterMS.getMap(), this.symbolManager));
+			assert(false, format("old %d, new %d", 
+				this.firstExtendedMS.getSize(),
+				this.firstExtendedFasterMS.getSize()));
+		}*/
+		this.firstExtended = this.firstExtendedFasterMS.getMap();
 		//print(extendedFirstSetToString(pm, sm));
 		//log();
 		//pm.makeNormalFollowSet();
@@ -157,8 +173,12 @@ class ProductionManager {
 			writeLR0Graph(this.getItemSets(), this.symbolManager, 
 				this.getProductions(), graphFileName, this);
 		}
-		log("computeTranslationTable");
-		this.computeTranslationTable();
+		/*log("computeTranslationTable");
+		this.computeTranslationTable();*/
+
+		log("makeFinalTable");
+		this.makeFinalTable();
+
 		log("computeFinalTable");
 		//println(transitionTableToString(this, this.symbolManager));
 		//println(mergedExtendedToString(pm, sm));
@@ -616,6 +636,101 @@ class ProductionManager {
 		}
 	}
 
+	private void makeFinalTable() {
+		scope Trace st = new Trace("makeFinalTable");
+		this.mapExtendedFollowSetToGrammer();
+		this.reduceExtGrammerFollow();
+		
+		// the final table
+		auto ret = new Deque!(Deque!(Deque!(FinalItem)))();
+
+		Pair!(Set!(int),Set!(int)) tAnT = 
+			this.symbolManager.getTermAndNonTerm();
+
+		auto tmp = new Deque!(Deque!(FinalItem))(this.symbolManager.getSize());
+		// place the itemset corner sym, this is just whitespace later
+		tmp.pushBack(new Deque!(FinalItem)([FinalItem(Type.ItemSet, -1)]));
+
+		// place the $ symbol as first term item
+		tmp.pushBack(new Deque!(FinalItem)([FinalItem(Type.Term, -1)])); 
+
+		// place all term item
+		foreach(int it; tAnT.first) {
+			tmp.pushBack(new Deque!(FinalItem)([FinalItem(Type.Term, it)]));
+		}
+		// place all non-term item
+		foreach(int it; tAnT.second) {
+			tmp.pushBack(new Deque!(FinalItem)([FinalItem(Type.NonTerm, it)]));
+		}
+
+		ret.pushBack(tmp);
+
+		foreach(ItemSet it; this.getItemSets()) {
+			auto row = new Deque!(Deque!(FinalItem))(128);
+			// the first entry is the itemset
+			row.pushBack(
+				new Deque!(FinalItem)([FinalItem(Type.ItemSet,
+					conv!(long,int)(it.getId()))]) 
+				);
+
+			foreach(size_t idx, Deque!(FinalItem) j; tmp) {
+				if(idx == 0) { // ignore the itemset entry
+					continue;
+				}
+				int jt = j[0].number;
+				Type jTyp = j[0].typ;
+				auto tmp2 = new Deque!(FinalItem)();
+
+				// the shift or goto symbol
+				int toInsert = conv!(long,int)(it.getFollowOnInput(jt));
+				if(it.getId() == 155 && toInsert == -99) {
+					Map!(int,ItemSet) fo = it.getFollowSet();
+					StringBuffer!(char) sbT = new StringBuffer!(char)();
+					for(auto it = fo.begin(); it.isValid(); it++) {
+						sbT.pushBack("%s:%d,", 
+							this.symbolManager.getSymbolName((*it).getKey()), 
+							(*it).getData().getId());
+					}
+					log("Follow Set { %s", sbT.getString());
+				}
+				if(toInsert != -99) {
+					// if it's a term we need to shift if it's a non-term
+					// we need to goto
+					tmp2.pushBack(FinalItem(
+						jTyp == Type.Term ? Type.Shift : Type.Goto, 
+						toInsert));
+				}
+
+				// insert the reductions
+				auto mrMi = this.mergedExtended.find(it.getId());
+				MergedReduction mr = mrMi !is null ? mrMi.getData() : null;
+				if(mr !is null) {
+					ISRIterator!(size_t) kt = mr.iterator(jt);
+					for(; kt !is null && kt.isValid(); kt++) {
+						if(*kt == 0) { 
+							tmp2.pushBack(FinalItem(Type.Accept, 
+								conv!(size_t,int)(*kt)));
+						} else {
+							tmp2.pushBack(FinalItem(Type.Reduce, 
+								conv!(size_t,int)(*kt)));
+						}
+					}
+				}
+
+				// nothing inserted means error
+				if(tmp2.isEmpty()) {
+					tmp2.pushBack(FinalItem(Type.Error, -99));
+				}
+
+				// save it all
+				row.pushBack(tmp2);
+			}
+
+			ret.pushBack(row);
+		}
+		this.finalTableNew = ret;
+	}
+
 	private Deque!(Deque!(int)) computeTranslationTable() {
 		scope Trace st = new Trace("computeTranslationTable");
 		Deque!(Deque!(int)) ret = new Deque!(Deque!(int))(
@@ -644,9 +759,13 @@ class ProductionManager {
 		foreach(ItemSet it; iSet) {
 			Deque!(int) tmp2 = new Deque!(int)(this.symbolManager.getSize()+1);
 			tmp2.pushBack(conv!(long,int)(it.getId()));
+			size_t cnt = 0;
 			foreach(size_t idx, int jt; tmp) {
-				tmp2.pushBack(conv!(long,int)(it.getFollowOnInput(jt)));
+				int toInsert = conv!(long,int)(it.getFollowOnInput(jt));
+				cnt = cnt + (toInsert != -99 ? 1 : 0);
+				tmp2.pushBack(toInsert);
 			}
+			assert(cnt == it.getFollowSet.getSize(), "this should be equal");
 			ret.pushBack(tmp2);
 		}
 
@@ -684,6 +803,7 @@ class ProductionManager {
 	 *		4E5 := 5t4 4z5 ( $, t, z)
 	 */
 	private void mapExtendedFollowSetToGrammer() {
+		scope Trace st = new Trace("mapExtendedFollowSetToGrammer");
 		this.extGrammerFollow = new Deque!(Pair!(Deque!(ExtendedItem),
 			Set!(int)))(this.extGrammerComplex.getSize());
 
@@ -767,6 +887,7 @@ class ProductionManager {
 	 *  and end on the same number. This could lead to reduce reduce confilcts.
 	 */
 	public void reduceExtGrammerFollow() {
+		scope Trace st = new Trace("reduceExtGrammerFollow");
 		Map!(size_t, MergedReduction) mr = 
 			new Map!(size_t,MergedReduction)();
 		Set!(size_t) allreadyProcessed = new Set!(size_t)();
@@ -2063,6 +2184,52 @@ class ProductionManager {
 		}
 	}
 
+	public void makeExtendedFirstSetFaster() {
+		scope Trace st = new Trace("makeExtendedFirstSetFaster");
+		this.constructExtendedKind();
+		assert(this.extGrammerComplex !is null);
+		assert(this.extGrammerKind !is null);
+
+		MapSet!(ExtendedItem,int) first = new MapSet!(ExtendedItem,int)(
+			ISRType.HashTable, ISRType.HashTable);
+
+		MapSet!(ExtendedItem,ExtendedItem) bli = new MapSet!(
+			ExtendedItem,ExtendedItem)(ISRType.HashTable, ISRType.HashTable);
+
+		size_t oldSize = 0;
+		foreach(idx, Deque!(ExtendedItem) it; this.extGrammerComplex) {
+			assert(it !is null, "no null productions allowed");	
+			assert(it.getSize() > 1, "no empty productions allowed");
+			
+			// if the first symbol is a terminal
+			MapItem!(ExtendedItem, bool) mi = 
+				this.extGrammerKind.find(it[1]);
+
+			assert(mi !is null);
+			bool kind = mi.getData();
+			if(!kind) {
+				assert(it[1].getItem() != -2, "no epsilon allowed");
+				first.insert(it[0], it[1].getItem());
+			} else {
+				/*auto jt = first.iterator(it[1]);
+				for(; jt !is null && jt.isValid(); jt++) {
+					assert(*jt != -2, "no epsilon allowed");
+					first.insert(it[0], *jt);
+				}*/
+				bli.insert(it[1], it[0]);
+			}
+		}
+		do {
+			oldSize = first.getSize();
+			foreach(from, to; bli) {
+				first.insert(to, first.getSet(from));
+			}
+		} while(first.getSize() > oldSize);
+
+		this.firstExtendedFasterMS = first;
+	}
+
+
 	public void makeExtendedFirstSet() {
 		scope Trace st = new Trace("makeExtendedFirstSet");
 		this.constructExtendedKind();
@@ -2086,6 +2253,7 @@ class ProductionManager {
 				assert(it.getSize() > 0);
 				if(it.getSize() == 1) { // epsilon prod
 					change = first.insert(it[0], -2) ? true : change;
+					assert(false, "we shouldn't have epsilon productions");
 					// terminal
 				} else if(this.extGrammerKind.contains(it[1]) &&
 						!this.extGrammerKind.find(it[1]).getData()) { 
@@ -2134,7 +2302,7 @@ class ProductionManager {
 				}
 			}
 		}
-		this.firstExtended = first.getMap();
+		this.firstExtendedMS = first;
 	}
 
 	/************************************************************************* 

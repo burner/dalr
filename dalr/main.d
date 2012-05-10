@@ -246,10 +246,16 @@ int main(string[] args) {
 
 	//println(extendedGrammerToString(pm, sm));
 	//println(itemsetsToString(pm, sm));
-	/*log("writing transition table");
+	log("writing transition table");
 	File tranTable = new File("tranTable", FileMode.OutNew);
-	tranTable.writeString(finalTransitionTableToString(pm, sm));
-	tranTable.close();*/
+	tranTable.writeString(finalTransitionTableToString(pm.getFinalTable(), pm, 
+		sm));
+	tranTable.close();
+	
+	tranTable = new File("tranTableNew", FileMode.OutNew);
+	tranTable.writeString(finalTransitionTableToString(pm.finalTableNew, pm, 
+		sm));
+	tranTable.close();
 
 	if(outputFile !is null && outputFile.length > 0) {
 		log("writing the parsetable into file %s", outputFile);

@@ -196,9 +196,10 @@ public string finalTransitionTableToStringShort(ProductionManager pm,
 	return ret.getString();
 }
 
-public string finalTransitionTableToString(ProductionManager pm, 
+public string finalTransitionTableToString(
+		Deque!(Deque!(Deque!(FinalItem))) fi, ProductionManager pm, 
 		SymbolManager sm) {
-	Deque!(Deque!(Deque!(FinalItem))) fi = pm.getFinalTable();	
+	//Deque!(Deque!(Deque!(FinalItem))) fi = pm.getFinalTable();	
 	Deque!(Deque!(string)) tmp = new Deque!(Deque!(string))(fi.getSize());
 
 	// for alignment of the table
@@ -263,8 +264,10 @@ public string finalTransitionTableToString(ProductionManager pm,
 	debug { // every row must have the same size
 		assert(tmp.getSize() > 0);
 		size_t unionSize = tmp[0].getSize();
-		foreach(Deque!(string) it; tmp) {
-			assert(it.getSize() == unionSize);
+		foreach(size_t idx, Deque!(string) it; tmp) {
+			assert(it.getSize() == unionSize, 
+				format("at line %d unionSize %d, itSize %d", idx, unionSize, 
+				it.getSize()));
 		}
 		assert(maxLength >= "ItemSet".length, format("%u", maxLength));
 	}
@@ -345,8 +348,8 @@ public string extendedFollowSetToString(ProductionManager pm,
 	return extendedTSetToString!("Follow")(pm.getFollowExtended(), sm);
 }
 
-public string extendedTSetToString(string type)(Map!(ExtendedItem, 
-		Set!(int)) map, SymbolManager sm) {
+public string extendedTSetToString(string type)(
+		Map!(ExtendedItem, Set!(int)) map, SymbolManager sm) {
 	ISRIterator!(MapItem!(ExtendedItem, Set!(int))) it = map.begin();
 	StringBuffer!(char) sb = new StringBuffer!(char)(map.getSize() * 20);
 	for(size_t idx = 0; it.isValid(); idx++, it++) {
