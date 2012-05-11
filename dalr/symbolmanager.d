@@ -9,6 +9,7 @@ import hurt.io.stdio;
 import hurt.string.formatter;
 import hurt.string.stringbuffer;
 import hurt.string.stringutil;
+import hurt.string.spell;
 import hurt.util.pair;
 import hurt.util.slog;
 
@@ -118,6 +119,18 @@ public class SymbolManager {
 	}
 
 	public void printUnexpectedTerms() {
+		foreach(it,sym; this.stringSymbols) {
+			foreach(jt,sym; this.stringSymbols) {
+				if(it == jt) {
+					continue;
+				}
+				int dis = levenshteinDistance(it, jt);
+				if(dis <= 2) {
+					warn("terms %s and %s might have the same meaning",
+						it, jt);
+				}
+			}
+		}
 		//log("%d", this.stringSymbols.getSize());
 		foreach(string key, Symbol value; this.stringSymbols) {
 			bool capLetter = false;

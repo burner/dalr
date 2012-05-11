@@ -179,10 +179,12 @@ class ProductionManager {
 		log("makeFinalTable");
 		this.makeFinalTable();
 
-		log("computeFinalTable");
+		this.finalTable = this.finalTableNew;
+
+		/*log("computeFinalTable");
 		//println(transitionTableToString(this, this.symbolManager));
 		//println(mergedExtendedToString(pm, sm));
-		this.computeFinalTable();
+		this.computeFinalTable();*/
 		log("applyPrecedence");
 		return this.applyPrecedence(glr);
 	}
@@ -683,16 +685,6 @@ class ProductionManager {
 
 				// the shift or goto symbol
 				int toInsert = conv!(long,int)(it.getFollowOnInput(jt));
-				if(it.getId() == 155 && toInsert == -99) {
-					Map!(int,ItemSet) fo = it.getFollowSet();
-					StringBuffer!(char) sbT = new StringBuffer!(char)();
-					for(auto it = fo.begin(); it.isValid(); it++) {
-						sbT.pushBack("%s:%d,", 
-							this.symbolManager.getSymbolName((*it).getKey()), 
-							(*it).getData().getId());
-					}
-					log("Follow Set { %s", sbT.getString());
-				}
 				if(toInsert != -99) {
 					// if it's a term we need to shift if it's a non-term
 					// we need to goto
