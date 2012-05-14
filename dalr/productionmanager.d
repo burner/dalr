@@ -1183,7 +1183,7 @@ class ProductionManager {
 	}
 
 	private void completeItemSet(ItemSet iSet) {
-		scope Trace st = new Trace("compleItemSet");
+		scope Trace st = new Trace("completeItemSet");
 		assert(iSet !is null);
 		Deque!(Item) de = iSet.getItems();
 		// sort them so the completed itemset can be found

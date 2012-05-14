@@ -125,7 +125,7 @@ public class SymbolManager {
 					continue;
 				}
 				int dis = levenshteinDistance(it, jt);
-				if(dis <= 2) {
+				if(dis < 2) {
 					warn("terms %s and %s might have the same meaning",
 						it, jt);
 				}
