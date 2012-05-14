@@ -58,6 +58,7 @@ class ProductionManager {
 	private Map!(ExtendedItem,Set!(int)) followExtendedEven;
 	private Map!(ExtendedItem,Set!(int)) followExtendedFaster;
 	private Map!(ExtendedItem,Set!(int)) followExtendedThread;
+	private Map!(ExtendedItem,Set!(int)) followExtendedEpsilon;
 
 	// Translation Table
 	private Deque!(Deque!(int)) translationTable;
@@ -141,16 +142,21 @@ class ProductionManager {
 		//this.makeExtendedFollowSetLinear();
 		//this.makeExtendedFollowSetFaster();
 		this.makeExtendedFollowSetEvenFaster();
+		//this.makeExtendedFollowSetEpsilonFree();
 		//this.makeExtendedFollowSetThreaded();
 		//println(extendedGrammerItemsToString(this, this.symbolManager));
 		//log("normal %u linear %u", this.followExtended.getSize(),
 		//	this.followExtendedLinear.getSize());
-		/*log("faster %u evenFaster %u", this.followExtendedFaster.getSize(),
+		/*log("epsilon %u evenFaster %u", this.followExtendedEpsilon.getSize(),
 			this.followExtendedEven.getSize());
-		log("faster and evenFaster equal %b", this.followExtendedFaster ==
-			this.followExtendedEven);
-		assert(this.followExtendedFaster == this.followExtendedEven);
-		*/
+		if(this.followExtendedEpsilon != this.followExtendedEven) {
+			log("even %s\n\n", extendedTSetToString!("Follow")(
+				this.followExtendedEven, this.symbolManager));
+			log("epsilon %s\n\n", extendedTSetToString!("Follow")(
+				this.followExtendedEpsilon, this.symbolManager));
+			//assert(false);
+		}*/
+		
 	
 		//log("linear = %s", extendedTSetToString!("Follow")(
 		//	this.followExtendedLinear, this.symbolManager));
@@ -1647,6 +1653,83 @@ class ProductionManager {
 
 		this.followExtendedThread = followSets.getMap();
 
+	}
+
+	public void makeExtendedFollowSetEpsilonFree() {
+		Set!(ExtendedItem) nonTerm = new Set!(ExtendedItem)(ISRType.HashTable);
+		bool termOrNonTerm(ExtendedItem item) {
+			if(nonTerm.contains(item)) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+		scope Trace st = new Trace("makeExtendedFollowSetEpsilonFree");
+		log("first %s", extendedFirstSetToString(this, this.symbolManager));
+		assert(this.firstExtended !is null);
+		auto grammar = this.extGrammerComplex;
+
+		foreach(Deque!(ExtendedItem) it; grammar) {
+			nonTerm.insert(it[0]);
+		}
+
+		MapSet!(ExtendedItem,int) followSets = 
+			new MapSet!(ExtendedItem,int)(ISRType.HashTable, 
+			ISRType.HashTable);
+
+		/* the first non terminal of the first prod should contain the 
+		 * $ Symbol aka -1 */
+		followSets.insert(this.findFirstItemOfExtendedItem(grammar), -1);
+
+		auto mapping = new MapSet!(ExtendedItem,ExtendedItem)
+			(ISRType.HashTable, ISRType.HashTable);
+
+		foreach(size_t idx, Deque!(ExtendedItem) it; grammar) {
+			foreach(size_t jdx, ExtendedItem jt; it) {
+				if(jdx == 0 || !termOrNonTerm(jt)) {
+					continue;
+				}
+
+				// rule 3
+				if(jdx+1 == it.getSize()) {
+					mapping.insert(jt, it[0]);
+					continue;
+				}
+
+				if(termOrNonTerm(it[jdx+1])) {
+					log();
+					mapping.insert(it[jdx+1], jt);
+				}
+				auto zt = this.firstExtended.find(it[jdx+1]);
+				if(zt is null) {
+					followSets.insert(jt, it[jdx+1].getItem());
+					log("(%s%s%s)", it[jdx+1].getLeft() == -1 ? "$" : 
+						conv!(int,string)(it[jdx+1].getLeft()),
+						productionItemToString(it[jdx+1].getItem(), 
+						this.symbolManager), it[jdx+1].getRight() == -1 ? "$" : 
+						conv!(int,string)(it[jdx+1].getRight()));
+					continue;
+				} else {
+					log();
+					for(auto kt = zt.getData().begin(); kt.isValid(); 
+							kt++) {
+						followSets.insert(jt, *kt);
+					}
+				}
+			}
+		}
+
+		size_t oldSize = followSets.getSize();
+		do {
+			oldSize = followSets.getSize();
+			foreach(from, to; mapping) {
+				followSets.insert(to, followSets.getSet(from));
+			}
+		} while(followSets.getSize() > oldSize);
+
+
+		this.followExtendedEpsilon = followSets.getMap();
 	}
 
 	public void makeExtendedFollowSetEvenFaster() {
