@@ -13,7 +13,7 @@ build: $(GEN) $(OBJS) Makefile
 	dmd $(OBJS) buildinfo.d -ofdmcd -L../../libhurt/libhurt.a $(DFLAGS)
 
 parsetable: d.dlr
-	../Dalr -g ambiGraph -i d.dlr -glr true
+	../Dalr -g ambiGraph -i d.dlr -glr true -t prodtree.dot
 
 parsetable.d: d.dlr Makefile
 	../Dalr -i d.dlr -r parsetable.d -rm parsetable -z prodgraph.dot -g dgraph

@@ -6,10 +6,57 @@ import dalr.symbolmanager;
 import hurt.container.mapset;
 import hurt.container.deque;
 import hurt.container.set;
+import hurt.container.stack;
 import hurt.string.stringbuffer;
+import hurt.string.formatter;
 import hurt.io.stream;
 import hurt.io.stdio;
 import hurt.string.stringutil;
+import hurt.util.slog;
+import hurt.util.pair;
+
+void tree(string filename, ProductionManager pm, SymbolManager sm) {
+	Deque!(Deque!(int)) prods = pm.getProductions();	
+	File output = new File(filename, FileMode.OutNew);
+	output.writeString("digraph g {\n\tcompound=true;\n");
+
+	auto prodIdices = new MapSet!(int,size_t)();
+	foreach(size_t idx, Deque!(int) it; prods) {
+		foreach(size_t jdx, int jt; it) {
+			prodIdices.insert(it[0], idx);
+		}
+	}
+
+	auto toProcess = new Stack!(int)(128);
+	toProcess.push(prods[0][0]);
+	auto processed = new Set!(int)();
+
+	auto processedWritten = new MapSet!(int,int)();
+
+	while(!toProcess.isEmpty()) {
+		int startSym = toProcess.pop();
+		auto it = prodIdices.iterator(startSym);
+		for(; it.isValid(); it++) {
+			auto prod = prods[*it];
+			foreach(jt; prod) {
+				if(sm.getKind(jt)) {
+					//log("%d %d", startSym, jt);
+					if(!processedWritten.contains(startSym, jt)) {
+						output.writeString(format("\t%s -> %s;\n", sm.getSymbolName(startSym), 
+							sm.getSymbolName(jt)));
+						processedWritten.insert(startSym, jt);
+					}
+					if(!processed.contains(jt)) {
+						toProcess.push(jt);
+					}
+				}
+			}
+		}
+		processed.insert(startSym);
+	}
+	output.writeString("}\n");
+	output.close();
+}
 
 void prodToTree(string filename, ProductionManager pm, SymbolManager sm) {
 	Deque!(Deque!(int)) prods = pm.getProductions();	

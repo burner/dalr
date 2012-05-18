@@ -97,6 +97,9 @@ int main(string[] args) {
 		~ " productions and it follow productions. To do this pass a" ~
 		" outputfile name to dalr.", prodTreeFilename);
 
+	string treeFilename = "";
+	arg.setOption("-t", "--tree", "The production tree", treeFilename);
+
 	bool printAll = false;
 	arg.setOption("-k", "--printitemsets",
 		"The resulting graph are to big to be layouted with dot" ~
@@ -222,6 +225,11 @@ int main(string[] args) {
 	logFile.writeString("\n\n\n");
 	logFile.writeString(itemsetsToString(pm, sm));
 	logFile.close();
+
+	if(treeFilename != "") {
+		log("writing production tree");
+		tree(treeFilename, pm, sm);
+	}
 
 	if(dontPrintError && ambiSet.first.getSize() > 0) {
 		log("writing %d graphs with conflict", ambiSet.first.getSize());
