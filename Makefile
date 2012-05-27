@@ -55,7 +55,7 @@ dalr.tostring.o: dalr/tostring.d dalr/productionmanager.d Makefile \
 dalr.finalitem.o: dalr/finalitem.d Makefile ../libhurt/libhurt.a
 	dmd $(CFLAGS) -c dalr/finalitem.d -ofdalr.finalitem.o
 
-dalr.checker.o: dalr/checker.d dalr/symbolmanager.d Makefile \
+dalr.checker.o: dalr/checker.d dalr/symbolmanager.d dalr/filereader.d Makefile \
 ../libhurt/libhurt.a
 	dmd $(CFLAGS) -c dalr/checker.d -ofdalr.checker.o
 

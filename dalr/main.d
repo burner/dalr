@@ -198,7 +198,7 @@ int main(string[] args) {
 	sm.printUnexpectedTerms();
 
 	// check if all non-terms are reached
-	Checker(pm.getProductions(), sm);
+	Checker(pm.getProductions(), sm, fr.getProductions());
 
 	Pair!(Set!(int),string) ambiSet = pm.makeAll(graphfile, printAround, glr, 
 		printAll);
