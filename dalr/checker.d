@@ -1,5 +1,6 @@
 module dalr.checker;
 
+import hurt.conv.conv;
 import hurt.container.deque;
 import hurt.container.set;
 import hurt.container.map;
@@ -37,6 +38,7 @@ struct Checker {
 		this.checkReach();
 		this.printUnreached();
 		this.checkBuildWithTermName();
+		this.checkBuildWithTreeIndices();
 	}
 
 	void buildSSymRul() {
@@ -72,6 +74,55 @@ struct Checker {
 					trim(value.getStartSymbol()));
 			/*log("%s == %s", value.getAction()[pos+len .. posC], 
 				trim(value.getStartSymbol()));*/
+		}
+	}
+
+	private static size_t getProductionLength(Production p) {
+		string[] sp = split(trim(p.getProdString()));
+		return sp.length;
+	}
+
+	private static Deque!(int) getChildIds(Production p) {
+		string action = p.getAction();
+		size_t low = find(action, '[');
+		if(low == action.length) {
+			return new Deque!(int)();
+		}
+		size_t high = find(action, ']', low+1);
+		auto sp = split(action[low+1 .. high], ',');
+		auto ret = new Deque!(int)(sp.length);
+		foreach(it; sp) {
+			ret.pushBack(-conv!(string,int)(trim(it)));
+		}
+		return ret;
+	}
+
+	private static int getPosIdx(Production p) {
+		string action = p.getAction();
+		size_t high = find(action, ']');
+		if(high == action.length) {
+			return 9999;
+		}
+		size_t nLow = find(action, '[', high);
+		size_t nHigh = find(action, ']', nLow);
+		auto sp = trim(action[nLow+1 .. nHigh]);
+		return -conv!(string,int)(sp);
+	}
+
+	void checkBuildWithTreeIndices() {
+		log("checking tree build indices");
+		foreach(it; actions) {
+			size_t proLength = getProductionLength(it);
+			auto chIdx = getChildIds(it);
+			foreach(jt; chIdx) {
+				warn(jt > proLength, 
+					"tree build index %d to high for production %s",
+					jt, it.getProduction());
+			}
+
+			int pos = getPosIdx(it);
+			warn(pos > proLength, "posIdx % to high for production %s",
+				pos, it.getProduction());
 		}
 	}
 
