@@ -85,6 +85,10 @@ int main(string[] args) {
 		"if passed no error dot files will be printed", 
 		dontPrintError);
 
+	bool verbose = false;
+	arg.setOption("-v", "--verbose", "if passed print alot of infos", 
+		verbose);
+
 	int printAround = -1;
 	arg.setOption("-a", "--printaround", 
 		"If a grammer has ambiguities it might make sense to print the lr set"
@@ -148,7 +152,7 @@ int main(string[] args) {
 	MapSet!(int,string) right = fr.getRightAssociation();
 	Set!(string) non = fr.getNonAssociation();
 
-	if(printPrecedence) { // needed for debugging the grammer
+	if(printPrecedence || verbose) { // needed for debugging the grammer
 		foreach(int idx, string it; left) {
 			log("%d -> %s", idx, it);
 		}
@@ -164,14 +168,14 @@ int main(string[] args) {
 			it++) {
 		actions.insert(pm.insertProduction(
 			gp.processProduction((*it).getProduction())), *it);
-		if(printProductions) { // needed for debugging the grammer
+		if(printProductions || verbose) { // needed for debugging the grammer
 			log("%s", (*it).getProduction());
 		}
 	}
 
 	foreach(it; fr.getConflictIgnores()) {
 		for(auto jt = it.getRuleIterator(); jt.isValid(); jt++) {
-			//log("%s", *jt);
+			log(verbose, "conflict ignore : %s", *jt);
 			auto r = gp.processProductionWithout(*jt);
 			/*foreach(kt; r) {
 				printf("%d ", kt);

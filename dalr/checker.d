@@ -62,16 +62,18 @@ struct Checker {
 			immutable string str = "buildTreeWithLoc(term";
 			size_t len = str.length;
 			size_t pos = findArr!(char)(value.getAction(), str);
-			assert(pos != value.getAction().length, format("pos = %d: %s %s %s",
+			warn(pos == value.getAction().length, format("pos = %d: %s %s %s",
 				pos, value.getProduction(), value.getAction(), 
 				value.getAction()[pos .. $]));
 			size_t posC = find!(char)(value.getAction(),',', pos+len);
-			assert(posC != value.getAction().length, value.getAction());
+			warn(posC == value.getAction().length, value.getAction());
 
-			warn(value.getAction()[pos+len .. posC] != 
-				trim(value.getStartSymbol()), "%s != %s", 
-					value.getAction()[pos+len .. posC], 
-					trim(value.getStartSymbol()));
+			if(value.getAction().length > pos+len && value.getAction().length > posC) {
+				warn(value.getAction()[pos+len .. posC] != 
+					trim(value.getStartSymbol()), "%s != %s", 
+						value.getAction()[pos+len .. posC], 
+						trim(value.getStartSymbol()));
+			}
 			/*log("%s == %s", value.getAction()[pos+len .. posC], 
 				trim(value.getStartSymbol()));*/
 		}
@@ -105,6 +107,9 @@ struct Checker {
 		}
 		size_t nLow = find(action, '[', high);
 		size_t nHigh = find(action, ']', nLow);
+		if(nLow+1 >= action.length || nHigh > action.length) {
+			return -99;
+		}
 		auto sp = trim(action[nLow+1 .. nHigh]);
 		return -conv!(string,int)(sp);
 	}

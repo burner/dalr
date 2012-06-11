@@ -16,6 +16,8 @@ import hurt.string.stringutil;
 import hurt.util.pair;
 import hurt.util.array;
 import hurt.util.slog;
+import hurt.math.mathutil;
+import hurt.util.random.random;
 
 class Production {
 	private string startSymbol;
@@ -67,6 +69,10 @@ class Production {
 
 	public string getStartSymbol() const {
 		return this.startSymbol;
+	}
+
+	public override string toString() {
+		return this.getProduction();
 	}
 }
 
@@ -146,6 +152,7 @@ class FileReader {
 	private size_t line;
 	private bool glr;
 	private Deque!(ConflictIgnore) conflictIgnores;
+	private uint disCounter;
 	
 	// input file
 	private InputStream inFile;
@@ -195,6 +202,8 @@ class FileReader {
 		this.glr = false;
 
 		this.conflictIgnores = new Deque!(ConflictIgnore)();
+
+		this.disCounter++;
 	}
 
 	public Deque!(ConflictIgnore) getConflictIgnores() {
@@ -376,16 +385,103 @@ class FileReader {
 
 	private string parseProduction(string cur, bool startOld = false) {
 		string start;
-		size_t colom;
-		size_t semi = find!(char)(cur, ';');
-		StringBuffer!(char) tmp = new StringBuffer!(char)(128);
-		bool startRound = true;
+		auto sb = new StringBuffer!(char)(128);
+		size_t semi, colom, semicolon, actionStart, actionEnd;
 
 		if(startOld) {
 			colom = find!(char)(cur, '|');
 			assert(colom < cur.length,
 				format("should have found a colom %d %d %s", colom, cur.length,
 				cur));
+			start = this.productions.back().startSymbol;
+		} else {
+			colom = findArr!(char)(cur, ":=");
+			start = cur[0 .. colom];
+			assert(colom < cur.length, 
+				format("should have found a colom %d %d %s", colom, cur.length,
+				cur));
+		}
+
+		colom = colom + (startOld ? 1 : 2);
+		log("%s %d", cur, colom);
+		cur = cur[colom .. $];
+		log("%s", cur);
+		//log("%s %s %d:%d=%d",start, cur, colom, (startOld ? 1 : 2),colom + (startOld ? 1 : 2) );
+
+		string leftNew = format("rand%d%d", rand.uniformR(2000), rand.uniformR(2000));
+		string rightNew = format("rand%d%d", rand.uniformR(2000), rand.uniformR(2000));
+		bool splitParse = false;
+		assert(leftNew != rightNew);
+
+		do {
+			semi = find!(char)(cur, ';');
+			actionStart = findArr!(char)(cur, "{:");
+			// simple semicolon end and maybe a action following
+			if( (semi < cur.length && actionStart < cur.length && 
+					semi < actionStart) || 
+					( semi < cur.length && actionStart == cur.length) ) {
+
+				sb.pushBack(cur[0 .. min(semi, actionStart)]);
+				log("%s", sb.getString());
+				if(!splitParse) {
+					this.productions.pushBack(new Production(start,sb.getString()));
+				} else {
+					this.productions.pushBack(new Production(rightNew,sb.getString()));
+				}
+
+				log("%s", this.productions.back().toString());
+				return cur;
+			// we found a semicolon and a actionstart and the semicolon is found 
+			// earlier than the actionstart. or we found just a  actionstart
+			} else if( (semi < cur.length && actionStart < cur.length && 
+					semi > actionStart) || 
+					(semi == cur.length && actionStart < cur.length) ){
+				splitParse = true;
+				
+				sb.pushBack(cur[0 .. actionStart]);
+				this.productions.pushBack(
+					new Production(leftNew, sb.getString()));
+
+				log("%s", this.productions.back().toString());
+				sb.clear();
+				cur = this.parseProductionAction(cur[actionStart .. $]);
+				actionEnd = findArr!(char)(cur, ":}");
+				cur = cur[actionEnd + 2 .. $];
+				semi = find!(char)(cur, ';');
+				if(semi < cur.length) {
+					this.productions.pushBack(new Production(rightNew,
+						cur[0 .. semi]));
+					this.productions.pushBack(
+						new Production(start, leftNew ~ " " ~ rightNew));
+					log("%s", this.productions.back().toString());
+					return cur[semi .. $];
+				} else {
+					sb.pushBack(cur[semi+1 .. $]);
+				}
+			} else {
+				sb.pushBack(cur);
+			}
+			if(this.isEof()) {
+				assert(false, "haven't found a semicolom befor eof");
+			}
+			colom = 0;
+			cur = this.getNextLine();
+		} while(true);
+		assert(false, "you should not reach this");
+	}
+
+	/*private string parseProduction(string cur, bool startOld = false) {
+		string start;
+		size_t colom;
+		size_t semi = find!(char)(cur, ';');
+		StringBuffer!(char) tmp = new StringBuffer!(char)(128);
+
+		if(startOld) {
+			colom = find!(char)(cur, '|');
+			assert(colom < cur.length,
+				format("should have found a colom %d %d %s", colom, cur.length,
+				cur));
+			start = this.productions.back().startSymbol;
 			tmp.pushBack(cur[colom+1 .. semi]);
 		} else {
 			colom = findArr!(char)(cur, ":=");
@@ -398,7 +494,6 @@ class FileReader {
 
 		// as long as we find no semicolom
 		while(semi == cur.length) {
-			startRound = false;
 			if(this.isEof()) {
 				assert(false, "haven't found a semicolom befor eof");
 			} else {
@@ -424,8 +519,9 @@ class FileReader {
 			this.productions.pushBack(
 				new Production(start, tmp.getString()));
 		}
+		this.productions.pushBack(new Production(start, tmp.getString()));
 		return cur;
-	}
+	}*/
 
 	private string parseConflictIgnore(string cur) {
 		size_t conStart = findArr!(char)(cur, "%{");	

@@ -220,6 +220,10 @@ class Parser {
 		this.printStack();
 	}
 
+	public void funStuff() {
+		log("HERE HERE HERE");
+	}
+
 	public bool parse() {
 		// we start at state (zero null none 0)
 		this.parseStack.pushBack(0);

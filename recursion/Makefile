@@ -8,15 +8,17 @@ all: build
 run: build
 	./dmcd
 
+new: clean build
+
 build: $(GEN) $(OBJS) Makefile
 	sh IncreBuildId.sh
 	dmd $(OBJS) buildinfo.d -ofdmcd -L../../libhurt/libhurt.a $(DFLAGS)
 
 parsetable: d.dlr
-	../Dalr -g ambiGraph -i d.dlr -glr true -t prodtree.dot
+	../Dalr -g ambiGraph -i d.dlr -glr true -t prodtree.dot -v
 
 parsetable.d: d.dlr Makefile
-	../Dalr -i d.dlr -r parsetable.d -rm parsetable -z prodgraph.dot -g dgraph
+	../Dalr -i d.dlr -r parsetable.d -rm parsetable -z prodgraph.dot -g dgraph -v -t prodtree.dot
 
 lextable.d: d.dlr d.dex Makefile
 	../../dex/fsm -i d.dex -n lextable.d -nm lextable
@@ -43,7 +45,7 @@ parsetable.o: parsetable.d Makefile
 	dmd -c $(DFLAGS) parsetable.d
 
 clean:
-	rm parsetable.d
-	rm lextable.d
-	rm *.o
-	rm dmcd
+	rm parsetable.d&
+	rm lextable.d&
+	rm *.o&
+	rm dmcd&

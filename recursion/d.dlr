@@ -9,19 +9,24 @@
 }%
 
 S := Module;
+		{: ret = buildTreeWithLoc(termS, [-1], actionNum, tokenStack[-1].getLoc()); :}
 
-Module := module IdentifierList semicolon; 
+Module := module {: funStuff(); :} IdentifierList semicolon; 
 		{: ret = buildTreeWithLoc(termModule, [-2], actionNum, tokenStack[-3].getLoc()); :}
-	| module IdentifierList semicolon DeclDefs;
+	| module {: funStuff(); :} IdentifierList semicolon DeclDefs;
 		{: ret = buildTreeWithLoc(termModule, [-3, -1], actionNum, this.tokenStack[-4].getLoc()); :}
 	| DeclDefs;
+		{: ret = buildTreeWithLoc(termModule, [-1], actionNum, tokenStack[-1].getLoc()); :}
 
 DeclDefs := DeclDefs DeclDef; 
 		{: ret = buildTreeWithLoc(termDeclDefs, [-2, -1], actionNum, this.tokenStack[-2].getLoc()); :}
 	| DeclDef;
+		{: ret = buildTreeWithLoc(termDeclDefs, [-1], actionNum, this.tokenStack[-1].getLoc()); :}
 
 DeclDef := ImportDeclaration;
+		{: ret = buildTreeWithLoc(termDeclDef, [-1], actionNum, this.tokenStack[-1].getLoc()); :}
 	| semicolon ;
+		{: ret = buildTreeWithLoc(termDeclDef, [-1], actionNum, this.tokenStack[-1].getLoc()); :}
 
 ImportDeclaration := import IdentifierList semicolon; 
 	{: ret = buildTreeWithLoc(termImportDeclaration, [-2], actionNum, this.tokenStack[-3].getLoc()); :}
