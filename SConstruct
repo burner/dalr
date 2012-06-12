@@ -14,6 +14,7 @@ dalr/tostring.d
 dalr/filereader.d     
 dalr/item.d           
 dalr/prodtree.d         
+buildinfo.d
 ''')
 
 env = Environment()

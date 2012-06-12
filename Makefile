@@ -18,6 +18,7 @@ count:
 	wc -l `find dalr -name \*.d && find tester -name \*.d`
 
 scons:
+	sh IncreBuildId.sh
 	scons -j3
 
 clean:
@@ -31,7 +32,6 @@ tester: $(TESTEROBJS) $(OBJS)
 	../libhurt/libhurt.a -gc -ofTester
 
 fine: $(OBJS) $(DALROBJS)
-	sh IncreBuildId.sh
 	dmd $(OBJS) $(CFLAGS) -version=DALR dalr.main.o buildinfo.d \
 	../libhurt/libhurt.a -gc -ofDalr
 
