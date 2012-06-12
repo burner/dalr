@@ -1,4 +1,4 @@
-all: fine
+all: scons
 
 #CFLAGS=-m64 -offsm -unittest -d-debug -gc
 #CFLAGS=-m64 -offsm -unittest -debug -gc -debug=RegExDebug -debug=StateDebug
@@ -17,9 +17,13 @@ TESTEROBJS=tester.tester.o
 count:
 	wc -l `find dalr -name \*.d && find tester -name \*.d`
 
+scons:
+	scons -j3
+
 clean:
-	rm *.o
-	rm Dalr
+	#rm *.o
+	#rm Dalr
+	scons --clean
 
 tester: $(TESTEROBJS) $(OBJS)
 	sh IncreBuildIdTester.sh

@@ -34,7 +34,7 @@ struct Checker {
 		this.actions = actions;
 
 		this.buildSSymRul();
-		log("Check for unreached non-terminals");
+		//log("Check for unreached non-terminals");
 		this.checkReach();
 		this.printUnreached();
 		this.checkBuildWithTermName();
@@ -68,7 +68,8 @@ struct Checker {
 			size_t posC = find!(char)(value.getAction(),',', pos+len);
 			warn(posC == value.getAction().length, value.getAction());
 
-			if(value.getAction().length > pos+len && value.getAction().length > posC) {
+			if(value.getAction().length > pos+len && 
+					value.getAction().length > posC) {
 				warn(value.getAction()[pos+len .. posC] != 
 					trim(value.getStartSymbol()), "%s != %s", 
 						value.getAction()[pos+len .. posC], 
