@@ -17,7 +17,6 @@ import hurt.util.pair;
 import hurt.util.array;
 import hurt.util.slog;
 import hurt.math.mathutil;
-import hurt.util.random.random;
 
 class Production {
 	private string startSymbol;
@@ -153,6 +152,7 @@ class FileReader {
 	private bool glr;
 	private Deque!(ConflictIgnore) conflictIgnores;
 	private uint disCounter;
+	private uint ruleSplitCnt;
 	
 	// input file
 	private InputStream inFile;
@@ -204,6 +204,7 @@ class FileReader {
 		this.conflictIgnores = new Deque!(ConflictIgnore)();
 
 		this.disCounter++;
+		this.ruleSplitCnt = 0;
 	}
 
 	public Deque!(ConflictIgnore) getConflictIgnores() {
@@ -408,8 +409,8 @@ class FileReader {
 		log("%s", cur);
 		//log("%s %s %d:%d=%d",start, cur, colom, (startOld ? 1 : 2),colom + (startOld ? 1 : 2) );
 
-		string leftNew = format("rand%d%d", rand.uniformR(2000), rand.uniformR(2000));
-		string rightNew = format("rand%d%d", rand.uniformR(2000), rand.uniformR(2000));
+		string leftNew = format("rule%d", this.ruleSplitCnt++);
+		string rightNew = format("rule%d", this.ruleSplitCnt++);
 		bool splitParse = false;
 		assert(leftNew != rightNew);
 
