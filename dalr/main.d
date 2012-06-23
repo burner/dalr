@@ -235,7 +235,7 @@ int main(string[] args) {
 		tree(treeFilename, pm, sm);
 	}
 
-	if(dontPrintError && ambiSet.first.getSize() > 0) {
+	if(!dontPrintError && ambiSet.first.getSize() > 0) {
 		log("writing %d graphs with conflict", ambiSet.first.getSize());
 		writeLR0GraphAround(pm.getItemSets(), sm, 
 			pm.getProductions(), graphfile, pm, ambiSet.first);
