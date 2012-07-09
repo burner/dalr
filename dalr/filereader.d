@@ -246,6 +246,7 @@ class FileReader {
 	public void parse() {
 		while(!this.isEof()) {
 			string cur = this.getNextLine();
+			//log("%s", cur);
 
 			// is the line a comment
 			size_t comment = findArr!(char)(cur, "//");
@@ -291,10 +292,12 @@ class FileReader {
 				cur = this.parseProduction(cur);
 				this.checkAndSetPrecedence!("%prec")(productions.back());
 				didSomething = true;
+				//log();
 			} else if(pipe < cur.length) {
 				cur = this.parseProduction(cur, true);
 				this.checkAndSetPrecedence!("%prec")(productions.back());
 				didSomething = true;
+				//log();
 			}
 
 			// production code 
@@ -302,6 +305,7 @@ class FileReader {
 			if(prodCodeStart < cur.length) {
 				cur = this.parseProductionAction(cur);
 				didSomething = true;
+				//log();
 			}
 
 			// to igore know conflicts
@@ -309,8 +313,10 @@ class FileReader {
 			if(conIgnore < cur.length) {
 				cur = this.parseConflictIgnore(cur);
 				didSomething = true;
+				//log();
 			}
 
+			//log("%b", didSomething);
 			if(cur.length > 0 && !didSomething) {
 				foreach(size_t idx, char it; cur) {
 					assert(isWhiteSpace(it), 
@@ -404,9 +410,9 @@ class FileReader {
 		}
 
 		colom = colom + (startOld ? 1 : 2);
-		log("%s %d", cur, colom);
+		//log("%s %d", cur, colom);
 		cur = cur[colom .. $];
-		log("%s", cur);
+		//log("%s", cur);
 		//log("%s %s %d:%d=%d",start, cur, colom, (startOld ? 1 : 2),colom + (startOld ? 1 : 2) );
 
 		string leftNew = format("rule%d", this.ruleSplitCnt++);
@@ -421,41 +427,49 @@ class FileReader {
 			if( (semi < cur.length && actionStart < cur.length && 
 					semi < actionStart) || 
 					( semi < cur.length && actionStart == cur.length) ) {
+				//log();
 
 				sb.pushBack(cur[0 .. min(semi, actionStart)]);
-				log("%s", sb.getString());
+				//log("%s", sb.getString());
 				if(!splitParse) {
-					this.productions.pushBack(new Production(start,sb.getString()));
+					this.productions.pushBack(
+						new Production(start,sb.getString()));
 				} else {
-					this.productions.pushBack(new Production(rightNew,sb.getString()));
+					this.productions.pushBack(
+						new Production(rightNew,sb.getString()));
 				}
 
-				log("%s", this.productions.back().toString());
+				//log("%s", this.productions.back().toString());
 				return cur;
-			// we found a semicolon and a actionstart and the semicolon is found 
+			// we found a semicolon and a actionstart and the semicolon is found
 			// earlier than the actionstart. or we found just a  actionstart
 			} else if( (semi < cur.length && actionStart < cur.length && 
 					semi > actionStart) || 
 					(semi == cur.length && actionStart < cur.length) ){
+				//log();
 				splitParse = true;
 				
 				sb.pushBack(cur[0 .. actionStart]);
 				this.productions.pushBack(
 					new Production(leftNew, sb.getString()));
 
-				log("%s", this.productions.back().toString());
+				//log("%s", this.productions.back().toString());
 				sb.clear();
 				cur = this.parseProductionAction(cur[actionStart .. $]);
+				//log("%s", cur);
 				actionEnd = findArr!(char)(cur, ":}");
 				cur = cur[actionEnd + 2 .. $];
 				semi = find!(char)(cur, ';');
+				//log("%s %d %d", cur, actionEnd, semi);
 				if(semi < cur.length) {
+					log("%s", cur[0 .. semi]);
 					this.productions.pushBack(new Production(rightNew,
 						cur[0 .. semi]));
 					this.productions.pushBack(
 						new Production(start, leftNew ~ " " ~ rightNew));
-					log("%s", this.productions.back().toString());
-					return cur[semi .. $];
+					//log("%s", this.productions.back().toString());
+					//log("%s", cur[semi+1 .. $]);
+					return cur[semi+1 .. $];
 				} else {
 					sb.pushBack(cur[semi+1 .. $]);
 				}
@@ -583,11 +597,13 @@ class FileReader {
 	private string parseProductionAction(string cur) {
 		size_t actionStart = findArr!(char)(cur, "{:");	
 		size_t actionEnd = findArr!(char)(cur, ":}");	
+		//log("%d %d %d", actionStart, actionEnd, cur.length);
 		// the action spans only one line
 		if(actionStart < cur.length && actionEnd < cur.length && 
 				actionStart < actionEnd) {
+			//log("%s", cur[actionStart+2 .. actionEnd]);
 			this.productions.back().setAction(cur[actionStart+2 .. actionEnd]);
-			return cur;
+			return cur[actionStart .. $];
 		// the action spans for more than one line
 		} else if(actionStart < cur.length && actionEnd == cur.length) {
 			StringBuffer!(char) tmp = new StringBuffer!(char)(128);
@@ -607,9 +623,11 @@ class FileReader {
 			// save the rest
 			tmp.pushBack(cur[0 .. actionEnd]);	
 			tmp.pushBack('\n');
-			this.stashString(cur[actionEnd+2 .. $]);
+			//this.stashString(cur[actionEnd+2 .. $]);
 			this.productions.back().setAction(tmp.getString());
-			return cur;
+			//log("%s", tmp.getString());
+			//log("%s", cur);
+			return cur[actionEnd .. $];
 		} else {
 			assert(false, "current line has no {: symbol");
 		}
