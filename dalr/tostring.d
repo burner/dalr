@@ -311,11 +311,11 @@ public string transitionTableToString(ProductionManager pm, SymbolManager sm) {
 	
 	// create the table
 	immutable string stringFormat = "%" ~ conv!(size_t,string)(size) 
-		~ "s";
+		~ "s &";
 	immutable string longFormat = "%" ~ conv!(size_t,string)(size) 
-		~ "d";
+		~ "d &";
 	immutable string inputFormat = "%" ~ conv!(size_t,string)(size) 
-		~ "s";
+		~ "s &";
 	ret.pushBack(format(inputFormat, "ItemSet"));
 	// their might be multiple items in a single cell (conflicts), this 
 	// leads to the extra foreach loop
@@ -332,10 +332,10 @@ public string transitionTableToString(ProductionManager pm, SymbolManager sm) {
 				}
 			}
 		}
-		ret.pushBack("\n");
-	}
+		ret.pushBack("\\\\ \\hline\n");
+	 }
 	
-	ret.pushBack("\n");
+	ret.pushBack("\\\\ \\hline\n");
 	return ret.getString();
 }
 

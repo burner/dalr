@@ -228,6 +228,12 @@ int main(string[] args) {
 	logFile.writeString(ambiSet.second);
 	logFile.writeString("\n\n\n");
 	logFile.writeString(itemsetsToString(pm, sm));
+	logFile.writeString("\n\n\n");
+	logFile.writeString(extendedFirstSetToString(pm, sm));
+	logFile.writeString("\n\n\n");
+	logFile.writeString(extendedFollowSetToString(pm, sm));
+	logFile.writeString("\n\n\n");
+	logFile.writeString(transitionTableToString(pm, sm));
 	logFile.close();
 
 	if(treeFilename != "") {
