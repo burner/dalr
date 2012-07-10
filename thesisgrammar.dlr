@@ -1,0 +1,11 @@
+S := Proto;
+
+Proto := Typ Identifier lparen ParameterList rparen semicolon;
+	| Typ Identifier lparen rparen semicolon;
+
+Typ := void;
+	| int;
+	| float;
+
+ParameterList := Typ Identifier;
+	| Typ Identifier comma ParameterList;
