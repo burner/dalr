@@ -144,7 +144,7 @@ class ProductionManager {
 		this.makeExtendedFollowSetEvenFaster();
 		//this.makeExtendedFollowSetEpsilonFree();
 		//this.makeExtendedFollowSetThreaded();
-		//println(extendedGrammerItemsToString(this, this.symbolManager));
+		println(extendedGrammerItemsToString(this, this.symbolManager));
 		//log("normal %u linear %u", this.followExtended.getSize(),
 		//	this.followExtendedLinear.getSize());
 		/*log("epsilon %u evenFaster %u", this.followExtendedEpsilon.getSize(),
