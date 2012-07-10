@@ -2268,6 +2268,12 @@ class ProductionManager {
 		MapSet!(ExtendedItem,int) first = new MapSet!(ExtendedItem,int)(
 			ISRType.HashTable, ISRType.HashTable);
 
+		foreach(ExtendedItem key, bool kind; this.extGrammerKind) {
+			if(!kind) {
+				first.insert(key, key.getItem());
+			}
+		}
+
 		MapSet!(ExtendedItem,ExtendedItem) bli = new MapSet!(
 			ExtendedItem,ExtendedItem)(ISRType.HashTable, ISRType.HashTable);
 
@@ -2315,6 +2321,12 @@ class ProductionManager {
 
 		MapSet!(ExtendedItem,int) first = new MapSet!(ExtendedItem,int)(
 			ISRType.HashTable, ISRType.HashTable);
+
+		foreach(ExtendedItem key, bool kind; this.extGrammerKind) {
+			if(!kind) {
+				first.insert(key, key.getItem());
+			}
+		}
 		bool change = true;
 		size_t changeCnt = 0;
 		while(change) { // as long as anything changes, continue
