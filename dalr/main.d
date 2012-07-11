@@ -269,10 +269,6 @@ int main(string[] args) {
 	//println(extendedGrammerToString(pm, sm));
 	//println(itemsetsToString(pm, sm));
 	log("writing transition table");
-	/*File tranTable = new File("tranTable", FileMode.OutNew);
-	tranTable.writeString(finalTransitionTableToString(pm.getFinalTable(), pm, 
-		sm));
-	tranTable.close();*/
 	
 	auto tranTable = new File("tranTableNew", FileMode.OutNew);
 	tranTable.writeString(finalTransitionTableToString(pm.finalTableNew, pm, 

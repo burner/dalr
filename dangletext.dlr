@@ -1,0 +1,6 @@
+S := IfElse;
+
+IfElse :=
+	if bool IfElse; 
+	| if bool IfElse else IfElse; 
+	| statement;
