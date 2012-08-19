@@ -761,6 +761,10 @@ class FileReader {
 		return this.productions.begin();
 	}
 
+	public size_t getNumberOfProductions() const {
+		return this.productions.getSize();
+	}
+
 	public MapSet!(int,string) getLeftAssociation() {
 		return this.leftAssociation;
 	}

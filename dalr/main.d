@@ -112,6 +112,9 @@ int main(string[] args) {
 
 	Map!(size_t,string) unpro = arg.getUnprocessed();
 	foreach(key, value; unpro) {
+		if(value == "--help" || value == "-h") {
+			continue;
+		}
 		warn("option %s at position %u not recognised", value, key);
 	}
 
@@ -172,6 +175,8 @@ int main(string[] args) {
 			log("%s", (*it).getProduction());
 		}
 	}
+
+	log(verbose, "number of productions %d", fr.getNumberOfProductions());
 
 	foreach(it; fr.getConflictIgnores()) {
 		for(auto jt = it.getRuleIterator(); jt.isValid(); jt++) {
