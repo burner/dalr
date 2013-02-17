@@ -616,6 +616,9 @@ public struct TableItem {
 			case TableType.Goto:
 				ret.pushBack("Goto:");
 				break;
+			case TableType.Search:
+				ret.pushBack("Search:");
+				break;
 			case TableType.Shift:
 				ret.pushBack("Shift:");
 				break;
